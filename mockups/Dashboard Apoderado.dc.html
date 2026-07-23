@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: 'Nunito', 'Quicksand', ui-rounded, sans-serif; }
+  a { color: #6D28D9; } a:hover { color: #8B5CF6; }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #E8E8EC; display: flex; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
+  <div data-screen-label="Dashboard – Apoderado" style="width: 390px; height: 844px; background: #1F2333; border-radius: 54px; padding: 10px; box-sizing: border-box; box-shadow: 0 24px 60px rgba(30,20,60,0.25); position: relative; flex-shrink: 0;">
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 150px; height: 28px; background: #1F2333; border-radius: 0 0 18px 18px; z-index: 5;"></div>
+    <div style="width: 100%; height: 100%; background: #FAF7FF; border-radius: 44px; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; padding: 44px 16px 14px;">
+
+      <!-- Encabezado -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 2px 10px;">
+        <div>
+          <div style="font-size: 12px; font-weight: 700; color: #8B7FC4;">Modo apoderado</div>
+          <div style="font-size: 21px; font-weight: 900; color: #312E81; line-height: 1.15;">Progreso de Vale</div>
+        </div>
+        <div style="background: #FFFFFF; border: 1.5px solid #E5DCFA; border-radius: 12px; padding: 9px 14px; font-size: 13px; font-weight: 800; color: #4C3D8F;">Esta semana ▾</div>
+      </div>
+
+      <!-- 1. Resumen semanal -->
+      <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 14px rgba(109,40,217,0.06); padding: 13px 16px; margin-bottom: 10px;">
+        <div style="font-size: 12px; font-weight: 900; color: #8B7FC4; letter-spacing: 0.6px; margin-bottom: 9px;">RESUMEN SEMANAL</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 7px 14px;">
+          <div>
+            <div style="font-size: 20px; font-weight: 900; color: #312E81;">23</div>
+            <div style="font-size: 12px; font-weight: 700; color: #6B6390; line-height: 1.3;">ejercicios resueltos</div>
+          </div>
+          <div>
+            <div style="font-size: 20px; font-weight: 900; color: #312E81;">7 de 10</div>
+            <div style="font-size: 12px; font-weight: 700; color: #6B6390; line-height: 1.3;">ejercicios correctos</div>
+          </div>
+          <div>
+            <div style="font-size: 20px; font-weight: 900; color: #312E81;">1 h 40 min</div>
+            <div style="font-size: 12px; font-weight: 700; color: #6B6390; line-height: 1.3;">de práctica</div>
+          </div>
+          <div>
+            <div style="font-size: 20px; font-weight: 900; color: #312E81;">3 días</div>
+            <div style="font-size: 12px; font-weight: 700; color: #6B6390; line-height: 1.3;">practicó esta semana</div>
+          </div>
+        </div>
+        <!-- mini tendencia -->
+        <div style="margin-top: 10px; border-top: 1.5px solid #F1ECFC; padding-top: 9px;">
+          <div style="display: flex; align-items: flex-end; gap: 10px; height: 34px; padding: 0 4px;">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 55%; background: #8B5CF6; border-radius: 6px 6px 3px 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 6px; background: #E9E2F8; border-radius: 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 90%; background: #8B5CF6; border-radius: 6px 6px 3px 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 6px; background: #E9E2F8; border-radius: 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 70%; background: #8B5CF6; border-radius: 6px 6px 3px 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 6px; background: #E9E2F8; border-radius: 3px;"></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end;"><div style="width: 100%; max-width: 26px; height: 6px; background: #E9E2F8; border-radius: 3px;"></div></div>
+          </div>
+          <div style="display: flex; gap: 10px; padding: 4px 4px 0;">
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">L</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">M</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">X</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">J</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">V</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">S</div>
+            <div style="flex: 1; text-align: center; font-size: 10.5px; font-weight: 800; color: #9A91BC;">D</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Qué está aprendiendo -->
+      <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 14px rgba(109,40,217,0.06); padding: 13px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 900; color: #8B7FC4; letter-spacing: 0.6px;">QUÉ ESTÁ APRENDIENDO</div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: #3B3358;">Leer y escribir números grandes</div>
+            <div style="font-size: 11.5px; font-weight: 900; color: #0E9F6E; flex-shrink: 0;">Dominado</div>
+          </div>
+          <div style="height: 10px; background: #F1ECFC; border-radius: 6px; margin-top: 5px; overflow: hidden;"><div style="width: 100%; height: 100%; background: #34D399; border-radius: 6px;"></div></div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #8A82A8; margin-top: 3px;">Lo maneja muy bien, ya casi no necesita pistas.</div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: #3B3358;">Multiplicar números de dos cifras</div>
+            <div style="font-size: 11.5px; font-weight: 900; color: #6D28D9; flex-shrink: 0;">Practicando</div>
+          </div>
+          <div style="height: 10px; background: #F1ECFC; border-radius: 6px; margin-top: 5px; overflow: hidden;"><div style="width: 55%; height: 100%; background: #8B5CF6; border-radius: 6px;"></div></div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #8A82A8; margin-top: 3px;">Va avanzando parejo, con práctica regular.</div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: #3B3358;">Fracciones equivalentes</div>
+            <div style="font-size: 11.5px; font-weight: 900; color: #6D28D9; flex-shrink: 0;">Practicando</div>
+          </div>
+          <div style="height: 10px; background: #F1ECFC; border-radius: 6px; margin-top: 5px; overflow: hidden;"><div style="width: 48%; height: 100%; background: #8B5CF6; border-radius: 6px;"></div></div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #8A82A8; margin-top: 3px;">Le está costando un poco: usa hartas pistas aquí.</div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: #3B3358;">Sumar y restar fracciones</div>
+            <div style="font-size: 11.5px; font-weight: 900; color: #B45309; flex-shrink: 0;">Empezando</div>
+          </div>
+          <div style="height: 10px; background: #F1ECFC; border-radius: 6px; margin-top: 5px; overflow: hidden;"><div style="width: 20%; height: 100%; background: #FBBF24; border-radius: 6px;"></div></div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #8A82A8; margin-top: 3px;">Recién está partiendo con este tema, es normal ir lento.</div>
+        </div>
+      </div>
+
+      <!-- 3. Sugerencia de la semana -->
+      <div style="background: #F5F1FF; border: 1.5px solid #DDD0FF; border-radius: 20px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start;">
+        <svg width="46" height="50" viewBox="0 0 200 214" style="flex-shrink: 0; margin-top: 2px;">
+          <path d="M62 142 Q34 132 30 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <path d="M138 142 Q166 132 170 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <path d="M72 160 Q66 196 48 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <path d="M90 166 Q90 204 74 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <path d="M110 166 Q110 204 126 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <path d="M128 160 Q134 196 152 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+          <ellipse cx="100" cy="122" rx="52" ry="48" fill="#8B5CF6"></ellipse>
+          <path d="M100 8 L138 82 L62 82 Z" fill="#312E81"></path>
+          <text x="100" y="46" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">÷</text>
+          <text x="92" y="66" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">+</text>
+          <text x="112" y="66" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">×</text>
+          <ellipse cx="100" cy="82" rx="58" ry="13" fill="#312E81"></ellipse>
+          <circle cx="84" cy="116" r="13" fill="#FFFFFF"></circle>
+          <circle cx="116" cy="116" r="13" fill="#FFFFFF"></circle>
+          <circle cx="86" cy="118" r="6" fill="#312E81"></circle>
+          <circle cx="114" cy="118" r="6" fill="#312E81"></circle>
+          <circle cx="88.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+          <circle cx="116.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+          <path d="M88 140 Q100 150 112 140" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"></path>
+        </svg>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 12px; font-weight: 900; color: #6D28D9; letter-spacing: 0.6px; margin-bottom: 4px;">SUGERENCIA DE LA SEMANA</div>
+          <div style="font-size: 13px; font-weight: 700; color: #4C3D8F; line-height: 1.5; text-wrap: pretty;">Esta semana conviene repasar <b>fracciones equivalentes</b>. Practicar 10 minutos, 2 o 3 veces por semana, ayuda más que una sesión larga.</div>
+        </div>
+      </div>
+
+      <!-- Pie privacidad -->
+      <div style="margin-top: auto; padding: 9px 8px 0; text-align: center; font-size: 11px; font-weight: 600; color: #9A91BC; line-height: 1.45;">🔒 Ves indicadores del avance de Vale. Las conversaciones con el tutor son privadas.</div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

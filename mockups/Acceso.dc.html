@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: 'Nunito', 'Quicksand', ui-rounded, sans-serif; }
+  a { color: #6D28D9; } a:hover { color: #8B5CF6; }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #E8E8EC; display: flex; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
+  <div data-screen-label="Acceso – Login y PIN" style="width: 390px; height: 844px; background: #1F2333; border-radius: 54px; padding: 10px; box-sizing: border-box; box-shadow: 0 24px 60px rgba(30,20,60,0.25); position: relative; flex-shrink: 0;">
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 150px; height: 28px; background: #1F2333; border-radius: 0 0 18px 18px; z-index: 5;"></div>
+    <div style="width: 100%; height: 100%; background: #F5F1FF; border-radius: 44px; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; padding: 44px 14px 14px; gap: 10px;">
+
+      <!-- PANEL A: Login apoderado -->
+      <div style="background: #FAF7FF; border-radius: 22px; padding: 14px 16px 16px; box-shadow: 0 4px 14px rgba(109,40,217,0.07); position: relative;">
+        <div style="position: absolute; top: 10px; right: 12px; background: #EDE6FC; border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 900; color: #8B7FC4; letter-spacing: 0.5px;">A · LOGIN APODERADO</div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 4px 0 10px;">
+          <svg width="52" height="56" viewBox="0 0 200 214" style="flex-shrink: 0;">
+            <path d="M0,-6 L1.8,-1.8 L6,0 L1.8,1.8 L0,6 L-1.8,1.8 L-6,0 L-1.8,-1.8 Z" transform="translate(170,118)" fill="#FBBF24"></path>
+            <path d="M62 142 Q34 132 30 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M138 142 Q166 132 170 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M72 160 Q66 196 48 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M90 166 Q90 204 74 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M110 166 Q110 204 126 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M128 160 Q134 196 152 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <line x1="36" y1="114" x2="20" y2="88" stroke="#92400E" stroke-width="5" stroke-linecap="round"></line>
+            <path d="M0,-9 L2.7,-2.8 L9,-2.8 L4,1.1 L5.6,7.8 L0,3.9 L-5.6,7.8 L-4,1.1 L-9,-2.8 L-2.7,-2.8 Z" transform="translate(18,80)" fill="#FBBF24"></path>
+            <ellipse cx="100" cy="122" rx="52" ry="48" fill="#8B5CF6"></ellipse>
+            <path d="M100 8 L138 82 L62 82 Z" fill="#312E81"></path>
+            <text x="100" y="44" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">÷</text>
+            <text x="91" y="62" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">+</text>
+            <text x="112" y="62" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">×</text>
+            <text x="101" y="78" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">−</text>
+            <ellipse cx="100" cy="82" rx="58" ry="13" fill="#312E81"></ellipse>
+            <circle cx="84" cy="116" r="13" fill="#FFFFFF"></circle>
+            <circle cx="116" cy="116" r="13" fill="#FFFFFF"></circle>
+            <circle cx="86" cy="118" r="6" fill="#312E81"></circle>
+            <circle cx="114" cy="118" r="6" fill="#312E81"></circle>
+            <circle cx="88.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+            <circle cx="116.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+            <path d="M88 140 Q100 150 112 140" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"></path>
+          </svg>
+          <div>
+            <div style="font-size: 20px; font-weight: 900; color: #6D28D9; line-height: 1.05;">Tutor Octavio</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: #A78BFA; margin-top: 2px;">Matemáticas con magia</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="height: 46px; background: #FFFFFF; border: 1.5px solid #E5DCFA; border-radius: 14px; display: flex; align-items: center; padding: 0 14px; font-size: 13.5px; font-weight: 700; color: #9A91BC; box-sizing: border-box;">Correo</div>
+          <div style="height: 46px; background: #FFFFFF; border: 1.5px solid #E5DCFA; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 13.5px; font-weight: 700; color: #9A91BC; box-sizing: border-box;"><span>Contraseña</span><span style="letter-spacing: 2px; color: #C9BFEA;">••••</span></div>
+          <div style="height: 48px; background: #6D28D9; border-radius: 14px; box-shadow: 0 4px 0 #55219E; display: flex; align-items: center; justify-content: center; font-size: 15.5px; font-weight: 900; color: #FFFFFF;">Entrar</div>
+          <div style="text-align: center; font-size: 12.5px; font-weight: 800; color: #8B5CF6; text-decoration: underline; text-underline-offset: 3px; padding-top: 2px;">Crear cuenta</div>
+        </div>
+      </div>
+
+      <!-- PANEL B: Selección de perfil + PIN -->
+      <div style="background: #FAF7FF; border-radius: 22px; padding: 14px 16px; box-shadow: 0 4px 14px rgba(109,40,217,0.07); position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 9px;">
+        <div style="position: absolute; top: 10px; right: 12px; background: #EDE6FC; border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 900; color: #8B7FC4; letter-spacing: 0.5px;">B · ¿QUIÉN ENTRA?</div>
+        <div style="font-size: 18px; font-weight: 900; color: #312E81; padding-top: 2px;">¿Quién va a practicar?</div>
+
+        <!-- Tarjeta Vale -->
+        <div style="background: #FFFFFF; border: 2px solid #8B5CF6; border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(109,40,217,0.10);">
+          <svg width="44" height="44" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="24" fill="#EDE6FC"></circle>
+            <circle cx="24" cy="19" r="8.5" fill="#8B5CF6"></circle>
+            <path d="M8 44 Q24 28 40 44 Z" fill="#8B5CF6"></path>
+          </svg>
+          <div style="flex: 1;">
+            <div style="font-size: 15.5px; font-weight: 900; color: #3B3358;">Vale · 5° básico</div>
+            <div style="font-size: 11.5px; font-weight: 700; color: #A78BFA;">Entra con tu PIN, sin correo</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 18 18"><path d="M6.5 3.5 L12 9 L6.5 14.5" fill="none" stroke="#8B5CF6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+
+        <!-- PIN -->
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 10px 14px 12px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-height: 0; justify-content: center;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <!-- Octavio guiñando -->
+            <svg width="38" height="40" viewBox="0 0 200 214">
+              <path d="M62 142 Q34 132 30 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M138 142 Q166 132 170 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M72 160 Q66 196 48 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M90 166 Q90 204 74 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M110 166 Q110 204 126 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M128 160 Q134 196 152 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+              <ellipse cx="100" cy="122" rx="52" ry="48" fill="#8B5CF6"></ellipse>
+              <path d="M100 8 L138 82 L62 82 Z" fill="#312E81"></path>
+              <text x="100" y="46" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">÷</text>
+              <text x="92" y="66" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">+</text>
+              <text x="112" y="66" text-anchor="middle" font-size="14" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">×</text>
+              <ellipse cx="100" cy="82" rx="58" ry="13" fill="#312E81"></ellipse>
+              <circle cx="84" cy="116" r="13" fill="#FFFFFF"></circle>
+              <circle cx="116" cy="116" r="13" fill="#FFFFFF"></circle>
+              <circle cx="86" cy="118" r="6" fill="#312E81"></circle>
+              <path d="M108 116 Q116 122 124 116" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"></path>
+              <circle cx="88.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+              <path d="M88 140 Q100 150 112 140" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"></path>
+            </svg>
+            <div style="font-size: 14.5px; font-weight: 900; color: #312E81;">Escribe tu PIN secreto</div>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <div style="width: 18px; height: 18px; border-radius: 50%; background: #6D28D9;"></div>
+            <div style="width: 18px; height: 18px; border-radius: 50%; background: #6D28D9;"></div>
+            <div style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #C4B5FD; box-sizing: border-box; background: #FFFFFF;"></div>
+            <div style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #C4B5FD; box-sizing: border-box; background: #FFFFFF;"></div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 64px); gap: 6px; justify-content: center;">
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">1</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">2</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">3</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">4</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">5</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">6</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">7</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">8</div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">9</div>
+            <div></div>
+            <div style="height: 36px; background: #F5F1FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #4C3D8F;">0</div>
+            <div style="height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #B7A8E8;">⌫</div>
+          </div>
+        </div>
+
+        <!-- Apoderado -->
+        <div style="background: #FFFFFF; border: 1.5px solid #E5DCFA; border-radius: 16px; padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div style="font-size: 13px; font-weight: 800; color: #6B6390;">👤 Soy el apoderado</div>
+          <div style="font-size: 12.5px; font-weight: 900; color: #6D28D9;">ver progreso →</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

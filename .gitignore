@@ -1,0 +1,17 @@
+# Material con derechos de autor de terceros — no publicar
+papers/
+papers.zip
+
+# Documentos internos de trabajo (plantillas, anteproyecto, correcciones del profesor)
+base/
+correcciones/
+ejemplos_estructuras/
+
+# Borradores del informe (la versión de trabajo vive en corregido/)
+informe_final_tt1.md
+informe_final_tt1.docx
+corregido/
+
+# Configuración local de herramientas
+.claude/
+bocetos/

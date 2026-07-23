@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: 'Nunito', 'Quicksand', ui-rounded, sans-serif; }
+  a { color: #6D28D9; } a:hover { color: #8B5CF6; }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #E8E8EC; display: flex; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
+  <div data-screen-label="Home – Estudiante" style="width: 390px; height: 844px; background: #1F2333; border-radius: 54px; padding: 10px; box-sizing: border-box; box-shadow: 0 24px 60px rgba(30,20,60,0.25); position: relative; flex-shrink: 0;">
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 150px; height: 28px; background: #1F2333; border-radius: 0 0 18px 18px; z-index: 5;"></div>
+    <div style="width: 100%; height: 100%; background: #FAF7FF; border-radius: 44px; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box;">
+
+      <div style="flex: 1; min-height: 0; overflow: hidden; padding: 48px 16px 0; box-sizing: border-box; display: flex; flex-direction: column;">
+
+        <!-- Encabezado -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 6px 2px 12px;">
+          <!-- Octavio pequeño saludando -->
+          <svg width="62" height="66" viewBox="0 0 200 214" style="flex-shrink: 0;">
+            <path d="M0,-6 L1.8,-1.8 L6,0 L1.8,1.8 L0,6 L-1.8,1.8 L-6,0 L-1.8,-1.8 Z" transform="translate(174,124)" fill="#FBBF24"></path>
+            <path d="M62 142 Q34 132 30 104" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M138 148 Q164 152 172 140" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M72 160 Q66 196 48 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M90 166 Q90 204 74 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M110 166 Q110 204 126 208" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M128 160 Q134 196 152 198" fill="none" stroke="#7C3AED" stroke-width="13" stroke-linecap="round"></path>
+            <line x1="36" y1="114" x2="20" y2="88" stroke="#92400E" stroke-width="5" stroke-linecap="round"></line>
+            <path d="M0,-9 L2.7,-2.8 L9,-2.8 L4,1.1 L5.6,7.8 L0,3.9 L-5.6,7.8 L-4,1.1 L-9,-2.8 L-2.7,-2.8 Z" transform="translate(18,80)" fill="#FBBF24"></path>
+            <ellipse cx="100" cy="122" rx="52" ry="48" fill="#8B5CF6"></ellipse>
+            <path d="M100 8 L138 82 L62 82 Z" fill="#312E81"></path>
+            <text x="100" y="44" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">÷</text>
+            <text x="91" y="62" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">+</text>
+            <text x="112" y="62" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">×</text>
+            <text x="101" y="78" text-anchor="middle" font-size="13" font-weight="900" fill="#FBBF24" font-family="Nunito, sans-serif">−</text>
+            <ellipse cx="100" cy="82" rx="58" ry="13" fill="#312E81"></ellipse>
+            <circle cx="84" cy="116" r="13" fill="#FFFFFF"></circle>
+            <circle cx="116" cy="116" r="13" fill="#FFFFFF"></circle>
+            <circle cx="86" cy="118" r="6" fill="#312E81"></circle>
+            <circle cx="114" cy="118" r="6" fill="#312E81"></circle>
+            <circle cx="88.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+            <circle cx="116.5" cy="115.5" r="2.4" fill="#FFFFFF"></circle>
+            <circle cx="72" cy="136" r="6" fill="#FB7185" opacity="0.45"></circle>
+            <circle cx="128" cy="136" r="6" fill="#FB7185" opacity="0.45"></circle>
+            <path d="M88 140 Q100 150 112 140" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"></path>
+          </svg>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 22px; font-weight: 900; color: #312E81; line-height: 1.1;">¡Hola, Vale!</div>
+            <div style="font-size: 12px; font-weight: 700; color: #A78BFA; margin-top: 2px;">¿Practicamos un poco hoy?</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end; flex-shrink: 0;">
+            <div style="background: #FFFFFF; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 900; color: #B45309; box-shadow: 0 2px 6px rgba(109,40,217,0.10);">⭐ 1.250</div>
+            <div style="background: #FFF7E6; border: 1.5px solid #FDE7B0; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 800; color: #B45309;">🔥 3 días</div>
+          </div>
+        </div>
+
+        <!-- Sugerencia de Octavio -->
+        <div style="background: #F5F1FF; border: 2.5px solid #8B5CF6; border-radius: 20px; padding: 14px 16px; box-shadow: 0 6px 18px rgba(109,40,217,0.10); position: relative; margin-bottom: 14px;">
+          <div style="position: absolute; top: -12px; left: 14px; background: #6D28D9; color: #FFFFFF; border-radius: 999px; padding: 4px 12px; font-size: 11.5px; font-weight: 900; letter-spacing: 0.3px;">🪄 Octavio te sugiere</div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 6px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 16.5px; font-weight: 900; color: #312E81;">Fracciones equivalentes</div>
+              <div style="display: inline-block; background: #FFE4E9; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 800; color: #BE4459; margin-top: 6px;">¡A repasar!</div>
+            </div>
+            <div style="height: 48px; background: #6D28D9; border-radius: 14px; box-shadow: 0 4px 0 #55219E; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #FFFFFF; padding: 0 20px; flex-shrink: 0;">Practicar</div>
+          </div>
+        </div>
+
+        <!-- Unidades 5° básico -->
+        <div style="font-size: 13px; font-weight: 900; color: #7C6BB8; letter-spacing: 0.5px; padding: 2px 4px 8px;">TUS UNIDADES · 5° BÁSICO</div>
+        <div style="display: flex; flex-direction: column; gap: 9px;">
+
+          <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); padding: 13px 16px; display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800; color: #3B3358;">Números grandes</div>
+              <div style="font-size: 14px; margin-top: 2px; letter-spacing: 2px;">⭐⭐⭐</div>
+            </div>
+            <div style="background: #D6F5E8; border-radius: 999px; padding: 5px 12px; font-size: 11.5px; font-weight: 900; color: #0E9F6E; flex-shrink: 0;">🏅 ¡Dominada!</div>
+          </div>
+
+          <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); padding: 13px 16px; display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800; color: #3B3358;">Multiplicación</div>
+              <div style="font-size: 14px; margin-top: 2px; letter-spacing: 2px;">⭐⭐<span style="opacity: 0.25;">⭐</span></div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 2px solid #C4B5FD; border-radius: 20px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); padding: 13px 16px; display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800; color: #3B3358;">Fracciones equivalentes</div>
+              <div style="font-size: 14px; margin-top: 2px; letter-spacing: 2px;">⭐⭐<span style="opacity: 0.25;">⭐</span></div>
+            </div>
+            <div style="background: #FFE4E9; border-radius: 999px; padding: 5px 12px; font-size: 11.5px; font-weight: 900; color: #BE4459; flex-shrink: 0;">¡A repasar!</div>
+          </div>
+
+          <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); padding: 13px 16px; display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800; color: #3B3358;">Sumar y restar fracciones</div>
+              <div style="font-size: 14px; margin-top: 2px; letter-spacing: 2px;">⭐<span style="opacity: 0.25;">⭐⭐</span></div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(109,40,217,0.07); padding: 13px 16px; display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800; color: #3B3358;">Decimales</div>
+              <div style="font-size: 14px; margin-top: 2px; letter-spacing: 2px; opacity: 0.25;">⭐⭐⭐</div>
+            </div>
+            <div style="background: #F5F1FF; border: 1.5px solid #DDD0FF; border-radius: 999px; padding: 5px 12px; font-size: 11.5px; font-weight: 900; color: #6D28D9; flex-shrink: 0;">✨ ¡Nueva!</div>
+          </div>
+
+        </div>
+
+        <!-- Acceso repaso 4° -->
+        <div style="text-align: center; padding: 12px 0 10px; font-size: 13px; font-weight: 800; color: #8B5CF6; text-decoration: underline; text-underline-offset: 3px;">Ver unidades de 4° básico</div>
+
+      </div>
+
+      <!-- Nav inferior -->
+      <div style="background: #FFFFFF; border-top: 1.5px solid #EFE8FF; padding: 10px 24px 22px; display: flex; justify-content: space-between; flex-shrink: 0;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px;">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 11 L12 4 L20 11 V20 H14 V15 H10 V20 H4 Z" fill="#6D28D9"></path></svg>
+          <div style="font-size: 11px; font-weight: 900; color: #6D28D9;">Inicio</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px;">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="3" fill="none" stroke="#B7A8E8" stroke-width="2"></rect><path d="M8 10 H16 M8 14 H13" stroke="#B7A8E8" stroke-width="2" stroke-linecap="round"></path></svg>
+          <div style="font-size: 11px; font-weight: 800; color: #B7A8E8;">Practicar</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px;">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3 L14.4 8.2 L20 8.9 L15.8 12.8 L17 18.5 L12 15.6 L7 18.5 L8.2 12.8 L4 8.9 L9.6 8.2 Z" fill="none" stroke="#B7A8E8" stroke-width="2" stroke-linejoin="round"></path></svg>
+          <div style="font-size: 11px; font-weight: 800; color: #B7A8E8;">Mis logros</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
