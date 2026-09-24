@@ -37,7 +37,7 @@
 | ID | Requerimiento | Prioridad | CU |
 |---|---|---|---|
 | RF-A1 | El sistema permitirá al apoderado registrarse con correo y contraseña, y crear un (1) perfil de estudiante asociado, indicando nombre/alias y curso (4°, 5° o 6° básico). | M | CU-9 |
-| RF-A2 | El sistema permitirá iniciar y cerrar sesión con dos roles diferenciados: `estudiante` y `apoderado`, con vistas e interfaces distintas por rol. | M | CU-1 |
+| RF-A2 | El sistema permitirá iniciar y cerrar sesión con dos roles diferenciados: `estudiante` y `apoderado`, con vistas e interfaces distintas por rol. La pantalla de acceso permitirá elegir si se entra a la interfaz del estudiante o a la del apoderado. | M | CU-1 |
 | RF-A3 | El acceso del estudiante desde el dispositivo del hogar usará un mecanismo simple y adecuado a su edad (p. ej., selección de perfil + PIN corto definido por el apoderado), evitando contraseñas alfanuméricas complejas. | S | CU-1 |
 | RF-A4 | El apoderado podrá editar el curso del estudiante (p. ej., promoverlo de 4° a 5°) sin perder el historial de progreso. | S | CU-9 |
 | RF-A5 | El perfil del estudiante se creará con datos mínimos (alias y curso); el sistema no solicitará RUT, colegio, fecha de nacimiento exacta ni otros datos identificatorios del menor. | M | CU-9 |
@@ -109,7 +109,7 @@
 | RNF-U1 | La interfaz del estudiante será adecuada al rango 9–12 años: navegación de máx. 2 niveles de profundidad, botones grandes, iconografía + texto, lectura a nivel de 4° básico. | Evaluación heurística (heurísticas de Nielsen + heurísticas para niños) sin problemas de severidad ≥3 en el flujo principal. |
 | RNF-U2 | La interfaz del apoderado será operable por un adulto de competencia digital básica sin capacitación. | SUS ≥ 70 con evaluadores adultos actuando como apoderados. |
 | RNF-U3 | El flujo principal del estudiante (entrar → elegir unidad → resolver un ejercicio → ver retroalimentación) será completable sin ayuda de un adulto tras el primer uso. | Recorrido cognitivo (cognitive walkthrough) en evaluación heurística. |
-| RNF-U4 | La aplicación será web responsiva, usable en computador y tablet; la vista del apoderado además será usable en pantalla de teléfono. | Prueba manual en 3 anchos de viewport (móvil/tablet/escritorio). |
+| RNF-U4 | La aplicación será nativa para Android 8 o superior, usable en teléfono y tablet, en orientación vertical y horizontal. Las vistas de estudiante y apoderado se adaptarán al tamaño y orientación de la pantalla. *(Actualización 24-sep-2026: reemplaza la versión anterior, "web responsiva, usable en computador y tablet"; el equipo decidió una app nativa Android para teléfono y tablet.)* | Prueba manual en teléfono y tablet, en ambas orientaciones, incluyendo un dispositivo o emulador con Android 8. |
 | RNF-U5 | Todo el contenido de la interfaz estará en español de Chile. | Inspección. |
 
 ### 4.2 Corrección pedagógica y calidad del contenido (RNF-P)
@@ -160,7 +160,7 @@
 
 ## 5. Impacto del cambio de alcance sobre el anteproyecto (a reconciliar en el informe final)
 
-1. **§6.1 Alcances:** agregar el rol apoderado y su dashboard: "interfaz web orientada a los roles de estudiante y apoderado; el apoderado administra la cuenta y accede a un dashboard de progreso con métricas de desempeño e identificación de contenidos de mayor dificultad".
+1. **§6.1 Alcances:** agregar el rol apoderado y su dashboard: "interfaz orientada a los roles de estudiante y apoderado; el apoderado administra la cuenta y accede a un dashboard de progreso con métricas de desempeño e identificación de contenidos de mayor dificultad".
 2. **§6.2 Limitaciones:** reescribir la exclusión de roles: quedan fuera **docente** y **administrador** (trabajo futuro); el apoderado deja de estar excluido.
 3. **Ley 21.719:** el argumento original ("no se recolectan datos de menores") se mantiene para TT1/TT2 porque la validación sigue siendo sin menores y con datos sintéticos; pero el diseño ahora sí contempla cuentas y registros de desempeño de estudiantes para un despliegue futuro → se agrega el principio de minimización (RNF-S2/S3/S4) y se posiciona al apoderado como titular del consentimiento. Esto **fortalece** la sección en vez de contradecirla.
 4. **Diagramas del anteproyecto (bocetos):** el diagrama de casos de uso requiere agregar el actor Apoderado (CU-9, CU-10) y los CU internos CU-11/CU-12; el diagrama de clases requiere las entidades `Apoderado` (o rol en `Usuario`), `DominioOA` (índice de dominio por OA) y la separación `Ejercicio.solucionReferencia` + `erroresComunes[]`; el diagrama de secuencia requiere una variante para "consultar dashboard". Se abordan en las tareas 21–24.

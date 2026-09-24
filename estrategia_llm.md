@@ -3,7 +3,7 @@
 **Proyecto:** Tutor inteligente basado en IA para el aprendizaje de matemáticas — eje de Números, 4°–6° básico.
 **Documento:** Estrategia completa de integración con el LLM: modelo y sustitutos, operaciones del Adaptador con sus parámetros, prompts de generación y triaje, política de datos hacia el proveedor, resiliencia y plan de calibración. Consolida lo que los diseños anteriores delegaron aquí: prompt de generación (`modelo_dominio.md` §4.3), redacción y versionado de prompts pedagógicos (`modelo_pedagogico.md` §4), parámetros de llamada (`stack_tecnologico.md` §6).
 
-**Decisiones tomadas con el equipo:** GPT-4o mini con snapshot congelado como modelo principal; prompts escritos en español; el tutor solo recibe contexto del ejercicio actual (sin memoria de sesión); el alias del estudiante nunca viaja al proveedor (se inserta localmente).
+**Decisiones tomadas con el equipo:** GPT-5.4 nano con snapshot congelado como modelo principal (decisión del 23-jul-2026, reemplaza al GPT-4o mini del anteproyecto por obsolescencia sobrevenida — ver §2 y reconciliación en el informe TT1); prompts escritos en español; el tutor solo recibe contexto del ejercicio actual (sin memoria de sesión); el alias del estudiante nunca viaja al proveedor (se inserta localmente).
 
 ---
 
@@ -20,11 +20,12 @@
 
 ## 2. Modelo
 
-- **Principal: GPT-4o mini con snapshot congelado** (p. ej. `gpt-4o-mini-2024-07-18`; el identificador exacto se fija al configurar el entorno, Fase III tarea 36, y vive en configuración — un solo lugar). Fiel al anteproyecto, precio estable (US$0,15 / 0,60 por millón de tokens) y **reproducibilidad**: la validación de TT2 se ejecuta contra una versión que no cambia entre calibración y medición.
-- Estado del modelo a julio 2026: OpenAI lo mantiene como *legacy* (la familia GPT-4.1 es la recomendada a usuarios nuevos) → registrado como **riesgo de obsolescencia** para la tarea 28, con mitigación ya diseñada:
-- **Sustitutos documentados** (el Adaptador AD-4 + prompts externos hacen del cambio una edición de configuración):
-  - **GPT-4.1 mini** (~US$0,40/1,60): *upgrade* del mismo proveedor si la calibración (tarea 58) muestra calidad insuficiente en guardas o JSON.
+- **Principal: GPT-5.4 nano con snapshot congelado** (el identificador exacto del snapshot se fija al configurar el entorno, Fase III tarea 36, y vive en configuración — un solo lugar). Precio ~US$0,20 / 1,25 por millón de tokens (julio 2026, verificar contra la página oficial) y **reproducibilidad**: la validación de TT2 se ejecuta contra una versión que no cambia entre calibración y medición. Reemplaza al GPT-4o mini seleccionado en el anteproyecto (obsolescencia sobrevenida durante TT1); cambio pendiente de ratificación con el profesor guía.
+- Antecedente del cambio: GPT-4o mini sigue disponible en la API sin fecha de retiro anunciada, pero fue retirado de ChatGPT (feb 2026) y de Azure AI Foundry (mar 2026), y GPT-4.1 mini — su sustituto documentado originalmente — también quedó *legacy*. Ante ese cuadro se optó por saltar directamente a la generación vigente en lugar de encadenar modelos en retirada.
+- **Sustitutos documentados** (el Adaptador AD-4 + prompts externos hacen del cambio una edición de configuración; precios de julio 2026 según agregadores públicos — verificar contra la página oficial de OpenAI al configurar):
+  - **GPT-5.4 mini** (~US$0,75/4,50): escalón superior del mismo proveedor si nano no alcanza los umbrales; exige re-estimar el presupuesto (podría exceder el tope en el mes de validación).
   - **Gemini Flash-Lite** (~US$0,10/0,40): sustituto de **otro proveedor**, prueba concreta de RNF-M3.
+- **Validación del modelo**: la prueba piloto de la calibración (tarea 58) mide la tasa real de GPT-5.4 nano sobre el conjunto de referencia antes de la generación masiva del banco; si no alcanza los umbrales, se escala a GPT-5.4 mini (re-estimando presupuesto) y, como salida de proveedor, a Gemini Flash-Lite.
 - Presupuesto y contabilidad de tokens: definidos en `stack_tecnologico.md` §4 (tope US$5/mes, alerta 80%, corte 100% → F6).
 
 ## 3. Operaciones del Adaptador
@@ -117,7 +118,7 @@ EJERCICIO: {ejercicioJson}
 
 - **Tarea 58 (calibración):** iterar cada prompt contra el **gold few-shot** midiendo: tasa de descarte del pipeline por capa, corrección aritmética, calidad de pistas/erroresComunes; ajustar temperatura y redacción. Cada iteración = nueva `versionPrompt` registrada — la calidad es trazable por versión.
 - **Tareas 70–72 (validación):** contra el **gold de validación reservado** (que jamás apareció en prompts): ≥95% corrección (RNF-P1), no revelación adversarial ≥95% (RNF-P2, midiendo lo que el filtro determinista no cubre), dimensión de tono (Maurya).
-- Si la calibración no alcanza los umbrales con GPT-4o mini → se repite con GPT-4.1 mini (§2) y el cambio se documenta en la reconciliación con el anteproyecto.
+- Si la calibración no alcanza los umbrales con GPT-5.4 nano → se repite con GPT-5.4 mini (§2) y el cambio se documenta en la reconciliación con el anteproyecto.
 
 ## 8. Trazabilidad y puntos abiertos
 
@@ -130,4 +131,4 @@ EJERCICIO: {ejercicioJson}
 | RNF-M1/M3 (prompts externos, proveedor sustituible) | §2, §6 |
 | RNF-C1 (costo) | §2 → `stack_tecnologico.md` §4 |
 
-**Abierto para fases siguientes:** valores definitivos de temperatura/max_tokens y redacción final de prompts tras calibración (tarea 58); snapshot exacto del modelo al configurar el entorno (tarea 36); riesgo de obsolescencia de GPT-4o mini y deriva del proveedor → tarea 28.
+**Abierto para fases siguientes:** valores definitivos de temperatura/max_tokens y redacción final de prompts tras calibración (tarea 58); snapshot exacto del modelo al configurar el entorno (tarea 36); riesgo de obsolescencia del modelo y deriva del proveedor → tarea 28 (actualizado: el caso GPT-4o mini durante TT1 validó la mitigación del adaptador único).

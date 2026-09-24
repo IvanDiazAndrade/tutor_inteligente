@@ -3,7 +3,7 @@
 **Proyecto:** Tutor inteligente basado en IA para el aprendizaje de matemáticas — eje de Números, 4°–6° básico.
 **Documento:** Diseño preliminar del modelo del dominio del ITS: catálogo curricular, esquema del ejercicio, corrector programático, catálogo de plantillas de generación, dimensionamiento del banco y pipeline de verificación. Deriva de `requisitos.md` (RF-D1–D8, RNF-P1–P3) y de `arquitectura.md` (§2 mapeo ITS, §3 "Catálogo curricular" y "Generador y banco", AD-2/AD-3/AD-9).
 
-**Decisiones de alcance tomadas con el equipo para este documento:** unidad = OA completo (24 unidades); formatos de respuesta numérico, fracción y ordenar/comparar (sin selección múltiple ni respuesta abierta); fracciones equivalentes aceptadas por defecto con refuerzo de la forma simplificada; representación pictórica SVG para fracciones y decimales; banco inicial 3 niveles × 5 ejercicios por unidad; corrector acepta coma y punto decimal (muestra siempre coma); gold standard de 2 ejercicios por OA.
+**Decisiones de alcance tomadas con el equipo para este documento:** unidad = OA completo (24 unidades); formatos de respuesta numérico, fracción y ordenar/comparar (sin selección múltiple ni respuesta abierta); fracciones equivalentes aceptadas por defecto con refuerzo de la forma simplificada; representación pictórica SVG para fracciones y decimales; banco inicial 3 niveles × 5 ejercicios por unidad; corrector acepta coma y punto decimal (muestra siempre coma); gold standard de ~60 ejercicios (2 por OA + 1 reservado extra en fracciones/decimales; ampliado el 23-jul-2026).
 
 ---
 
@@ -187,12 +187,12 @@ El LLM nunca produce SVG: si un ejercicio verbal quiere apoyo pictórico, emite 
 
 ## 7. Gold standard (resuelto a mano por el equipo)
 
-**2 ejercicios por OA ≈ 48**, escritos y resueltos a mano por el equipo, con roles separados para no contaminar la validación:
+**~60 ejercicios** (actualizado el 23-jul-2026, decisión de Iván tras la revisión del profesor guía: se amplía el set reservado con foco en los contenidos de mayor riesgo): base de **2 por OA (~48)** más **1 reservado adicional en las ~12 unidades de fracciones y decimales**, escritos y resueltos a mano por el equipo, con roles separados para no contaminar la validación:
 
 - **Set few-shot (1 por OA, ~24):** viaja como ejemplo en el prompt de generación del mismo OA (mejora formato y pertinencia curricular).
-- **Set de validación (1 por OA, ~24):** reservado; **nunca aparece en prompts**. Es la base del set de casos de prueba pedagógicos de TT2 (tareas 70–72): contra él se mide la corrección ≥95% (RNF-P1) comparando las soluciones del sistema con las resoluciones humanas.
+- **Set de validación (~36: 1 por OA + 1 extra en fracciones/decimales):** reservado; **nunca aparece en prompts**. Es la base del set de casos de prueba pedagógicos de TT2 (tareas 70–72): contra él se mide la corrección ≥95% (RNF-P1) comparando las soluciones del sistema con las resoluciones humanas. La sobre-representación de fracciones/decimales responde a la evidencia de EDUMATH (es el tópico donde más fallan los modelos) y hace el umbral más robusto: con ~36 casos, cada error mueve el porcentaje ~2,8 puntos (con 24 eran ~4,2).
 
-Ambos se almacenan en el banco con `fuente: "gold"` y quedan **fuera de la rotación** de ejercicios servidos a estudiantes. Esto materializa el "conjunto de ejercicios resueltos (gold standard)" del objetivo general del anteproyecto.
+Ambos se almacenan en el banco con `fuente: "gold"` y quedan **fuera de la rotación** de ejercicios servidos a estudiantes. Esto materializa el "conjunto de ejercicios resueltos (gold standard)" del objetivo general del anteproyecto. Esfuerzo estimado de la ampliación: ~12 ejercicios adicionales ≈ 3–5 horas de equipo, cargadas a la Fase IV.
 
 ---
 

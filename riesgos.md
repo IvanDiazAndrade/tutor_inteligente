@@ -9,15 +9,15 @@
 
 | ID | Riesgo | Prob. | Imp. | Exposición |
 |---|---|---|---|---|
-| R1 | **Obsolescencia de GPT-4o mini**: es *legacy* desde enero 2026; OpenAI podría anunciar su retiro durante TT2 | M | M | **Media** |
+| R1 | **Obsolescencia del modelo de lenguaje**: el proveedor puede descontinuar el modelo congelado durante TT2 (le ocurrió al GPT-4o mini original durante TT1, lo que motivó su reemplazo por GPT-5.4 nano) | B | M | **Baja** |
 | R2 | **Calidad de generación insuficiente**: la calibración no alcanza los umbrales (descartes ≫20%, corrección <95% contra gold) | M | A | **Alta** |
 | R3 | **Revelación de respuestas**: el tutor entrega la solución ante insistencia del estudiante | B | A | **Media** |
 | R4 | **Deriva del proveedor**: cambios de API, precios o comportamiento del modelo entre calibración y validación | M | M | **Media** |
 | R5 | **Caída de OpenAI** durante una demo o la validación | M | B | **Baja** |
 | R6 | **Defectos del corrector**: un falso "incorrecto" (parsing, equivalencias) frustra al estudiante y contamina el índice de dominio | M | A | **Alta** |
 
-- **R1** — Mitigación por diseño: snapshot congelado + Adaptador único + prompts externos hacen del cambio de modelo una edición de configuración; sustitutos ya evaluados (GPT-4.1 mini, Gemini Flash-Lite) en `estrategia_llm.md` §2. Contingencia: migrar y re-ejecutar la calibración (tarea 58) contra el mismo gold standard — el esfuerzo es acotado y medible.
-- **R2** — Es el riesgo central del proyecto (la tesis afirma que un LLM puede generar contenido educativo confiable). Mitigación por diseño: pipeline de 4 capas + doble pasada en fracciones (`modelo_dominio.md` §8), 71% del banco paramétrico sin LLM (AD-9), calibración temprana con versiones trazables. Contingencia escalonada: (1) upgrade a GPT-4.1 mini; (2) subir la proporción paramétrica y reducir los verbales por unidad; (3) último recurso: completar a mano los verbales de las unidades más débiles — el esquema del ejercicio es idéntico sea quien sea el autor.
+- **R1** — Mitigación por diseño: snapshot congelado + Adaptador único + prompts externos hacen del cambio de modelo una edición de configuración; sustitutos ya evaluados y actualizados a julio 2026 (GPT-5.4 nano/mini, Gemini Flash-Lite) en `estrategia_llm.md` §2. Contingencia: migrar y re-ejecutar la calibración (tarea 58) contra el mismo gold standard — el esfuerzo es acotado y medible.
+- **R2** — Es el riesgo central del proyecto (la tesis afirma que un LLM puede generar contenido educativo confiable). Mitigación por diseño: pipeline de 4 capas + doble pasada en fracciones (`modelo_dominio.md` §8), 71% del banco paramétrico sin LLM (AD-9), calibración temprana con versiones trazables. Contingencia escalonada: (1) upgrade al sustituto vigente del mismo proveedor (GPT-5.4 nano/mini, `estrategia_llm.md` §2); (2) subir la proporción paramétrica y reducir los verbales por unidad; (3) último recurso: completar a mano los verbales de las unidades más débiles — el esquema del ejercicio es idéntico sea quien sea el autor.
 - **R3** — Mitigación por diseño: doble capa (system prompt + filtro determinista de salida, `modelo_pedagogico.md` §6) — la revelación literal queda en ~0; queda el residuo de "guiar de más", que se mide en la validación adversarial (tareas 70–72). Contingencia: endurecer plantillas de pistas y bajar temperatura.
 - **R4** — Mitigación: snapshot fija el comportamiento; el tope de costo (US$5) con corte automático acota cualquier cambio de precios; el registro por `versionPrompt` + versión de modelo permite atribuir cambios de calidad. Contingencia: RNF-M3 — sustituir proveedor vía Adaptador.
 - **R5** — Mitigación por diseño: F6 degradación (`arquitectura.md`) — pistas pre-generadas, plantillas locales, corrección y dashboard nunca dependen del LLM; **el sistema se puede demostrar completo en modo degradado**. Contingencia: ninguna necesaria; es un escenario ensayable (y conviene mostrarlo como fortaleza en la defensa).
@@ -42,7 +42,7 @@
 | R10 | **Falta de evaluadores**: no reunir expertos para la heurística ni ~10+ adultos para el SUS | M | M | **Media** |
 | R11 | **Umbrales no alcanzados**: SUS <70 o corrección <95% en la medición final | M | A | **Alta** |
 
-- **R10** — Mitigación: URL pública (evaluación remota sin coordinación presencial, `stack_tecnologico.md`); reclutamiento anticipado. Contingencia: heurística con docentes/ayudantes UTEM como expertos de usabilidad; SUS con apoderados del círculo cercano de ambos integrantes (perfil objetivo: adulto no técnico).
+- **R10** — Mitigación: APK instalable enviado a los evaluadores (evaluación remota sin coordinación presencial, `stack_tecnologico.md`); reclutamiento anticipado, confirmando que cada evaluador tenga un teléfono o tablet Android. *(Actualización 24-sep-2026: antes era una URL pública; con la app nativa Android quedan fuera los evaluadores que solo tienen iPhone/iPad, ver R16.)* Contingencia: heurística con docentes/ayudantes UTEM como expertos de usabilidad; SUS con apoderados del círculo cercano de ambos integrantes (perfil objetivo: adulto no técnico).
 - **R11** — Mitigación: los umbrales se persiguen desde el diseño (calibración temprana, filtro determinista, aritmética exacta), y el plan incluye ciclo de mejora + re-ejecución (tareas 76–78). Contingencia metodológica: si tras el ciclo no se alcanza un umbral, **se reporta el valor real con análisis de causas** — el objetivo del TT es validar el método de evaluación, no garantizar el número; un 88% honesto y explicado defiende mejor que un 95% frágil.
 
 ## 4. Riesgos legales, éticos y de infraestructura
@@ -53,19 +53,21 @@
 | R13 | **Contenido inapropiado** generado por el LLM llega a un estudiante | B | A | **Media** |
 | R14 | **Limitaciones del hosting gratuito** (sleep, cuotas) durante demos o validación | M | B | **Baja** |
 | R15 | **Pérdida de trabajo**: repositorio, base de datos o documentos | B | A | **Media** |
+| R16 | **Plataforma móvil Android**: diferencias entre dispositivos (tamaños, orientación, Android 8 en equipos antiguos), evaluadores sin dispositivo Android y pérdida del keystore de firma | M | M | **Media** |
 
 - **R12** — Mitigación por diseño: sin menores reales en todo TT1/TT2 (datos sintéticos), minimización garantizada por la firma del Adaptador (`estrategia_llm.md` §4), apoderado como titular de la cuenta, alias sin PII. La postura es conservadora a propósito: más protección de la exigida.
 - **R13** — Mitigación por diseño: los ejercicios que llegan al estudiante pasaron compuerta humana (capa 4) o son paramétricos (sin LLM); los mensajes en vivo del tutor están acotados por prompt + filtro y por la interacción estructurada (el niño no puede desviar el tema). Contingencia: `estado: retirado` inmediato + revisión del lote afectado.
-- **R14** — Mitigación: plan pagado (~US$7) solo el mes de validación; demos importantes con la instancia "despierta" de antemano. Contingencia: la app también corre local (Docker) para demos presenciales.
+- **R14** — Mitigación: plan pagado (~US$7) solo el mes de validación; demos importantes con la instancia "despierta" de antemano. Contingencia: la API también corre local (Docker) para demos presenciales, con la app apuntando a esa dirección.
 - **R15** — Mitigación: monorepo en GitHub (todo lo textual, incluidos prompts y documentos), dumps automáticos de PostgreSQL (Render los incluye), y el banco de ejercicios es regenerable por diseño (pipeline + gold en el repo).
+- **R16** — Riesgo agregado el 24-sep-2026 por el cambio a app nativa Android. Mitigación: una sola base de código para teléfono y tablet (React Native + Expo, `stack_tecnologico.md`); pruebas en al menos un teléfono y una tablet reales, en ambas orientaciones, más un emulador con Android 8 (RNF-U4); keystore respaldado fuera del repositorio público y en los secretos de EAS. Contingencia: prestar un dispositivo Android a los evaluadores que no tengan uno, o hacer la sesión con el emulador en el computador del equipo.
 
 ## 5. Mapa de exposición
 
 |  | **Impacto B** | **Impacto M** | **Impacto A** |
 |---|---|---|---|
 | **Prob. A** | — | — | R7 |
-| **Prob. M** | R5, R14 | R1, R4, R8, R10 | **R2, R6, R11** |
-| **Prob. B** | — | R9 | R3, R12, R13, R15 |
+| **Prob. M** | R5, R14 | R4, R8, R10, R16 | **R2, R6, R11** |
+| **Prob. B** | — | R1, R9 | R3, R12, R13, R15 |
 
 Los cuatro que exigen seguimiento activo (revisión en cada levantamiento semanal, tarea 53): **R7** (capacidad), **R2** (calidad de generación), **R6** (corrector) y **R11** (umbrales). No es casualidad que los cuatro tengan mitigación estructural ya incorporada: el diseño de la Fase II se construyó alrededor de ellos (AD-2, AD-3, AD-9, pipeline, gold standard, MoSCoW).
 

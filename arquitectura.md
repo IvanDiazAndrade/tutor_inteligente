@@ -15,13 +15,13 @@ La arquitectura no parte de una tecnología sino de cuatro restricciones que imp
 
 3. **El sistema debe seguir operando si OpenAI cae** (RNF-R3), **sin enviar datos personales al proveedor** (RNF-S3), **con costo controlado** (RNF-C1) **y con prompts editables sin recompilar** (RNF-M1) y **proveedor sustituible** (RNF-M3) → todas las llamadas al LLM deben pasar por **un único punto de salida** (adaptador) que concentra plantillas, filtro de datos, reintentos, degradación y contabilidad de tokens.
 
-4. **Dos usuarios con necesidades opuestas comparten los mismos datos**: un niño de 9–12 años que resuelve ejercicios (RNF-U1) y un adulto de competencia digital básica que consulta progreso (RNF-U2, RF-DA) → **una sola fuente de datos de desempeño** (los intentos y el índice de dominio) y **dos vistas por rol** sobre ella (RF-A2), en vez de dos aplicaciones.
+4. **Dos usuarios con necesidades opuestas comparten los mismos datos**: un niño de 9–12 años que resuelve ejercicios (RNF-U1) y un adulto de competencia digital básica que consulta progreso (RNF-U2, RF-DA) → **una sola fuente de datos de desempeño** (los intentos y el índice de dominio) y **dos vistas por rol** sobre ella (RF-A2), en vez de dos aplicaciones. La pantalla de acceso separa la entrada a cada vista.
 
 Con esas cuatro restricciones, la forma general queda determinada:
 
 ```
 ┌─────────────────────────────┐
-│   CLIENTE (navegador)       │      SPA web responsiva (RNF-U4)
+│   CLIENTE (app Android)     │      teléfono y tablet (RNF-U4)
 │  ┌──────────┐ ┌──────────┐  │
 │  │ Vista    │ │ Vista    │  │      dos vistas por rol (RF-A2)
 │  │Estudiante│ │Apoderado │  │
@@ -48,11 +48,11 @@ Con esas cuatro restricciones, la forma general queda determinada:
          │ matemático, RNF-S3)             │
 ┌────────▼─────────┐            ┌──────────▼──────────┐
 │  API OpenAI      │            │  Base de datos      │
-│  GPT-4o mini     │            │  relacional         │
+│  GPT-5.4 nano    │            │  relacional         │
 └──────────────────┘            └─────────────────────┘
 ```
 
-Las tecnologías concretas (framework del frontend, lenguaje del backend, motor de base de datos, hosting) se justifican y fijan en la **tarea 26**; esta arquitectura solo exige: navegador como cliente (RNF-U4), API sobre HTTPS (RNF-S5) y base de datos con agregaciones eficientes para el dashboard (RF-DA1–DA3).
+Las tecnologías concretas (framework del frontend, lenguaje del backend, motor de base de datos, hosting) se justifican y fijan en la **tarea 26**; esta arquitectura solo exige: app nativa Android como cliente (RNF-U4; actualización 24-sep-2026, antes navegador), API sobre HTTPS (RNF-S5) y base de datos con agregaciones eficientes para el dashboard (RF-DA1–DA3).
 
 ---
 
@@ -65,7 +65,7 @@ El objetivo específico 3 del anteproyecto pide definir los módulos principales
 | **Modelo del dominio** | Catálogo curricular + Generador y banco de ejercicios | RF-D1–D8 | tarea 23 |
 | **Modelo del estudiante** | Motor adaptativo (índice de dominio por OA + historial de intentos) | RF-E1–E5 | tarea 22 |
 | **Modelo pedagógico** | Orquestador pedagógico (plantillas, guardas, política de intentos) | RF-P1–P7 | tarea 24 |
-| **Interfaz** | SPA con vista estudiante y vista apoderado (OLM con skill meters) | RF-A2, RF-E5, RF-G, RF-DA, RNF-U | tarea 25 |
+| **Interfaz** | App Android con vista estudiante y vista apoderado (OLM con skill meters) | RF-A2, RF-E5, RF-G, RF-DA, RNF-U | tarea 25 |
 
 El LLM **no es un módulo del ITS**: es un recurso de generación de lenguaje al servicio del modelo pedagógico y del dominio, siempre invocado a través del Adaptador y condicionado por las plantillas del orquestador. Esta separación es lo que distingue al sistema de "un chat con GPT", y es la traducción arquitectónica de las guardas de RF-P2–P4.
 
@@ -124,14 +124,14 @@ Notas de diseño: el "progreso" que ven estudiante y apoderado **se deriva por c
 
 | # | Decisión | Alternativa descartada | Justificación |
 |---|---|---|---|
-| AD-1 | Toda la lógica pedagógica y la solución de referencia viven en el servidor. | Evaluación en el cliente. | RF-D3, RNF-P2; con la solución en el navegador bastaría inspeccionar el tráfico para obtener la respuesta (guardas de Bastani). |
+| AD-1 | Toda la lógica pedagógica y la solución de referencia viven en el servidor. | Evaluación en el cliente. | RF-D3, RNF-P2; con la solución en el dispositivo bastaría inspeccionar el tráfico para obtener la respuesta (guardas de Bastani). |
 | AD-2 | Corrección programática de respuestas; el LLM solo explica y guía. | LLM como corrector. | GPT sin apoyo comete errores aritméticos/lógicos (Bastani: 51% correcto); RF-D7 hace las respuestas validables sin LLM; menor costo (RNF-C1) y latencia (RNF-R1); el resultado correcto/incorrecto debe ser determinista porque alimenta el índice de dominio y el dashboard. |
 | AD-3 | Pre-generación asíncrona + banco persistido con ciclo de vida. | Generación on-demand al pedir cada ejercicio. | RNF-R2, RNF-C1 (reutilización), RNF-P1 (verificar antes de servir); habilita el gold standard del objetivo general. |
 | AD-4 | Adaptador LLM único con plantillas versionadas fuera del código. | Llamadas a OpenAI dispersas en los módulos. | RNF-M1/M3; punto único para filtro de PII (RNF-S3), contabilidad de costo (RNF-C1) y degradación (RNF-R3). |
 | AD-5 | Modelo del estudiante: índice de dominio simple e interpretable por OA. | Knowledge tracing profundo (DKT/AKT). | Cold start sin datos de entrenamiento; el apoderado debe entender el indicador (RF-DA2, RNF-U2); Cho et al. 2024; Bull & Kay 2016. |
 | AD-6 | Dashboard por agregación determinista, sin LLM en tiempo real. | Resúmenes generados por LLM al abrir el dashboard. | RF-DA5; indicadores auditables y reproducibles (Schwendimann); costo y latencia. |
 | AD-7 | Base de datos relacional. | NoSQL/documental. | Entidades tabulares con relaciones claras; las agregaciones del dashboard (RF-DA1–DA3) son consultas SQL naturales; motor concreto en tarea 26. |
-| AD-8 | Una SPA con dos vistas por rol y backend común. | Aplicaciones separadas estudiante/apoderado. | Una sola fuente de datos de desempeño (§1.4); alcance de prototipo (RNF-R4); JWT por rol ya separa las vistas (RF-A2). |
+| AD-8 | Una app Android con dos vistas por rol y backend común. | Aplicaciones separadas estudiante/apoderado. | Una sola fuente de datos de desempeño (§1.4); alcance de prototipo (RNF-R4); JWT por rol ya separa las vistas (RF-A2). *Actualización 24-sep-2026: el cliente pasó de SPA web a app nativa Android (teléfono y tablet); la decisión de una sola aplicación con dos vistas se mantiene.* |
 | AD-9 | Dos fuentes de ejercicios: generador paramétrico (código) para lo numérico/pictórico y LLM solo para problemas verbales. | Generar todo el banco con el LLM. | Misma filosofía de AD-2 aplicada a la generación: lo determinizable se determiniza. Reduce costo de API (RNF-C1), garantiza corrección por construcción en lo numérico (RNF-P1), acota la revisión humana a los problemas verbales y reduce la superficie de error del LLM (mitigación comprometida en las limitaciones del anteproyecto). El LLM queda donde aporta valor irreemplazable: lenguaje natural en enunciados contextualizados, retroalimentación y pistas. |
 
 ---
@@ -145,5 +145,5 @@ Los bocetos de Fase I (casos de uso CU-1–CU-8, clases, secuencia, despliegue) 
 - ~~Algoritmo exacto del índice de dominio y umbrales de cambio de nivel~~ → **resuelto en `modelo_estudiante.md` (tarea 22)**: promedio móvil exponencial (α 0,3 / 0,5 en sondeo), umbrales 0,8/0,4 con racha de seguridad, sondeo integrado en frío, marca "para repasar" sin decaimiento.
 - ~~Esquema JSON del ejercicio, catálogo de plantillas paramétricas por OA y políticas de equivalencia del corrector~~ → **resuelto en `modelo_dominio.md` (tarea 23)**; prompts de generación y triaje → **resuelto en `estrategia_llm.md` (tarea 27)**.
 - ~~Plantillas pedagógicas (guardas, tono, pistas, política de intentos)~~ → **resuelto en `modelo_pedagogico.md` (tarea 24)**: interacción estructurada, 3 pistas pre-generadas por ejercicio, refuerzo local, explicación guiada ofrecida tras 3 fallos, andamiaje por banda, filtro de salida de no revelación. Parámetros de llamada, política de datos y prompts de generación/triaje → **resuelto en `estrategia_llm.md` (tarea 27)**.
-- ~~Stack concreto y tope de costo mensual~~ → **resuelto en `stack_tecnologico.md` (tarea 26)**: React+TypeScript / Python+FastAPI / PostgreSQL / Render; tope de API US$5/mes con corte automático en el Adaptador.
-- ~~Riesgos técnicos derivados~~ → **resuelto en `riesgos.md` (tarea 28)**: 15 riesgos evaluados; los críticos (capacidad del equipo, calidad de generación, corrector, umbrales de validación) con mitigación estructural ya incorporada al diseño.
+- ~~Stack concreto y tope de costo mensual~~ → **resuelto en `stack_tecnologico.md` (tarea 26)**: React Native + Expo (TypeScript) / Python+FastAPI / PostgreSQL / Render (actualizado 24-sep-2026: antes React web); tope de API US$5/mes con corte automático en el Adaptador.
+- ~~Riesgos técnicos derivados~~ → **resuelto en `riesgos.md` (tarea 28)**: 16 riesgos evaluados (R16, plataforma Android, agregado el 24-sep-2026); los críticos (capacidad del equipo, calidad de generación, corrector, umbrales de validación) con mitigación estructural ya incorporada al diseño.
