@@ -15,3 +15,26 @@ corregido/
 # Configuración local de herramientas
 .claude/
 bocetos/
+
+# Carpeta interna del equipo (estado, pendientes, reglas)
+No subir al repo/
+
+# Secretos: API key, credenciales de EAS, keystore de firma de Android
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+
+# App (React Native + Expo)
+app/node_modules/
+app/.expo/
+app/dist/
+app/android/
+app/ios/
+
+# Backend (Python)
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
