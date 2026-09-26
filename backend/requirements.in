@@ -1,0 +1,14 @@
+# Dependencias directas del backend (sin versión). Las versiones exactas quedan en requirements.txt.
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+alembic
+psycopg[binary]
+pyjwt
+bcrypt
+apscheduler<4
+openai
+jinja2
+pyyaml

@@ -1,0 +1,4 @@
+# Herramientas de desarrollo y pruebas (sin versión). Las versiones exactas quedan en requirements-dev.txt.
+pytest
+httpx
+ruff
