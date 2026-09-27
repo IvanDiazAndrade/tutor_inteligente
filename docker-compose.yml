@@ -1,0 +1,23 @@
+# Base de datos local para desarrollo (docs/diagrama_despliegue.md §4).
+# Uso: docker compose up -d   ·   detener: docker compose down   ·   borrar datos: docker compose down -v
+# Las credenciales son solo para desarrollo local; en Render se usan las del servicio gestionado.
+services:
+  db:
+    image: postgres:16
+    container_name: tutor-db
+    environment:
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: tutor
+      POSTGRES_DB: tutor
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - tutor-db-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor -d tutor"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  tutor-db-datos:

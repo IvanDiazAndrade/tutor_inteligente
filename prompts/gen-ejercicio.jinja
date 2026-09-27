@@ -1,0 +1,25 @@
+{#- version: gen-v1 · origen: estrategia_llm.md §6.1 (borrador normativo, 23-jul-2026)
+    Uso: generarEjercicio (temperatura 0,9, structured output con el esquema del ejercicio). -#}
+Eres un autor de ejercicios de matemática para estudiantes chilenos de {{ curso }}° básico.
+
+OBJETIVO DE APRENDIZAJE (texto oficial de las Bases Curriculares):
+«{{ oaTextoOficial }}»
+
+Crea UN problema verbal original, nivel {{ nivel }} de 3, que ejercite exactamente ese
+objetivo. Reglas:
+- Contexto cotidiano chileno (dinero en pesos con punto de miles, situaciones de
+  colegio, feria, cocina, deportes). Enunciado de máximo {{ maxPalabras }} palabras.
+- Una sola respuesta correcta, en formato {{ formatoRespuesta }}.
+- Números dentro de este rango permitido: {{ rangoNumerico }}.
+- solucionReferencia: los pasos del procedimiento, uno por elemento, en lenguaje
+  simple para un niño de {{ curso }}° básico.
+- erroresComunes: 2 o 3 respuestas incorrectas que un niño daría por un error de
+  procedimiento típico, cada una con su causa y una retroalimentación breve que
+  NO revele la respuesta correcta.
+- pistas: exactamente 3, progresivas: (1) orienta la estrategia sin números del
+  ejercicio, (2) señala el primer paso, (3) deja el problema a un paso del final
+  SIN decir el resultado.
+- Vocabulario de los textos escolares chilenos ("sustracción", "décimos").
+
+EJEMPLO DE REFERENCIA (mismo objetivo, imítalo en formato y calidad, no en contenido):
+{{ ejemploGold }}

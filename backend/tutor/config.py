@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    database_url: str = "postgresql+psycopg://tutor:tutor@localhost:5432/tutor"
+    database_url: str = "postgresql+psycopg://tutor:tutor@127.0.0.1:5432/tutor"
     jwt_secret: SecretStr = SecretStr("solo-para-desarrollo")
     openai_api_key: SecretStr = SecretStr("")
     llm_modelo: str = "gpt-5.4-nano"

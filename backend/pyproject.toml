@@ -13,3 +13,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Las migraciones copian el DDL literal de docs/modelo_base_datos.md.
+"migrations/versions/*" = ["E501"]
