@@ -10,3 +10,5 @@ def test_salud_responde_ok():
 
     assert respuesta.status_code == 200
     assert respuesta.json()["estado"] == "ok"
+    # La API responde aunque la base de datos no esté disponible (p. ej. en CI).
+    assert respuesta.json()["base_datos"] in {"ok", "sin conexión"}
