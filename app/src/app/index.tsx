@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,22 +20,29 @@ export default function Acceso() {
   const [error, setError] = useState(false);
   const perfil = PERFILES_EJEMPLO.find((p) => p.id === perfilId) ?? PERFILES_EJEMPLO[0];
 
-  useEffect(() => {
-    if (pin.length < LARGO_PIN) return;
-    if (pin === PIN_EJEMPLO) {
+  const temporizador = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(temporizador.current), []);
+
+  // Se revisa el PIN al escribir el último dígito. Con error, los puntos quedan en naranjo
+  // un momento y luego se limpian para reintentar.
+  const cambiarPin = (nuevo: string) => {
+    if (error) return;
+    setPin(nuevo);
+    if (nuevo.length < LARGO_PIN) return;
+    if (nuevo === PIN_EJEMPLO) {
       setPin('');
       router.push({ pathname: '/estudiante', params: { alias: perfil.alias } });
       return;
     }
     setError(true);
-    const t = setTimeout(() => {
+    temporizador.current = setTimeout(() => {
       setPin('');
       setError(false);
     }, 900);
-    return () => clearTimeout(t);
-  }, [pin, perfil.alias]);
+  };
 
   const elegirPerfil = (id: string) => {
+    clearTimeout(temporizador.current);
     setPerfilId(id);
     setPin('');
     setError(false);
@@ -68,7 +75,7 @@ export default function Acceso() {
           {error ? '¡Uy! Ese PIN no es. Prueba otra vez' : `Hola ${perfil.alias}, escribe tu PIN`}
         </Text>
       </View>
-      <TecladoPin pin={pin} onCambio={setPin} error={error} grande={esTablet} />
+      <TecladoPin pin={pin} onCambio={cambiarPin} error={error} grande={esTablet} />
     </View>
   );
 
