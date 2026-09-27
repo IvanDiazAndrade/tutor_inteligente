@@ -4,10 +4,11 @@ type Props = {
   titulo: string;
   onPress: () => void;
   deshabilitado?: boolean;
+  grande?: boolean;
 };
 
 // Botón principal con la "sombra sólida" de los mockups; al presionarlo baja 4 px.
-export function BotonPrimario({ titulo, onPress, deshabilitado = false }: Props) {
+export function BotonPrimario({ titulo, onPress, deshabilitado = false, grande = false }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -18,9 +19,9 @@ export function BotonPrimario({ titulo, onPress, deshabilitado = false }: Props)
     >
       {({ pressed }) => (
         <Text
-          className={`h-12 rounded-2xl bg-primario text-center font-nunito-black text-base leading-[48px] text-white ${
-            pressed ? 'translate-y-0' : '-translate-y-1'
-          }`}
+          className={`rounded-2xl bg-primario text-center font-nunito-black text-white ${
+            grande ? 'h-16 text-2xl leading-[64px]' : 'h-12 text-base leading-[48px]'
+          } ${pressed ? 'translate-y-0' : '-translate-y-1'}`}
         >
           {titulo}
         </Text>

@@ -20,6 +20,7 @@ module.exports = {
         ambar: { DEFAULT: '#B45309', fondo: '#FFF7E6', borde: '#FDE7B0' },
         nueva: { borde: '#DDD0FF' },
         divisor: '#EFE8FF',
+        globo: '#E9D5FF',
       },
       // En React Native cada peso de una fuente propia es una familia distinta.
       fontFamily: {
