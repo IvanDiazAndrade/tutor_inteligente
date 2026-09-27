@@ -14,6 +14,12 @@ module.exports = {
         tinta: { DEFAULT: '#312E81', media: '#3B3358', tecla: '#4C3D8F' },
         apagado: { DEFAULT: '#9A91BC', oscuro: '#6B6390' },
         dorado: '#FBBF24',
+        seccion: '#7C6BB8',
+        exito: { DEFAULT: '#0E9F6E', fondo: '#D6F5E8' },
+        repasar: { DEFAULT: '#BE4459', fondo: '#FFE4E9' },
+        ambar: { DEFAULT: '#B45309', fondo: '#FFF7E6', borde: '#FDE7B0' },
+        nueva: { borde: '#DDD0FF' },
+        divisor: '#EFE8FF',
       },
       // En React Native cada peso de una fuente propia es una familia distinta.
       fontFamily: {

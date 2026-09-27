@@ -31,7 +31,7 @@ export default function Acceso() {
     if (nuevo.length < LARGO_PIN) return;
     if (nuevo === PIN_EJEMPLO) {
       setPin('');
-      router.push({ pathname: '/estudiante', params: { alias: perfil.alias } });
+      router.replace('/estudiante');
       return;
     }
     setError(true);
