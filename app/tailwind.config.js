@@ -21,6 +21,9 @@ module.exports = {
         nueva: { borde: '#DDD0FF' },
         divisor: '#EFE8FF',
         globo: '#E9D5FF',
+        // Bandas del medidor de dominio (panel del apoderado). Validadas con el script de
+        // la guía de visualización: contraste >= 3:1 sobre blanco y separables con daltonismo.
+        banda: { dominado: '#059669', practicando: '#8B5CF6', empezando: '#D97706', riel: '#F1ECFC' },
       },
       // En React Native cada peso de una fuente propia es una familia distinta.
       fontFamily: {

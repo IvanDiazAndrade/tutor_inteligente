@@ -6,7 +6,8 @@ export const UMBRAL_BAJO = 0.4;
 export const UMBRAL_ALTO = 0.8;
 export const DIAS_PARA_REPASAR = 21;
 
-export type Unidad = { id: string; curso: number; nombre: string };
+// nombre: corto, para el estudiante. ciudadana: descripción para el apoderado (RF-DA2).
+export type Unidad = { id: string; curso: number; nombre: string; ciudadana: string };
 
 export type Dominio = {
   unidadId: string;

@@ -11,28 +11,123 @@ export const ESTUDIANTE_EJEMPLO = PERFILES_EJEMPLO[0];
 // Solo para el prototipo: el PIN real se compara con bcrypt en el servidor (CU-1).
 export const PIN_EJEMPLO = '1234';
 
-// Unidades del Anillo 1 para 4° y 5° (modelo_dominio.md §4), con un nombre corto provisorio.
-// En la Fase IV se muestra la descripcionCiudadana del catálogo.
+// Unidades del Anillo 1 para 4° y 5° (modelo_dominio.md §4). Los nombres cortos (estudiante) y las
+// descripciones ciudadanas (apoderado) son provisorios: en la Fase IV vienen del catálogo.
 export const UNIDADES: Unidad[] = [
-  { id: '4B-OA1', curso: 4, nombre: 'Números hasta 10.000' },
-  { id: '4B-OA2', curso: 4, nombre: 'Cálculo mental' },
-  { id: '4B-OA3', curso: 4, nombre: 'Sumar y restar hasta 1.000' },
-  { id: '4B-OA5', curso: 4, nombre: 'Multiplicación' },
-  { id: '4B-OA6', curso: 4, nombre: 'División' },
-  { id: '4B-OA7', curso: 4, nombre: 'Problemas con dinero' },
-  { id: '4B-OA8', curso: 4, nombre: '¿Qué es una fracción?' },
-  { id: '4B-OA9', curso: 4, nombre: 'Sumar y restar fracciones' },
-  { id: '5B-OA1', curso: 5, nombre: 'Números grandes' },
-  { id: '5B-OA3', curso: 5, nombre: 'Multiplicación' },
-  { id: '5B-OA4', curso: 5, nombre: 'División con resto' },
-  { id: '5B-OA5', curso: 5, nombre: 'Operaciones combinadas' },
-  { id: '5B-OA6', curso: 5, nombre: 'Problemas con las 4 operaciones' },
-  { id: '5B-OA7', curso: 5, nombre: 'Fracciones equivalentes' },
-  { id: '5B-OA9', curso: 5, nombre: 'Sumar y restar fracciones' },
-  { id: '5B-OA10', curso: 5, nombre: 'De fracción a decimal' },
-  { id: '5B-OA11', curso: 5, nombre: 'Comparar decimales' },
-  { id: '5B-OA12', curso: 5, nombre: 'Sumar y restar decimales' },
-  { id: '5B-OA13', curso: 5, nombre: 'Problemas con fracciones y decimales' },
+  {
+    id: '4B-OA1',
+    curso: 4,
+    nombre: 'Números hasta 10.000',
+    ciudadana: 'Leer y escribir números hasta 10.000',
+  },
+  {
+    id: '4B-OA2',
+    curso: 4,
+    nombre: 'Cálculo mental',
+    ciudadana: 'Tablas de multiplicar y división mental',
+  },
+  {
+    id: '4B-OA3',
+    curso: 4,
+    nombre: 'Sumar y restar hasta 1.000',
+    ciudadana: 'Sumar y restar números hasta 1.000',
+  },
+  {
+    id: '4B-OA5',
+    curso: 4,
+    nombre: 'Multiplicación',
+    ciudadana: 'Multiplicar un número de tres cifras por uno de una',
+  },
+  {
+    id: '4B-OA6',
+    curso: 4,
+    nombre: 'División',
+    ciudadana: 'Dividir un número de dos cifras por uno de una',
+  },
+  {
+    id: '4B-OA7',
+    curso: 4,
+    nombre: 'Problemas con dinero',
+    ciudadana: 'Resolver problemas con dinero',
+  },
+  {
+    id: '4B-OA8',
+    curso: 4,
+    nombre: '¿Qué es una fracción?',
+    ciudadana: 'Entender qué es una fracción',
+  },
+  {
+    id: '4B-OA9',
+    curso: 4,
+    nombre: 'Sumar y restar fracciones',
+    ciudadana: 'Sumar y restar fracciones con el mismo denominador',
+  },
+  {
+    id: '5B-OA1',
+    curso: 5,
+    nombre: 'Números grandes',
+    ciudadana: 'Leer y escribir números grandes',
+  },
+  {
+    id: '5B-OA3',
+    curso: 5,
+    nombre: 'Multiplicación',
+    ciudadana: 'Multiplicar números de dos cifras',
+  },
+  {
+    id: '5B-OA4',
+    curso: 5,
+    nombre: 'División con resto',
+    ciudadana: 'Dividir con resto',
+  },
+  {
+    id: '5B-OA5',
+    curso: 5,
+    nombre: 'Operaciones combinadas',
+    ciudadana: 'Resolver operaciones combinadas con paréntesis',
+  },
+  {
+    id: '5B-OA6',
+    curso: 5,
+    nombre: 'Problemas con las 4 operaciones',
+    ciudadana: 'Resolver problemas con las cuatro operaciones',
+  },
+  {
+    id: '5B-OA7',
+    curso: 5,
+    nombre: 'Fracciones equivalentes',
+    ciudadana: 'Fracciones equivalentes',
+  },
+  {
+    id: '5B-OA9',
+    curso: 5,
+    nombre: 'Sumar y restar fracciones',
+    ciudadana: 'Sumar y restar fracciones',
+  },
+  {
+    id: '5B-OA10',
+    curso: 5,
+    nombre: 'De fracción a decimal',
+    ciudadana: 'Pasar de fracción a número decimal',
+  },
+  {
+    id: '5B-OA11',
+    curso: 5,
+    nombre: 'Comparar decimales',
+    ciudadana: 'Comparar y ordenar números decimales',
+  },
+  {
+    id: '5B-OA12',
+    curso: 5,
+    nombre: 'Sumar y restar decimales',
+    ciudadana: 'Sumar y restar números decimales',
+  },
+  {
+    id: '5B-OA13',
+    curso: 5,
+    nombre: 'Problemas con fracciones y decimales',
+    ciudadana: 'Resolver problemas con fracciones y decimales',
+  },
 ];
 
 const haceDias = (dias: number) => new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
