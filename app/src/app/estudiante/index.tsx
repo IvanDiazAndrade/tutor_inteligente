@@ -66,7 +66,9 @@ export default function HomeEstudiante() {
       </View>
       <View className="items-end gap-1.5">
         <View className="rounded-full bg-white px-3 py-1.5">
-          <Text className={`font-nunito-black text-ambar ${esTablet ? 'text-base' : 'text-[13px]'}`}>
+          <Text
+            className={`font-nunito-black text-ambar ${esTablet ? 'text-base' : 'text-[13px]'}`}
+          >
             ⭐ {conPuntoDeMiles(PUNTOS_EJEMPLO)}
           </Text>
         </View>

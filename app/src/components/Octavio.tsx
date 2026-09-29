@@ -38,9 +38,7 @@ const SIMBOLOS = [
 export function Octavio({ tamano = 56, guino = false, conVarita = false, tutor = false }: Props) {
   return (
     <Svg width={tamano * 0.93} height={tamano} viewBox="0 0 200 214" accessibilityLabel="Octavio">
-      {(conVarita || tutor) && (
-        <Path d={DESTELLO} transform="translate(170,118)" fill={DORADO} />
-      )}
+      {(conVarita || tutor) && <Path d={DESTELLO} transform="translate(170,118)" fill={DORADO} />}
       {tutor && (
         <>
           <Path d={DESTELLO} transform="translate(178,150) scale(0.83)" fill={DORADO} />
@@ -52,20 +50,44 @@ export function Octavio({ tamano = 56, guino = false, conVarita = false, tutor =
       ))}
       {(conVarita || tutor) && (
         <>
-          <Line x1={36} y1={114} x2={20} y2={88} stroke="#92400E" strokeWidth={5} strokeLinecap="round" />
+          <Line
+            x1={36}
+            y1={114}
+            x2={20}
+            y2={88}
+            stroke="#92400E"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
           <Path d={ESTRELLA} transform="translate(18,80)" fill={DORADO} />
         </>
       )}
       {tutor && (
         <>
-          <Line x1={164} y1={114} x2={180} y2={88} stroke="#92400E" strokeWidth={5} strokeLinecap="round" />
+          <Line
+            x1={164}
+            y1={114}
+            x2={180}
+            y2={88}
+            stroke="#92400E"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
           <Path d={ESTRELLA} transform="translate(182,80)" fill={DORADO} />
         </>
       )}
       <Ellipse cx={100} cy={122} rx={52} ry={48} fill={CUERPO} />
       <Path d="M100 8 L138 82 L62 82 Z" fill={SOMBRERO} />
       {SIMBOLOS.map(({ x, y, s }) => (
-        <SvgText key={s} x={x} y={y} textAnchor="middle" fontSize={13} fontWeight="900" fill={DORADO}>
+        <SvgText
+          key={s}
+          x={x}
+          y={y}
+          textAnchor="middle"
+          fontSize={13}
+          fontWeight="900"
+          fill={DORADO}
+        >
           {s}
         </SvgText>
       ))}
@@ -75,14 +97,26 @@ export function Octavio({ tamano = 56, guino = false, conVarita = false, tutor =
       <Circle cx={86} cy={118} r={6} fill={SOMBRERO} />
       <Circle cx={88.5} cy={115.5} r={2.4} fill="#FFFFFF" />
       {guino ? (
-        <Path d="M108 116 Q116 122 124 116" fill="none" stroke={SOMBRERO} strokeWidth={4} strokeLinecap="round" />
+        <Path
+          d="M108 116 Q116 122 124 116"
+          fill="none"
+          stroke={SOMBRERO}
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
       ) : (
         <>
           <Circle cx={114} cy={118} r={6} fill={SOMBRERO} />
           <Circle cx={116.5} cy={115.5} r={2.4} fill="#FFFFFF" />
         </>
       )}
-      <Path d="M88 140 Q100 150 112 140" fill="none" stroke={SOMBRERO} strokeWidth={4} strokeLinecap="round" />
+      <Path
+        d="M88 140 Q100 150 112 140"
+        fill="none"
+        stroke={SOMBRERO}
+        strokeWidth={4}
+        strokeLinecap="round"
+      />
       {tutor && (
         <>
           <Circle cx={72} cy={136} r={6} fill="#FB7185" opacity={0.45} />

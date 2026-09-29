@@ -9,11 +9,7 @@ const ESTRELLA =
 export function Estrellas({ cantidad, grande = false }: { cantidad: number; grande?: boolean }) {
   const tamano = grande ? 22 : 16;
   return (
-    <View
-      accessible
-      accessibilityLabel={`${cantidad} de 3 estrellas`}
-      className="flex-row gap-1"
-    >
+    <View accessible accessibilityLabel={`${cantidad} de 3 estrellas`} className="flex-row gap-1">
       {[0, 1, 2].map((i) => (
         <Svg key={i} width={tamano} height={tamano} viewBox="0 0 24 24">
           <Path

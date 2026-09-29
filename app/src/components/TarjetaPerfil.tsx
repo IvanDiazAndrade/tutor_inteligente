@@ -28,9 +28,7 @@ export function TarjetaPerfil({
       onPress={onPress}
       className={`flex-row items-center rounded-[18px] border-2 bg-white ${grande ? 'py-5' : 'py-3'} ${
         compacta ? 'gap-2 px-3' : 'gap-3 px-4'
-      } ${
-        seleccionado ? 'border-primario-claro' : 'border-borde'
-      }`}
+      } ${seleccionado ? 'border-primario-claro' : 'border-borde'}`}
     >
       <Svg width={avatar} height={avatar} viewBox="0 0 48 48">
         <Circle cx={24} cy={24} r={24} fill="#EDE6FC" />

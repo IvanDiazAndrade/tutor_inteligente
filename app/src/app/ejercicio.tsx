@@ -239,7 +239,12 @@ export default function Ejercicio() {
   const acciones = estado === 'respondiendo' && (
     <View className="flex-row flex-wrap justify-center gap-2">
       {fallos >= FALLOS_PARA_RESOLVER_JUNTOS && (
-        <BotonAccion texto="🤝 ¿Lo resolvemos juntos?" onPress={resolverJuntos} destacado grande={g} />
+        <BotonAccion
+          texto="🤝 ¿Lo resolvemos juntos?"
+          onPress={resolverJuntos}
+          destacado
+          grande={g}
+        />
       )}
       <BotonAccion
         texto={`💡 Pista (quedan ${MAX_PISTAS - pistasUsadas})`}
@@ -262,10 +267,7 @@ export default function Ejercicio() {
       {dosColumnas ? (
         <View className={`flex-1 flex-row ${g ? 'gap-8 px-8 pt-4' : 'gap-4 px-4 pt-2'}`}>
           <View className="flex-1">
-            <ScrollView
-              contentContainerClassName="gap-3 pb-4"
-              keyboardShouldPersistTaps="handled"
-            >
+            <ScrollView contentContainerClassName="gap-3 pb-4" keyboardShouldPersistTaps="handled">
               {encabezado}
               {tarjeta}
             </ScrollView>

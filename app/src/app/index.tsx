@@ -71,7 +71,9 @@ export default function Acceso() {
     <View className="items-center gap-2.5 rounded-[18px] bg-white px-4 py-3">
       <View className="flex-row items-center gap-2">
         <Octavio tamano={esTablet ? 56 : 40} guino />
-        <Text className={`shrink font-nunito-black text-tinta ${esTablet ? 'text-xl' : 'text-base'}`}>
+        <Text
+          className={`shrink font-nunito-black text-tinta ${esTablet ? 'text-xl' : 'text-base'}`}
+        >
           {error ? '¡Uy! Ese PIN no es. Prueba otra vez' : `Hola ${perfil.alias}, escribe tu PIN`}
         </Text>
       </View>
@@ -87,7 +89,9 @@ export default function Acceso() {
         esTablet ? 'py-5' : 'py-3'
       }`}
     >
-      <Text className={`font-nunito-extrabold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}>
+      <Text
+        className={`font-nunito-extrabold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}
+      >
         👤 Soy el apoderado
       </Text>
       <Text className={`font-nunito-black text-primario ${esTablet ? 'text-lg' : 'text-sm'}`}>

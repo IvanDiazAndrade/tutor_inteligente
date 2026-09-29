@@ -21,7 +21,8 @@ const equivalentes = (a: Fraccion, b: Fraccion) => a.num * b.den === b.num * a.d
 export function corregir(respuesta: string, ejercicio: EjercicioEjemplo): ResultadoCorreccion {
   if (ejercicio.formatoRespuesta === 'fraccion') {
     const dada = aFraccion(respuesta);
-    if (!dada) return { tipo: 'formato_invalido', mensaje: 'Escribe los dos números de la fracción.' };
+    if (!dada)
+      return { tipo: 'formato_invalido', mensaje: 'Escribe los dos números de la fracción.' };
     if (dada.den === 0) {
       return { tipo: 'formato_invalido', mensaje: 'El número de abajo no puede ser 0.' };
     }

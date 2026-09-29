@@ -28,7 +28,8 @@ export default function Diagnostico() {
         <Text className="text-3xl font-bold text-violet-700">Tutor Inteligente</Text>
         <Text className="text-base text-slate-600">Entorno de desarrollo listo</Text>
         <Text className="text-sm text-slate-500">
-          Expo SDK {Constants.expoConfig?.sdkVersion} · Android API {Platform.Version} · {orientacion}
+          Expo SDK {Constants.expoConfig?.sdkVersion} · Android API {Platform.Version} ·{' '}
+          {orientacion}
         </Text>
         <Text className={`text-center text-sm font-semibold ${colorServidor}`}>{servidor}</Text>
         <Text className="text-xs text-slate-400">{API_URL}</Text>
