@@ -1,0 +1,186 @@
+# Catálogo curricular del Anillo 1: 24 unidades, una por OA (RF-D1, modelo_dominio.md §1).
+# Es un archivo de datos (RNF-M2): agregar el Anillo 2 u otro curso es agregar entradas aquí y
+# volver a ejecutar `python -m tutor.catalogo`, que actualiza sin duplicar.
+#
+# Origen de cada campo:
+#   basal                  curriculo_4a6_matematica.md, cruce con la Priorización Curricular 2023-2025
+#   oa_texto_oficial       PENDIENTE: el diseño exige la redacción completa de las Bases Curriculares
+#                          (va íntegra en el prompt de generación, RF-D2). Mientras tanto va el resumen
+#                          de curriculo_4a6_matematica.md marcado [TRANSCRIBIR].
+#   descripcion_ciudadana  provisoria (prototipo, tarea 42); revisar con el equipo
+#   rango_numerico         modelo_dominio.md §4 y el resumen del OA; {} donde los documentos no lo fijan
+
+unidades:
+  # 4° básico ----------------------------------------------------------------------------
+  - id: 4B-OA1
+    curso: 4
+    orden: 1
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Representar y describir números del 0 al 10 000 (conteo de 10/100/1000, lectura/escritura, recta numérica, tabla posicional, valor posicional hasta decena de mil, composición/descomposición aditiva)."
+    descripcion_ciudadana: Leer y escribir números hasta 10.000
+    rango_numerico: { min: 0, max: 10000 }
+  - id: 4B-OA2
+    curso: 4
+    orden: 2
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Estrategias de cálculo mental para multiplicaciones hasta 10·10 y divisiones correspondientes (conteo, doblar/dividir por 2, descomposición, doble del doble)."
+    descripcion_ciudadana: Tablas de multiplicar y división mental
+    rango_numerico: { factor_max: 10 }
+  - id: 4B-OA3
+    curso: 4
+    orden: 3
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Adición y sustracción de números hasta 1 000 (estrategias personales, descomposición, estimación, problemas rutinarios y no rutinarios, algoritmos hasta 4 sumandos)."
+    descripcion_ciudadana: Sumar y restar números hasta 1.000
+    rango_numerico: { min: 0, max: 1000, sumandos_max: 4 }
+  - id: 4B-OA5
+    curso: 4
+    orden: 4
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Multiplicación de 3 dígitos × 1 dígito (tablas, estimación, distributiva, algoritmo, problemas)."
+    descripcion_ciudadana: Multiplicar un número de tres cifras por uno de una
+    rango_numerico: { digitos_factor_1: 3, digitos_factor_2: 1 }
+  - id: 4B-OA6
+    curso: 4
+    orden: 5
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] División con dividendos de 2 dígitos y divisores de 1 dígito (relación multiplicación-división, estimación de cociente, descomposición, algoritmo)."
+    descripcion_ciudadana: Dividir un número de dos cifras por uno de una
+    rango_numerico: { digitos_dividendo: 2, digitos_divisor: 1 }
+  - id: 4B-OA7
+    curso: 4
+    orden: 6
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Problemas rutinarios y no rutinarios con dinero, seleccionando la operación apropiada."
+    descripcion_ciudadana: Resolver problemas con dinero
+    rango_numerico: { monto_min: 100, monto_max: 10000, multiplo_de: 10 }
+  - id: 4B-OA8
+    curso: 4
+    orden: 7
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Fracciones con denominadores 2, 3, 4, 5, 6, 8, 10, 12, 100 (parte de un todo, recta numérica, representaciones distintas, comparar y ordenar)."
+    descripcion_ciudadana: Entender qué es una fracción
+    rango_numerico: { denominadores: [2, 3, 4, 5, 6, 8, 10, 12, 100] }
+  - id: 4B-OA9
+    curso: 4
+    orden: 8
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Adición y sustracción de fracciones con igual denominador (concreta/pictórica, en resolución de problemas)."
+    descripcion_ciudadana: Sumar y restar fracciones con el mismo denominador
+    rango_numerico: { denominadores: [2, 3, 4, 5, 6, 8, 10, 12] }
+
+  # 5° básico ----------------------------------------------------------------------------
+  - id: 5B-OA1
+    curso: 5
+    orden: 1
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Números naturales hasta más de 6 dígitos y menores que 1 000 millones (valor posicional, forma estándar y expandida, aproximación, comparar/ordenar)."
+    descripcion_ciudadana: Leer y escribir números grandes
+    rango_numerico: { min: 0, max: 999999999 }
+  - id: 5B-OA3
+    curso: 5
+    orden: 2
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Multiplicación de 2 dígitos × 2 dígitos (estimación, cálculo mental, algoritmo, problemas)."
+    descripcion_ciudadana: Multiplicar números de dos cifras
+    rango_numerico: { digitos_factor_1: 2, digitos_factor_2: 2 }
+  - id: 5B-OA4
+    curso: 5
+    orden: 3
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] División con dividendos de 3 dígitos y divisores de 1 dígito (interpretación del resto, problemas)."
+    descripcion_ciudadana: Dividir con resto
+    rango_numerico: { dividendo_min: 100, dividendo_max: 999, divisor_min: 2, divisor_max: 9 }
+  - id: 5B-OA5
+    curso: 5
+    orden: 4
+    basal: false
+    oa_texto_oficial: "[TRANSCRIBIR] Cálculos con las cuatro operaciones combinadas: paréntesis y prevalencia (prioridad de operaciones)."
+    descripcion_ciudadana: Resolver operaciones combinadas con paréntesis
+    rango_numerico: { resultado: entero }
+  - id: 5B-OA6
+    curso: 5
+    orden: 5
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Problemas rutinarios y no rutinarios con las cuatro operaciones (dinero; calculadora/computador sobre 10 000)."
+    descripcion_ciudadana: Resolver problemas con las cuatro operaciones
+    rango_numerico: {}
+  - id: 5B-OA7
+    curso: 5
+    orden: 6
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Fracciones propias: representación, fracciones equivalentes (simplificar y amplificar), comparación con igual y distinto denominador."
+    descripcion_ciudadana: Fracciones equivalentes
+    rango_numerico: { fracciones: propias }
+  - id: 5B-OA9
+    curso: 5
+    orden: 7
+    basal: false
+    oa_texto_oficial: "[TRANSCRIBIR] Adición y sustracción de fracciones propias con denominadores ≤ 12 (amplificando o simplificando)."
+    descripcion_ciudadana: Sumar y restar fracciones
+    rango_numerico: { denominador_max: 12 }
+  - id: 5B-OA10
+    curso: 5
+    orden: 8
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Fracción → decimal para denominadores 2, 4, 5 y 10."
+    descripcion_ciudadana: Pasar de fracción a número decimal
+    rango_numerico: { denominadores: [2, 4, 5, 10] }
+  - id: 5B-OA11
+    curso: 5
+    orden: 9
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Comparar y ordenar decimales hasta la milésima."
+    descripcion_ciudadana: Comparar y ordenar números decimales
+    rango_numerico: { posiciones_decimales: 3 }
+  - id: 5B-OA12
+    curso: 5
+    orden: 10
+    basal: false
+    oa_texto_oficial: "[TRANSCRIBIR] Adición y sustracción de decimales hasta la milésima."
+    descripcion_ciudadana: Sumar y restar números decimales
+    rango_numerico: { posiciones_decimales: 3 }
+  - id: 5B-OA13
+    curso: 5
+    orden: 11
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Problemas rutinarios y no rutinarios con adiciones/sustracciones de fracciones propias o decimales."
+    descripcion_ciudadana: Resolver problemas con fracciones y decimales
+    rango_numerico: {}
+
+  # 6° básico ----------------------------------------------------------------------------
+  - id: 6B-OA2
+    curso: 6
+    orden: 1
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Cálculos con las cuatro operaciones en resolución de problemas (calculadora sobre 10 000)."
+    descripcion_ciudadana: Resolver problemas con las cuatro operaciones
+    rango_numerico: {}
+  - id: 6B-OA5
+    curso: 6
+    orden: 2
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Fracciones y números mixtos: equivalencias entre fracciones impropias y números mixtos, recta numérica."
+    descripcion_ciudadana: Pasar de fracción impropia a número mixto
+    rango_numerico: {}
+  - id: 6B-OA6
+    curso: 6
+    orden: 3
+    basal: false
+    oa_texto_oficial: "[TRANSCRIBIR] Adición y sustracción de fracciones propias e impropias y números mixtos (numeradores y denominadores de hasta 2 dígitos)."
+    descripcion_ciudadana: Sumar y restar fracciones y números mixtos
+    rango_numerico: { digitos_max: 2 }
+  - id: 6B-OA7
+    curso: 6
+    orden: 4
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Multiplicación y división de decimales por naturales de 1 dígito, múltiplos de 10 y decimales hasta la milésima."
+    descripcion_ciudadana: Multiplicar y dividir números decimales
+    rango_numerico: { digitos_multiplicador: 1, posiciones_decimales: 3 }
+  - id: 6B-OA8
+    curso: 6
+    orden: 5
+    basal: true
+    oa_texto_oficial: "[TRANSCRIBIR] Problemas rutinarios y no rutinarios con adiciones/sustracciones de fracciones propias, impropias, números mixtos o decimales."
+    descripcion_ciudadana: Resolver problemas con fracciones y decimales
+    rango_numerico: {}

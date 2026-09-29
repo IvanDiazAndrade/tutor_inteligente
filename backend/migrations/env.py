@@ -5,6 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import tutor.modelos  # noqa: F401  (registra las tablas en Base.metadata)
 from tutor.config import get_settings
 from tutor.db import Base
 
