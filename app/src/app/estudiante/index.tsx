@@ -1,57 +1,51 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { TipoEtiqueta } from '@/components/Etiqueta';
+import { api, type UnidadEstudiante } from '@/api/cliente';
 import { Octavio } from '@/components/Octavio';
 import { SugerenciaOctavio } from '@/components/SugerenciaOctavio';
 import { TarjetaUnidad } from '@/components/TarjetaUnidad';
-import {
-  DOMINIOS_EJEMPLO,
-  ESTUDIANTE_EJEMPLO,
-  PUNTOS_EJEMPLO,
-  RACHA_DIAS_EJEMPLO,
-  UNIDADES,
-} from '@/datos/ejemplo';
 import { useDistribucion } from '@/hooks/useDistribucion';
-import { estrellas, paraRepasar, type Unidad, unidadSugerida } from '@/modelo/progreso';
+import { useSesion } from '@/sesion/SesionContext';
+import { useConsulta } from '@/sesion/useConsulta';
 
 const conPuntoDeMiles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-// Home del estudiante (CU-2, CU-6; mockup "Home Estudiante"): saludo, puntos y racha,
-// unidad sugerida y mapa de unidades de su curso; las de cursos anteriores se abren aparte.
+// Home del estudiante (CU-2, CU-6; mockup "Home Estudiante"): saludo, puntos, unidad sugerida
+// y mapa de unidades de su curso; las de cursos anteriores se abren aparte. Estrellas,
+// etiquetas y sugerencia las calcula el servidor (GET /estudiante/unidades).
 export default function HomeEstudiante() {
   const { dosColumnas, esTablet } = useDistribucion();
+  const { cerrar } = useSesion();
   const [verAnteriores, setVerAnteriores] = useState(false);
-  const estudiante = ESTUDIANTE_EJEMPLO;
+  const perfil = useConsulta('perfil-estudiante', api.perfilEstudiante);
+  const unidades = useConsulta('unidades', api.unidades);
 
-  const { delCurso, anteriores, dominios, sugerida, primeraNueva, hoy } = useMemo(() => {
-    const hoy = new Date();
-    const dominios = new Map(DOMINIOS_EJEMPLO.map((d) => [d.unidadId, d]));
-    // El estudiante ve su curso y los anteriores, nunca los superiores (modelo_estudiante.md §5).
-    const visibles = UNIDADES.filter((u) => u.curso <= estudiante.curso);
-    const delCurso = visibles.filter((u) => u.curso === estudiante.curso);
-    return {
-      hoy,
-      dominios,
-      delCurso,
-      anteriores: visibles.filter((u) => u.curso < estudiante.curso),
-      sugerida: unidadSugerida(visibles, dominios, hoy, estudiante.curso),
-      primeraNueva: delCurso.find((u) => !dominios.has(u.id)),
-    };
-  }, [estudiante.curso]);
+  if (perfil.isPending || unidades.isPending) {
+    return <Estado texto="Octavio está preparando tus unidades…" esTablet={esTablet} />;
+  }
+  if (perfil.isError || unidades.isError) {
+    return (
+      <Estado
+        texto={(perfil.error ?? unidades.error)?.message ?? 'Algo salió mal.'}
+        esTablet={esTablet}
+        onReintentar={() => {
+          perfil.refetch();
+          unidades.refetch();
+        }}
+      />
+    );
+  }
 
-  const etiquetaDe = (u: Unidad): TipoEtiqueta | undefined => {
-    const d = dominios.get(u.id);
-    if (paraRepasar(d, hoy)) return 'repasar';
-    if (estrellas(d) === 3) return 'dominada';
-    if (u.id === primeraNueva?.id) return 'nueva';
-    return undefined;
-  };
+  const estudiante = perfil.data;
+  const delCurso = unidades.data.filter((u) => u.curso === estudiante.curso);
+  const anteriores = unidades.data.filter((u) => u.curso < estudiante.curso);
+  const sugerida = unidades.data.find((u) => u.sugerida);
 
-  const practicar = (u: Unidad) =>
-    router.push({ pathname: '/ejercicio', params: { unidad: u.id, nombre: u.nombre } });
+  const practicar = (u: UnidadEstudiante) =>
+    router.push({ pathname: '/ejercicio', params: { unidad: u.id, nombre: u.descripcion } });
 
   const encabezado = (
     <View className="flex-row items-center gap-2.5">
@@ -64,43 +58,32 @@ export default function HomeEstudiante() {
           ¿Practicamos un poco hoy?
         </Text>
       </View>
-      <View className="items-end gap-1.5">
-        <View className="rounded-full bg-white px-3 py-1.5">
-          <Text
-            className={`font-nunito-black text-ambar ${esTablet ? 'text-base' : 'text-[13px]'}`}
-          >
-            ⭐ {conPuntoDeMiles(PUNTOS_EJEMPLO)}
-          </Text>
-        </View>
-        <View className="rounded-full border-[1.5px] border-ambar-borde bg-ambar-fondo px-3 py-1">
-          <Text
-            className={`font-nunito-extrabold text-ambar ${esTablet ? 'text-base' : 'text-xs'}`}
-          >
-            🔥 {RACHA_DIAS_EJEMPLO} días
-          </Text>
-        </View>
+      <View className="rounded-full bg-white px-3 py-1.5">
+        <Text className={`font-nunito-black text-ambar ${esTablet ? 'text-base' : 'text-[13px]'}`}>
+          ⭐ {conPuntoDeMiles(estudiante.puntajeTotal)}
+        </Text>
       </View>
     </View>
   );
 
   const sugerencia = sugerida && (
     <SugerenciaOctavio
-      nombre={sugerida.nombre}
-      etiqueta={etiquetaDe(sugerida) === 'repasar' ? 'repasar' : undefined}
+      nombre={sugerida.descripcion}
+      etiqueta={sugerida.etiqueta === 'repasar' ? 'repasar' : undefined}
       onPracticar={() => practicar(sugerida)}
       grande={esTablet}
       apilada={dosColumnas && !esTablet}
     />
   );
 
-  const listaUnidades = (unidades: Unidad[]) => (
+  const listaUnidades = (lista: UnidadEstudiante[]) => (
     <View className={esTablet ? 'flex-row flex-wrap gap-3' : 'gap-2.5'}>
-      {unidades.map((u) => (
+      {lista.map((u) => (
         <View key={u.id} className={esTablet ? 'w-[48.5%]' : ''}>
           <TarjetaUnidad
-            nombre={u.nombre}
-            estrellas={estrellas(dominios.get(u.id))}
-            etiqueta={etiquetaDe(u)}
+            nombre={u.descripcion}
+            estrellas={u.estrellas}
+            etiqueta={u.etiqueta ?? undefined}
             onPress={() => practicar(u)}
             grande={esTablet}
           />
@@ -131,27 +114,27 @@ export default function HomeEstudiante() {
     </Pressable>
   );
 
-  const unidades = (
+  const mapa = (
     <View className="gap-3">
       {tituloSeccion(`Tus unidades · ${estudiante.curso}° básico`)}
       {listaUnidades(delCurso)}
       {anteriores.length > 0 &&
         enlace(
           verAnteriores
-            ? `Ocultar unidades de ${estudiante.curso - 1}° básico`
-            : `Ver unidades de ${estudiante.curso - 1}° básico`,
+            ? 'Ocultar unidades de cursos anteriores'
+            : 'Ver unidades de cursos anteriores',
           () => setVerAnteriores((v) => !v),
         )}
       {verAnteriores && (
         <View className="gap-3">
-          {tituloSeccion(`Repaso · ${estudiante.curso - 1}° básico`)}
+          {tituloSeccion('Repaso · cursos anteriores')}
           {listaUnidades(anteriores)}
         </View>
       )}
     </View>
   );
 
-  const salir = enlace('Cambiar de perfil', () => router.replace('/'));
+  const salir = enlace('Cambiar de perfil', () => cerrar().then(() => router.replace('/')));
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-panel">
@@ -165,7 +148,7 @@ export default function HomeEstudiante() {
             </ScrollView>
           </View>
           <View className={esTablet ? 'flex-[3]' : 'flex-1'}>
-            <ScrollView contentContainerClassName="pb-4">{unidades}</ScrollView>
+            <ScrollView contentContainerClassName="pb-4">{mapa}</ScrollView>
           </View>
         </View>
       ) : (
@@ -176,9 +159,39 @@ export default function HomeEstudiante() {
         >
           {encabezado}
           {sugerencia}
-          {unidades}
+          {mapa}
           {salir}
         </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+}
+
+// Carga o error, con Octavio y un botón para reintentar.
+function Estado({
+  texto,
+  esTablet,
+  onReintentar,
+}: {
+  texto: string;
+  esTablet: boolean;
+  onReintentar?: () => void;
+}) {
+  return (
+    <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-panel p-6">
+      <Octavio tamano={esTablet ? 120 : 88} conVarita />
+      <Text
+        className={`text-center font-nunito-bold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-base'}`}
+      >
+        {texto}
+      </Text>
+      {onReintentar && (
+        <Pressable
+          onPress={onReintentar}
+          className="rounded-full bg-primario px-6 py-3 active:bg-primario-oscuro"
+        >
+          <Text className="font-nunito-black text-white">Reintentar</Text>
+        </Pressable>
       )}
     </SafeAreaView>
   );

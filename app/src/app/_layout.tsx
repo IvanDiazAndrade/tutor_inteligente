@@ -12,6 +12,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
+import { ProveedorSesion } from '@/sesion/SesionContext';
+
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -36,7 +38,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F5F1FF' } }} />
+      <ProveedorSesion>
+        <Stack
+          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F5F1FF' } }}
+        />
+      </ProveedorSesion>
     </QueryClientProvider>
   );
 }

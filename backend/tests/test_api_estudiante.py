@@ -88,3 +88,8 @@ def test_no_puede_cerrar_una_sesion_ajena(cliente, estudiante):
         f"/estudiante/sesiones/{uuid.uuid4()}/cierre", headers=_cabecera(estudiante)
     )
     assert ajena.status_code == 404
+
+
+def test_perfil_con_alias_curso_y_puntos(cliente, estudiante):
+    perfil = cliente.get("/estudiante/perfil", headers=_cabecera(estudiante)).json()
+    assert perfil["alias"] == "Vale" and perfil["curso"] == 5 and perfil["puntajeTotal"] == 0

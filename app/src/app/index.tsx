@@ -1,83 +1,112 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { api, ErrorApi } from '@/api/cliente';
 import { Encabezado } from '@/components/Encabezado';
 import { Octavio } from '@/components/Octavio';
 import { TarjetaPerfil } from '@/components/TarjetaPerfil';
 import { LARGO_PIN, TecladoPin } from '@/components/TecladoPin';
-import { PERFILES_EJEMPLO, PIN_EJEMPLO } from '@/datos/ejemplo';
 import { useDistribucion } from '@/hooks/useDistribucion';
+import { useSesion } from '@/sesion/SesionContext';
 
-// Pantalla de acceso (CU-1, RF-A2, RF-A3; mockup "Acceso"). El estudiante elige su perfil
-// y escribe su PIN; el apoderado entra por el enlace inferior con correo y contraseña.
+// Pantalla de acceso (CU-1, RF-A2, RF-A3; mockup "Acceso"). El estudiante elige uno de los
+// perfiles recordados en este teléfono y escribe su PIN, que valida el servidor. El apoderado
+// entra por el enlace inferior con correo y contraseña.
 export default function Acceso() {
   const { dosColumnas, esTablet } = useDistribucion();
   const compacta = dosColumnas && !esTablet;
-  const [perfilId, setPerfilId] = useState(PERFILES_EJEMPLO[0].id);
+  const { cargando, sesion, perfiles, iniciar } = useSesion();
+  const [perfilId, setPerfilId] = useState<string | null>(null);
   const [pin, setPin] = useState('');
-  const [error, setError] = useState(false);
-  const perfil = PERFILES_EJEMPLO.find((p) => p.id === perfilId) ?? PERFILES_EJEMPLO[0];
+  const [error, setError] = useState<string | null>(null);
+  const [verificando, setVerificando] = useState(false);
+  const perfil = perfiles.find((p) => p.id === perfilId) ?? perfiles[0];
 
   const temporizador = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(temporizador.current), []);
 
-  // Se revisa el PIN al escribir el último dígito. Con error, los puntos quedan en naranjo
-  // un momento y luego se limpian para reintentar.
-  const cambiarPin = (nuevo: string) => {
-    if (error) return;
-    setPin(nuevo);
-    if (nuevo.length < LARGO_PIN) return;
-    if (nuevo === PIN_EJEMPLO) {
-      setPin('');
-      router.replace('/estudiante');
-      return;
-    }
-    setError(true);
+  if (cargando) return null;
+  if (sesion?.rol === 'estudiante') return <Redirect href="/estudiante" />;
+  if (sesion?.rol === 'apoderado') return <Redirect href="/apoderado" />;
+
+  const mostrarError = (mensaje: string) => {
+    setError(mensaje);
+    // Los puntos quedan en naranjo un momento y luego se limpian para reintentar.
     temporizador.current = setTimeout(() => {
       setPin('');
-      setError(false);
-    }, 900);
+      setError(null);
+    }, 1400);
+  };
+
+  // Se envía el PIN al escribir el último dígito.
+  const cambiarPin = async (nuevo: string) => {
+    if (error || verificando || !perfil) return;
+    setPin(nuevo);
+    if (nuevo.length < LARGO_PIN) return;
+    setVerificando(true);
+    try {
+      const { token } = await api.ingresarEstudiante(perfil.id, nuevo);
+      await iniciar(token, 'estudiante');
+      router.replace('/estudiante');
+    } catch (e) {
+      if (e instanceof ErrorApi && e.estado === 401)
+        mostrarError('¡Uy! Ese PIN no es. Prueba otra vez');
+      else if (e instanceof ErrorApi && e.estado === 423)
+        mostrarError('Espera un momento e intenta otra vez');
+      else mostrarError(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
+    } finally {
+      setVerificando(false);
+    }
   };
 
   const elegirPerfil = (id: string) => {
     clearTimeout(temporizador.current);
     setPerfilId(id);
     setPin('');
-    setError(false);
+    setError(null);
   };
 
-  const perfiles = (
+  const listaPerfiles = (
     <View className="gap-2.5">
       <Text className={`font-nunito-black text-tinta ${esTablet ? 'text-2xl' : 'text-lg'}`}>
         ¿Quién va a practicar?
       </Text>
-      {PERFILES_EJEMPLO.map((p) => (
-        <TarjetaPerfil
-          key={p.id}
-          alias={p.alias}
-          curso={p.curso}
-          seleccionado={p.id === perfilId}
-          onPress={() => elegirPerfil(p.id)}
-          compacta={compacta}
-          grande={esTablet}
-        />
-      ))}
+      {perfiles.length === 0 ? (
+        <Text
+          className={`font-nunito-bold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}
+        >
+          Todavía no hay perfiles en este dispositivo. El apoderado entra primero y crea el perfil
+          del estudiante.
+        </Text>
+      ) : (
+        perfiles.map((p) => (
+          <TarjetaPerfil
+            key={p.id}
+            alias={p.alias}
+            curso={p.curso}
+            seleccionado={p.id === perfil?.id}
+            onPress={() => elegirPerfil(p.id)}
+            compacta={compacta}
+            grande={esTablet}
+          />
+        ))
+      )}
     </View>
   );
 
-  const bloquePin = (
+  const bloquePin = perfil && (
     <View className="items-center gap-2.5 rounded-[18px] bg-white px-4 py-3">
       <View className="flex-row items-center gap-2">
         <Octavio tamano={esTablet ? 56 : 40} guino />
         <Text
           className={`shrink font-nunito-black text-tinta ${esTablet ? 'text-xl' : 'text-base'}`}
         >
-          {error ? '¡Uy! Ese PIN no es. Prueba otra vez' : `Hola ${perfil.alias}, escribe tu PIN`}
+          {error ?? (verificando ? 'Revisando…' : `Hola ${perfil.alias}, escribe tu PIN`)}
         </Text>
       </View>
-      <TecladoPin pin={pin} onCambio={cambiarPin} error={error} grande={esTablet} />
+      <TecladoPin pin={pin} onCambio={cambiarPin} error={error !== null} grande={esTablet} />
     </View>
   );
 
@@ -95,7 +124,7 @@ export default function Acceso() {
         👤 Soy el apoderado
       </Text>
       <Text className={`font-nunito-black text-primario ${esTablet ? 'text-lg' : 'text-sm'}`}>
-        ver progreso →
+        {perfiles.length === 0 ? 'entrar →' : 'ver progreso →'}
       </Text>
     </Pressable>
   );
@@ -103,11 +132,11 @@ export default function Acceso() {
   return (
     <SafeAreaView className="flex-1 bg-fondo">
       <ScrollView contentContainerClassName="grow justify-center p-3">
-        {dosColumnas ? (
+        {dosColumnas && bloquePin ? (
           <View className="w-full max-w-[1100px] flex-row gap-4 self-center">
             <View className="flex-1 justify-between gap-4 rounded-[22px] bg-panel p-4">
               <Encabezado grande={esTablet} />
-              {perfiles}
+              {listaPerfiles}
               {enlaceApoderado}
             </View>
             <View className="flex-1 justify-center rounded-[22px] bg-panel p-4">{bloquePin}</View>
@@ -119,7 +148,7 @@ export default function Acceso() {
             }`}
           >
             <Encabezado grande={esTablet} />
-            {perfiles}
+            {listaPerfiles}
             {bloquePin}
             {enlaceApoderado}
           </View>

@@ -64,7 +64,7 @@ def test_flujo_apoderado_crea_perfil_y_el_estudiante_entra_con_pin(cliente):
     estudiante_id = _crear_estudiante(cliente, token)
 
     perfil = cliente.get("/apoderado/estudiante", headers=_cabecera(token)).json()
-    assert perfil == {"id": estudiante_id, "alias": "Vale", "curso": 5}
+    assert perfil == {"id": estudiante_id, "alias": "Vale", "curso": 5, "puntajeTotal": 0}
 
     respuesta = _login_estudiante(cliente, estudiante_id, "1234")
     assert respuesta.status_code == 200

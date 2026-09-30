@@ -38,7 +38,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "api:tipos": "npx -y openapi-typescript@7.13.0 http://127.0.0.1:8000/openapi.json -o src/api/esquema.ts && prettier --write src/api/esquema.ts"
   },
   "private": true
 }

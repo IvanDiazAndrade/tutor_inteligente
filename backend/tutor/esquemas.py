@@ -83,6 +83,7 @@ class PerfilEstudiante(Esquema):
     id: uuid.UUID
     alias: str
     curso: int
+    puntaje_total: int
 
 
 # Unidades y sesiones (CU-2) --------------------------------------------------------------

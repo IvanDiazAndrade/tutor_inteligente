@@ -1,15 +1,10 @@
-// Datos de ejemplo del prototipo (tarea 42). Son sintéticos (RNF-S4) y se reemplazan por
-// la API en la Fase IV: los perfiles vendrán de expo-secure-store y el PIN lo valida el servidor.
+// Datos de ejemplo del prototipo (tarea 42), sintéticos (RNF-S4). Desde la tarea 50 el acceso,
+// la home y el perfil usan la API; esto queda solo para el panel del apoderado (tarea 65) y
+// los puntos iniciales del ejercicio (tareas 56-61).
 import type { Dominio, Unidad } from '@/modelo/progreso';
 
-export type PerfilLocal = { id: string; alias: string; curso: number };
-
-export const PERFILES_EJEMPLO: PerfilLocal[] = [{ id: 'ejemplo-vale', alias: 'Vale', curso: 5 }];
-
-export const ESTUDIANTE_EJEMPLO = PERFILES_EJEMPLO[0];
-
-// Solo para el prototipo: el PIN real se compara con bcrypt en el servidor (CU-1).
-export const PIN_EJEMPLO = '1234';
+// Estudiante de ejemplo para los indicadores del panel del apoderado (hasta la tarea 65).
+export const ESTUDIANTE_EJEMPLO = { alias: 'Vale', curso: 5 };
 
 // Unidades del Anillo 1 para 4° y 5° (modelo_dominio.md §4). Los nombres cortos (estudiante) y las
 // descripciones ciudadanas (apoderado) son provisorios: en la Fase IV vienen del catálogo.
@@ -146,4 +141,3 @@ export const DOMINIOS_EJEMPLO: Dominio[] = [
 ];
 
 export const PUNTOS_EJEMPLO = 1250;
-export const RACHA_DIAS_EJEMPLO = 3;

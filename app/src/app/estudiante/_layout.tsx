@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import { useDistribucion } from '@/hooks/useDistribucion';
+import { Protegida } from '@/sesion/Protegida';
 
 const ACTIVO = '#6D28D9';
 const INACTIVO = '#B7A8E8';
@@ -40,7 +41,8 @@ function IconoLogros({ color, tamano }: { color: ColorValue; tamano: number }) {
   );
 }
 
-// Navegación del estudiante: máximo dos niveles de profundidad (RNF-U1).
+// Navegación del estudiante: máximo dos niveles de profundidad (RNF-U1). Solo con una sesión
+// de estudiante; sin ella vuelve a la pantalla de acceso.
 export default function LayoutEstudiante() {
   const { bottom } = useSafeAreaInsets();
   const { esTablet } = useDistribucion();
@@ -48,47 +50,49 @@ export default function LayoutEstudiante() {
   const icono = esTablet ? 34 : 24;
   const alto = esTablet ? 92 : 64;
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: ACTIVO,
-        tabBarInactiveTintColor: INACTIVO,
-        tabBarLabelPosition: 'below-icon',
-        tabBarLabelStyle: {
-          fontFamily: 'Nunito_900Black',
-          fontSize: esTablet ? 17 : 11,
-        },
-        tabBarStyle: {
-          borderTopColor: '#EFE8FF',
-          borderTopWidth: 1.5,
-          height: alto + bottom,
-          paddingTop: esTablet ? 10 : 6,
-          paddingBottom: 8 + bottom,
-        },
-        sceneStyle: { backgroundColor: '#FAF7FF' },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color }) => <IconoInicio color={color} tamano={icono} />,
+    <Protegida rol="estudiante">
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: ACTIVO,
+          tabBarInactiveTintColor: INACTIVO,
+          tabBarLabelPosition: 'below-icon',
+          tabBarLabelStyle: {
+            fontFamily: 'Nunito_900Black',
+            fontSize: esTablet ? 17 : 11,
+          },
+          tabBarStyle: {
+            borderTopColor: '#EFE8FF',
+            borderTopWidth: 1.5,
+            height: alto + bottom,
+            paddingTop: esTablet ? 10 : 6,
+            paddingBottom: 8 + bottom,
+          },
+          sceneStyle: { backgroundColor: '#FAF7FF' },
         }}
-      />
-      <Tabs.Screen
-        name="practicar"
-        options={{
-          title: 'Practicar',
-          tabBarIcon: ({ color }) => <IconoPracticar color={color} tamano={icono} />,
-        }}
-      />
-      <Tabs.Screen
-        name="logros"
-        options={{
-          title: 'Mis logros',
-          tabBarIcon: ({ color }) => <IconoLogros color={color} tamano={icono} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Inicio',
+            tabBarIcon: ({ color }) => <IconoInicio color={color} tamano={icono} />,
+          }}
+        />
+        <Tabs.Screen
+          name="practicar"
+          options={{
+            title: 'Practicar',
+            tabBarIcon: ({ color }) => <IconoPracticar color={color} tamano={icono} />,
+          }}
+        />
+        <Tabs.Screen
+          name="logros"
+          options={{
+            title: 'Mis logros',
+            tabBarIcon: ({ color }) => <IconoLogros color={color} tamano={icono} />,
+          }}
+        />
+      </Tabs>
+    </Protegida>
   );
 }

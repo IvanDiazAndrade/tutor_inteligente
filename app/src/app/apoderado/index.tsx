@@ -9,6 +9,10 @@ import { Octavio } from '@/components/Octavio';
 import { PISTAS_PROMEDIO_EJEMPLO, type Periodo, RESUMENES_EJEMPLO } from '@/datos/apoderado';
 import { DOMINIOS_EJEMPLO, ESTUDIANTE_EJEMPLO, UNIDADES } from '@/datos/ejemplo';
 import { useDistribucion } from '@/hooks/useDistribucion';
+import { api } from '@/api/cliente';
+import { Protegida } from '@/sesion/Protegida';
+import { useSesion } from '@/sesion/SesionContext';
+import { useConsulta } from '@/sesion/useConsulta';
 import { banda, type Dominio, paraRepasar, type Unidad, unidadSugerida } from '@/modelo/progreso';
 
 const PISTAS_ALTAS = 1.5;
@@ -34,10 +38,14 @@ function comentarioDe(dominio: Dominio, pistas: number, hoy: Date): string {
 
 // Panel del apoderado (CU-10; mockup "Dashboard Apoderado"): resumen semanal, qué está
 // aprendiendo y sugerencia de la semana. Pocos indicadores y encuadre de avance (RF-DA4, DA6).
-export default function PanelApoderado() {
+// El nombre del estudiante viene del servidor; los indicadores siguen siendo de ejemplo hasta
+// que el servicio dashboard (F4) esté disponible (tarea 65).
+function Panel() {
   const { dosColumnas, esTablet: g } = useDistribucion();
   const [periodo, setPeriodo] = useState<Periodo>('esta');
-  const estudiante = ESTUDIANTE_EJEMPLO;
+  const { cerrar } = useSesion();
+  const perfil = useConsulta('estudiante-del-apoderado', api.estudianteDelApoderado);
+  const estudiante = { ...ESTUDIANTE_EJEMPLO, alias: perfil.data?.alias ?? '…' };
   const resumen = RESUMENES_EJEMPLO[periodo];
 
   const { medidores, sugerencia } = useMemo(() => {
@@ -185,7 +193,11 @@ export default function PanelApoderado() {
         🔒 Ves indicadores del avance de {estudiante.alias}. Las conversaciones con el tutor son
         privadas.
       </Text>
-      <Pressable accessibilityRole="button" onPress={() => router.replace('/')} className="py-2">
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => cerrar().then(() => router.replace('/'))}
+        className="py-2"
+      >
         <Text
           className={`font-nunito-extrabold text-primario-claro underline ${g ? 'text-base' : 'text-[13px]'}`}
         >
@@ -203,6 +215,11 @@ export default function PanelApoderado() {
         }`}
       >
         {encabezado}
+        <View className="rounded-xl border-[1.5px] border-ambar-borde bg-ambar-fondo px-3 py-2">
+          <Text className={`font-nunito-bold text-ambar ${g ? 'text-base' : 'text-xs'}`}>
+            Vista previa: los indicadores son de ejemplo hasta conectar el panel (tarea 65).
+          </Text>
+        </View>
         {dosColumnas ? (
           <View className={`flex-row items-start ${g ? 'gap-5' : 'gap-3'}`}>
             <View className={`flex-1 ${g ? 'gap-5' : 'gap-3'}`}>
@@ -221,5 +238,13 @@ export default function PanelApoderado() {
         {pie}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+export default function PanelApoderado() {
+  return (
+    <Protegida rol="apoderado">
+      <Panel />
+    </Protegida>
   );
 }
