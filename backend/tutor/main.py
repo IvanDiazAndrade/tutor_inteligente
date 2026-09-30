@@ -6,8 +6,12 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from tutor import __version__
 from tutor.db import engine
+from tutor.rutas import apoderado, auth, estudiante
 
 app = FastAPI(title="Tutor Inteligente", version=__version__)
+app.include_router(auth.router)
+app.include_router(apoderado.router)
+app.include_router(estudiante.router)
 
 
 @app.get("/salud")

@@ -53,7 +53,7 @@ export default function PanelApoderado() {
         comentario: comentarioDe(d, PISTAS_PROMEDIO_EJEMPLO[u.id] ?? 0, hoy),
       };
     });
-    const sugerida = unidadSugerida(visibles, dominios, hoy);
+    const sugerida = unidadSugerida(visibles, dominios, hoy, estudiante.curso);
     const textoSugerencia = (u: Unidad) => {
       const d = dominios.get(u.id);
       if (!d) return `Esta semana pueden empezar con ${minuscula(u.ciudadana)}.`;

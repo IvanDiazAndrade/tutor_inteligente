@@ -37,7 +37,7 @@ export default function HomeEstudiante() {
       dominios,
       delCurso,
       anteriores: visibles.filter((u) => u.curso < estudiante.curso),
-      sugerida: unidadSugerida(visibles, dominios, hoy),
+      sugerida: unidadSugerida(visibles, dominios, hoy, estudiante.curso),
       primeraNueva: delCurso.find((u) => !dominios.has(u.id)),
     };
   }, [estudiante.curso]);

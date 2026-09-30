@@ -37,11 +37,12 @@ export function paraRepasar(dominio: Dominio | undefined, hoy: Date): boolean {
 }
 
 // Unidad sugerida (§5): 1) la "para repasar" más antigua; 2) la iniciada con menor índice
-// (< 0,6); 3) la siguiente no iniciada según el orden del catálogo.
+// (< 0,6); 3) la siguiente no iniciada según el orden del catálogo de su curso.
 export function unidadSugerida(
   unidades: Unidad[],
   dominios: Map<string, Dominio>,
   hoy: Date,
+  curso: number,
 ): Unidad | undefined {
   const aRepasar = unidades
     .filter((u) => paraRepasar(dominios.get(u.id), hoy))
@@ -57,5 +58,5 @@ export function unidadSugerida(
     .sort((a, b) => dominios.get(a.id)!.indice - dominios.get(b.id)!.indice);
   if (debiles.length > 0) return debiles[0];
 
-  return unidades.find((u) => !dominios.has(u.id));
+  return unidades.find((u) => u.curso === curso && !dominios.has(u.id));
 }

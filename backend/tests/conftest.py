@@ -60,3 +60,16 @@ def sesion(motor) -> Iterator[Session]:
         with Session(bind=conexion, join_transaction_mode="create_savepoint") as s:
             yield s
         transaccion.rollback()
+
+
+@pytest.fixture
+def cliente(sesion):
+    """Cliente HTTP de la API que usa la sesión de prueba (sus cambios se deshacen al final)."""
+    from fastapi.testclient import TestClient
+
+    from tutor.db import get_session
+    from tutor.main import app
+
+    app.dependency_overrides[get_session] = lambda: sesion
+    yield TestClient(app)
+    app.dependency_overrides.clear()
