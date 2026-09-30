@@ -153,6 +153,91 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/estudiante/unidades/{unidad_id}/ejercicio': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Servir */
+    post: operations['servir_estudiante_unidades__unidad_id__ejercicio_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/estudiante/servidos/{servido_id}/respuestas': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Responder */
+    post: operations['responder_estudiante_servidos__servido_id__respuestas_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/estudiante/servidos/{servido_id}/pistas': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Pedir Pista */
+    post: operations['pedir_pista_estudiante_servidos__servido_id__pistas_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/estudiante/servidos/{servido_id}/no-entiendo': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** No Entiendo */
+    post: operations['no_entiendo_estudiante_servidos__servido_id__no_entiendo_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/estudiante/servidos/{servido_id}/resolver-juntos': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resolver Juntos */
+    post: operations['resolver_juntos_estudiante_servidos__servido_id__resolver_juntos_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/salud': {
     parameters: {
       query?: never;
@@ -187,6 +272,36 @@ export interface components {
       /** Email */
       email: string;
     };
+    /**
+     * EjercicioParaEstudiante
+     * @description Lo único que viaja a la app: sin respuesta final ni solución (RF-D3, AD-1).
+     */
+    EjercicioParaEstudiante: {
+      /**
+       * Servidoid
+       * Format: uuid
+       */
+      servidoId: string;
+      /** Unidadid */
+      unidadId: string;
+      /** Unidaddescripcion */
+      unidadDescripcion: string;
+      /** Nivel */
+      nivel: number;
+      /** Enunciado */
+      enunciado: string;
+      /** Representacion */
+      representacion: {
+        [key: string]: unknown;
+      } | null;
+      /**
+       * Formatorespuesta
+       * @enum {string}
+       */
+      formatoRespuesta: 'numerico' | 'fraccion' | 'ordenar' | 'comparar';
+      /** Pistasrestantes */
+      pistasRestantes: number;
+    };
     /** EstudianteCambios */
     EstudianteCambios: {
       /** Alias */
@@ -207,6 +322,12 @@ export interface components {
       curso: number;
       /** Pin */
       pin: string;
+    };
+    /** ExplicacionGuiada */
+    ExplicacionGuiada: {
+      /** Pasos */
+      pasos: string[];
+      analogo: components['schemas']['EjercicioParaEstudiante'] | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -230,6 +351,11 @@ export interface components {
       /** Pin */
       pin: string;
     };
+    /** Mensaje */
+    Mensaje: {
+      /** Mensaje */
+      mensaje: string;
+    };
     /**
      * PerfilEstudiante
      * @description Lo que la app guarda para mostrar el perfil en la pantalla de acceso.
@@ -247,12 +373,48 @@ export interface components {
       /** Puntajetotal */
       puntajeTotal: number;
     };
+    /** PistaTutor */
+    PistaTutor: {
+      /** Numero */
+      numero: number;
+      /** Mensaje */
+      mensaje: string;
+      /** Pistasrestantes */
+      pistasRestantes: number;
+    };
     /** RegistroApoderado */
     RegistroApoderado: {
       /** Email */
       email: string;
       /** Contrasena */
       contrasena: string;
+    };
+    /** RespuestaEstudiante */
+    RespuestaEstudiante: {
+      /** Respuesta */
+      respuesta: string;
+      /** Tiemposegundos */
+      tiempoSegundos: number;
+    };
+    /** RespuestaTutor */
+    RespuestaTutor: {
+      /**
+       * Resultado
+       * @enum {string}
+       */
+      resultado: 'correcta' | 'incorrecta' | 'formato_invalido';
+      /** Mensaje */
+      mensaje: string;
+      /** Puntos */
+      puntos: number;
+      /** Pistasrestantes */
+      pistasRestantes: number;
+      /** Ofreceresolverjuntos */
+      ofreceResolverJuntos: boolean;
+      /** Cambionivel */
+      cambioNivel: ('sube' | 'baja') | null;
+      /** Degradado */
+      degradado: boolean;
     };
     /** SesionPractica */
     SesionPractica: {
@@ -579,6 +741,165 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['SesionPractica'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  servir_estudiante_unidades__unidad_id__ejercicio_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        unidad_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['EjercicioParaEstudiante'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  responder_estudiante_servidos__servido_id__respuestas_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        servido_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RespuestaEstudiante'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RespuestaTutor'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  pedir_pista_estudiante_servidos__servido_id__pistas_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        servido_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PistaTutor'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  no_entiendo_estudiante_servidos__servido_id__no_entiendo_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        servido_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Mensaje'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  resolver_juntos_estudiante_servidos__servido_id__resolver_juntos_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        servido_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ExplicacionGuiada'];
         };
       };
       /** @description Validation Error */

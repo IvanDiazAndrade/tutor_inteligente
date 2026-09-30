@@ -1,138 +1,219 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import { api, type EjercicioServido, ErrorApi } from '@/api/cliente';
 import { BotonAccion } from '@/components/BotonAccion';
 import { BotonPrimario } from '@/components/BotonPrimario';
 import { CampoRespuesta } from '@/components/CampoRespuesta';
 import { EnunciadoResaltado } from '@/components/EnunciadoResaltado';
 import { GloboOctavio } from '@/components/GloboOctavio';
+import { Octavio } from '@/components/Octavio';
 import { RepresentacionFraccion } from '@/components/RepresentacionFraccion';
-import { EJERCICIOS, ejercicioPorId, REFUERZOS } from '@/datos/ejercicios';
-import { PUNTOS_EJEMPLO } from '@/datos/ejemplo';
 import { useDistribucion } from '@/hooks/useDistribucion';
-import { corregir, puntosPor } from '@/modelo/corrector';
+import { Protegida } from '@/sesion/Protegida';
+import { useSesion } from '@/sesion/SesionContext';
+import { useConsulta } from '@/sesion/useConsulta';
 
-const MAX_PISTAS = 3;
-const FALLOS_PARA_RESOLVER_JUNTOS = 3; // RF-P7 (parámetro N, por defecto 3)
 const MENSAJE_INICIAL = 'Lee con calma y escribe tu respuesta. ¡Tú puedes!';
 
 const conPuntoDeMiles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-type Estado = 'respondiendo' | 'correcta' | 'guiada';
+type Estado = 'cargando' | 'respondiendo' | 'correcta' | 'guiada' | 'sin-ejercicios';
+
+type Representacion = {
+  tipo: string;
+  parametros: { denominador: number; partesDestacadas: number[] };
+};
 
 // Ejercicio con Octavio (CU-3, CU-4, CU-11, CU-13; mockup "Ejercicio Estudiante").
-// Prototipo: corrige en el dispositivo y Octavio usa las plantillas locales del modo sin LLM
-// (modelo_pedagogico.md §7). En la Fase IV todo esto lo resuelve el servidor (F2, F3).
-export default function Ejercicio() {
-  const { unidad } = useLocalSearchParams<{ unidad?: string }>();
-  const { dosColumnas, esTablet } = useDistribucion();
+// El servidor sirve el ejercicio (F1), corrige (F2), entrega las pistas (F3) y actualiza el
+// índice de dominio; la app nunca conoce la respuesta ni la solución (RF-D3, AD-1).
+function PantallaEjercicio() {
+  const { unidad } = useLocalSearchParams<{ unidad: string }>();
+  const { dosColumnas, esTablet: g } = useDistribucion();
+  const { sesion, cerrar } = useSesion();
+  const token = sesion!.token;
+  const clienteConsultas = useQueryClient();
+  const perfil = useConsulta('perfil-estudiante', api.perfilEstudiante);
 
-  const [ejercicioId, setEjercicioId] = useState(
-    () => EJERCICIOS.find((e) => e.unidadId === unidad)?.id ?? EJERCICIOS[0].id,
-  );
-  const ejercicio = ejercicioPorId(ejercicioId);
-
+  const [ejercicio, setEjercicio] = useState<EjercicioServido | null>(null);
+  const [estado, setEstado] = useState<Estado>('cargando');
   const [numerador, setNumerador] = useState('');
   const [denominador, setDenominador] = useState('');
-  const [estado, setEstado] = useState<Estado>('respondiendo');
   const [mensaje, setMensaje] = useState(MENSAJE_INICIAL);
-  const [pistasUsadas, setPistasUsadas] = useState(0);
-  const [fallos, setFallos] = useState(0);
+  const [pistasRestantes, setPistasRestantes] = useState(0);
+  const [ofreceJuntos, setOfreceJuntos] = useState(false);
   const [puedeNoEntiendo, setPuedeNoEntiendo] = useState(false);
+  const [pasos, setPasos] = useState<string[]>([]);
   const [pasoGuiado, setPasoGuiado] = useState(0);
-  const [seguidas, setSeguidas] = useState(2);
-  const [puntos, setPuntos] = useState(PUNTOS_EJEMPLO);
-  const [refuerzo, setRefuerzo] = useState(0);
+  const [analogo, setAnalogo] = useState<EjercicioServido | null>(null);
+  const [seguidas, setSeguidas] = useState(0);
+  const [ocupado, setOcupado] = useState(false);
+  const inicio = useRef(0); // se fija al mostrar cada ejercicio
 
-  const cargar = (id: string) => {
-    setEjercicioId(id);
+  // Errores de red o de sesión: se muestran en el globo de Octavio; con 401 vuelve al acceso.
+  const conManejo = useCallback(
+    async (accion: () => Promise<void>) => {
+      setOcupado(true);
+      try {
+        await accion();
+      } catch (e) {
+        if (e instanceof ErrorApi && e.estado === 401) {
+          await cerrar();
+          return;
+        }
+        setMensaje(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
+      } finally {
+        setOcupado(false);
+      }
+    },
+    [cerrar],
+  );
+
+  const mostrar = useCallback((nuevo: EjercicioServido, mensajeInicial = MENSAJE_INICIAL) => {
+    setEjercicio(nuevo);
+    setEstado('respondiendo');
     setNumerador('');
     setDenominador('');
-    setEstado('respondiendo');
-    setMensaje(MENSAJE_INICIAL);
-    setPistasUsadas(0);
-    setFallos(0);
+    setMensaje(mensajeInicial);
+    setPistasRestantes(nuevo.pistasRestantes);
+    setOfreceJuntos(false);
     setPuedeNoEntiendo(false);
+    setPasos([]);
     setPasoGuiado(0);
-  };
+    setAnalogo(null);
+    inicio.current = Date.now();
+  }, []);
 
-  // "Otro ejercicio": pasa al siguiente sin penalizar (modelo_pedagogico.md §2).
-  const otroEjercicio = () => {
-    const i = EJERCICIOS.findIndex((e) => e.id === ejercicio.id);
-    cargar(EJERCICIOS[(i + 1) % EJERCICIOS.length].id);
+  // Servir un ejercicio de la unidad; también es "Otro ejercicio" (sin penalizar).
+  const servir = useCallback(
+    () =>
+      conManejo(async () => {
+        try {
+          mostrar(await api.servirEjercicio(token, unidad));
+        } catch (e) {
+          if (e instanceof ErrorApi && e.estado === 404) {
+            setEstado('sin-ejercicios');
+            setMensaje(e.message);
+            return;
+          }
+          throw e;
+        }
+      }),
+    [conManejo, mostrar, token, unidad],
+  );
+
+  // Primer ejercicio al abrir la pantalla. El estado cambia recién cuando responde el servidor,
+  // y se ignora la respuesta si la pantalla ya se cerró.
+  useEffect(() => {
+    let activa = true;
+    api
+      .servirEjercicio(token, unidad)
+      .then((nuevo) => activa && mostrar(nuevo))
+      .catch((e) => {
+        if (!activa) return;
+        if (e instanceof ErrorApi && e.estado === 401) cerrar();
+        setEstado('sin-ejercicios');
+        setMensaje(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
+      });
+    return () => {
+      activa = false;
+    };
+  }, [token, unidad, mostrar, cerrar]);
+
+  const actualizarProgreso = () => {
+    clienteConsultas.invalidateQueries({ queryKey: ['perfil-estudiante'] });
+    clienteConsultas.invalidateQueries({ queryKey: ['unidades'] });
   };
 
   const responder = () => {
+    if (!ejercicio) return;
     if (estado === 'correcta') {
-      otroEjercicio();
+      servir();
       return;
     }
     Keyboard.dismiss();
     const respuesta =
       ejercicio.formatoRespuesta === 'fraccion' ? `${numerador}/${denominador}` : numerador;
-    const resultado = corregir(respuesta, ejercicio);
-
-    if (resultado.tipo === 'formato_invalido') {
-      setMensaje(resultado.mensaje); // no cuenta como intento
-      return;
-    }
-    if (resultado.tipo === 'correcta') {
-      const ganados = puntosPor(ejercicio.nivel, pistasUsadas);
-      const forma = resultado.esFormaCanonica
-        ? ''
-        : ` También puedes escribirla como ${ejercicio.respuestaFinal}.`;
-      setPuntos((p) => p + ganados);
-      setSeguidas((s) => s + 1);
-      setRefuerzo((r) => r + 1);
-      setEstado('correcta');
-      setMensaje(`${REFUERZOS[refuerzo % REFUERZOS.length]}${forma} Ganaste ${ganados} puntos.`);
-      return;
-    }
-    // Incorrecta: causa del error común si se detecta; si no, el primer paso (plantilla local).
-    const nuevosFallos = fallos + 1;
-    setFallos(nuevosFallos);
-    setSeguidas(0);
-    setPuedeNoEntiendo(true);
-    setMensaje(
-      resultado.errorComun
-        ? `Todavía no es. ${resultado.errorComun.retroalimentacion}`
-        : `Todavía no es. Revisa este paso: ${ejercicio.solucionReferencia[0]}`,
-    );
+    const segundos = Math.round((Date.now() - inicio.current) / 1000);
+    conManejo(async () => {
+      const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);
+      setMensaje(r.mensaje);
+      if (r.resultado === 'formato_invalido') return; // no cuenta como intento
+      setPuedeNoEntiendo(r.resultado === 'incorrecta');
+      setOfreceJuntos(r.ofreceResolverJuntos);
+      setSeguidas((s) => (r.resultado === 'correcta' ? s + 1 : 0));
+      if (r.resultado === 'correcta') setEstado('correcta');
+      actualizarProgreso();
+    });
   };
 
-  const pedirPista = () => {
-    if (pistasUsadas >= MAX_PISTAS) return;
-    setMensaje(`Pista ${pistasUsadas + 1}: ${ejercicio.pistas[pistasUsadas]}`);
-    setPistasUsadas(pistasUsadas + 1);
-    setPuedeNoEntiendo(true);
-  };
+  const pedirPista = () =>
+    ejercicio &&
+    conManejo(async () => {
+      const pista = await api.pedirPista(token, ejercicio.servidoId);
+      setMensaje(pista.mensaje);
+      setPistasRestantes(pista.pistasRestantes);
+      setPuedeNoEntiendo(true);
+    });
 
-  const noEntiendo = () => setMensaje(ejercicio.reexplicacion);
+  const noEntiendo = () =>
+    ejercicio &&
+    conManejo(async () => {
+      setMensaje((await api.noEntiendo(token, ejercicio.servidoId)).mensaje);
+    });
 
-  const resolverJuntos = () => {
-    Keyboard.dismiss();
-    setEstado('guiada');
-    setPasoGuiado(0);
-    setMensaje(ejercicio.solucionReferencia[0]);
-  };
+  const resolverJuntos = () =>
+    ejercicio &&
+    conManejo(async () => {
+      Keyboard.dismiss();
+      const guiada = await api.resolverJuntos(token, ejercicio.servidoId);
+      setPasos(guiada.pasos);
+      setPasoGuiado(0);
+      setAnalogo(guiada.analogo ?? null);
+      setMensaje(guiada.pasos[0]);
+      setEstado('guiada');
+      actualizarProgreso();
+    });
 
   const siguientePaso = () => {
     const siguiente = pasoGuiado + 1;
     setPasoGuiado(siguiente);
-    setMensaje(ejercicio.solucionReferencia[siguiente]);
+    setMensaje(pasos[siguiente]);
   };
 
-  const ultimoPaso = pasoGuiado === ejercicio.solucionReferencia.length - 1;
   const probarParecido = () => {
-    const i = EJERCICIOS.findIndex((e) => e.id === ejercicio.id);
-    cargar(ejercicio.analogoId ?? EJERCICIOS[(i + 1) % EJERCICIOS.length].id);
-    setMensaje('¡Ahora prueba este, que es parecido!');
+    if (analogo) mostrar(analogo, '¡Ahora prueba este, que es parecido!');
+    else servir();
   };
 
-  const g = esTablet;
+  if (estado === 'cargando' || estado === 'sin-ejercicios' || !ejercicio) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-panel p-6">
+        <Octavio tamano={g ? 120 : 88} conVarita />
+        <Text
+          className={`text-center font-nunito-bold text-apagado-oscuro ${g ? 'text-lg' : 'text-base'}`}
+        >
+          {estado === 'cargando' ? 'Octavio está eligiendo un ejercicio…' : mensaje}
+        </Text>
+        {estado !== 'cargando' && (
+          <Pressable
+            onPress={() => router.back()}
+            className="rounded-full bg-primario px-6 py-3 active:bg-primario-oscuro"
+          >
+            <Text className="font-nunito-black text-white">Volver</Text>
+          </Pressable>
+        )}
+      </SafeAreaView>
+    );
+  }
+
+  const representacion = ejercicio.representacion as Representacion | null;
+  const ultimoPaso = pasoGuiado === pasos.length - 1;
 
   const encabezado = (
     <View className="gap-2.5">
@@ -158,17 +239,19 @@ export default function Ejercicio() {
         </Pressable>
         <View className="flex-1">
           <Text className={`font-nunito-extrabold text-tinta ${g ? 'text-xl' : 'text-sm'}`}>
-            {ejercicio.unidadNombre}
+            {ejercicio.unidadDescripcion}
           </Text>
           <Text className={`font-nunito-bold text-lila ${g ? 'text-sm' : 'text-[11px]'}`}>
             Unidad {ejercicio.unidadId}
           </Text>
         </View>
-        <View className="rounded-full bg-white px-3 py-1.5">
-          <Text className={`font-nunito-black text-ambar ${g ? 'text-lg' : 'text-[13px]'}`}>
-            ⭐ {conPuntoDeMiles(puntos)}
-          </Text>
-        </View>
+        {perfil.data && (
+          <View className="rounded-full bg-white px-3 py-1.5">
+            <Text className={`font-nunito-black text-ambar ${g ? 'text-lg' : 'text-[13px]'}`}>
+              ⭐ {conPuntoDeMiles(perfil.data.puntajeTotal)}
+            </Text>
+          </View>
+        )}
       </View>
       <View className="flex-row gap-2">
         <View className="rounded-full border-[1.5px] border-nueva-borde bg-fondo px-3 py-1">
@@ -191,15 +274,15 @@ export default function Ejercicio() {
     <View className={`rounded-[20px] bg-white ${g ? 'gap-6 p-7' : 'gap-3.5 p-[18px]'}`}>
       <EnunciadoResaltado texto={ejercicio.enunciado} grande={g} />
       <View className={`flex-row items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}>
-        {ejercicio.representacion && (
+        {representacion?.tipo === 'fraccion-circulo' && (
           <RepresentacionFraccion
-            denominador={ejercicio.representacion.denominador}
-            partesDestacadas={ejercicio.representacion.partesDestacadas}
+            denominador={representacion.parametros.denominador}
+            partesDestacadas={representacion.parametros.partesDestacadas}
             tamano={g ? 200 : 128}
           />
         )}
         <CampoRespuesta
-          formato={ejercicio.formatoRespuesta}
+          formato={ejercicio.formatoRespuesta === 'fraccion' ? 'fraccion' : 'numerico'}
           numerador={numerador}
           denominador={denominador}
           onCambio={(n, d) => {
@@ -207,7 +290,7 @@ export default function Ejercicio() {
             setDenominador(d);
           }}
           onEnviar={responder}
-          deshabilitado={estado !== 'respondiendo'}
+          deshabilitado={estado !== 'respondiendo' || ocupado}
           grande={g}
         />
       </View>
@@ -215,6 +298,7 @@ export default function Ejercicio() {
         <BotonPrimario
           titulo={estado === 'correcta' ? 'Siguiente ejercicio →' : 'Responder'}
           onPress={responder}
+          deshabilitado={ocupado}
           grande={g}
         />
       )}
@@ -222,7 +306,7 @@ export default function Ejercicio() {
   );
 
   const tutor = (
-    <GloboOctavio mensaje={mensaje} grande={g}>
+    <GloboOctavio mensaje={ocupado ? 'Octavio está pensando…' : mensaje} grande={g}>
       {estado === 'guiada' && (
         <View className="flex-row justify-end">
           <BotonAccion
@@ -238,27 +322,28 @@ export default function Ejercicio() {
 
   const acciones = estado === 'respondiendo' && (
     <View className="flex-row flex-wrap justify-center gap-2">
-      {fallos >= FALLOS_PARA_RESOLVER_JUNTOS && (
+      {ofreceJuntos && (
         <BotonAccion
           texto="🤝 ¿Lo resolvemos juntos?"
           onPress={resolverJuntos}
+          deshabilitado={ocupado}
           destacado
           grande={g}
         />
       )}
       <BotonAccion
-        texto={`💡 Pista (quedan ${MAX_PISTAS - pistasUsadas})`}
+        texto={`💡 Pista (quedan ${pistasRestantes})`}
         onPress={pedirPista}
-        deshabilitado={pistasUsadas >= MAX_PISTAS}
+        deshabilitado={pistasRestantes === 0 || ocupado}
         grande={g}
       />
       <BotonAccion
         texto="🤔 No entiendo"
         onPress={noEntiendo}
-        deshabilitado={!puedeNoEntiendo}
+        deshabilitado={!puedeNoEntiendo || ocupado}
         grande={g}
       />
-      <BotonAccion texto="↻ Otro ejercicio" onPress={otroEjercicio} grande={g} />
+      <BotonAccion texto="↻ Otro ejercicio" onPress={servir} deshabilitado={ocupado} grande={g} />
     </View>
   );
 
@@ -299,5 +384,13 @@ export default function Ejercicio() {
         </ScrollView>
       )}
     </SafeAreaView>
+  );
+}
+
+export default function Ejercicio() {
+  return (
+    <Protegida rol="estudiante">
+      <PantallaEjercicio />
+    </Protegida>
   );
 }

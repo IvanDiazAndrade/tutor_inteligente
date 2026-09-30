@@ -102,3 +102,45 @@ class SesionPractica(Esquema):
     id: uuid.UUID
     inicio: datetime
     fin: datetime | None
+
+
+# Ejercicios (CU-3, CU-4, CU-11, CU-13) ----------------------------------------------------
+
+
+class EjercicioParaEstudiante(Esquema):
+    """Lo único que viaja a la app: sin respuesta final ni solución (RF-D3, AD-1)."""
+
+    servido_id: uuid.UUID
+    unidad_id: str
+    unidad_descripcion: str
+    nivel: int
+    enunciado: str
+    representacion: dict | None
+    formato_respuesta: Literal["numerico", "fraccion", "ordenar", "comparar"]
+    pistas_restantes: int
+
+
+class RespuestaEstudiante(Esquema):
+    respuesta: str = Field(min_length=1, max_length=100)
+    tiempo_segundos: int = Field(ge=0, le=24 * 60 * 60)
+
+
+class RespuestaTutor(Esquema):
+    resultado: Literal["correcta", "incorrecta", "formato_invalido"]
+    mensaje: str
+    puntos: int
+    pistas_restantes: int
+    ofrece_resolver_juntos: bool
+    cambio_nivel: Literal["sube", "baja"] | None
+    degradado: bool  # True mientras el tutor responda con mensajes locales (sin LLM)
+
+
+class PistaTutor(Esquema):
+    numero: int
+    mensaje: str
+    pistas_restantes: int
+
+
+class ExplicacionGuiada(Esquema):
+    pasos: list[str]
+    analogo: EjercicioParaEstudiante | None

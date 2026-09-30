@@ -79,7 +79,31 @@ export const api = {
   perfilEstudiante: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/estudiante/perfil', { token }),
   unidades: (token: string) => pedir<UnidadEstudiante[]>('GET', '/estudiante/unidades', { token }),
+
+  // Ejercicio (F1, F2, F3 y RF-P7). La app nunca recibe la respuesta ni la solución.
+  servirEjercicio: (token: string, unidadId: string) =>
+    pedir<EjercicioServido>('POST', `/estudiante/unidades/${unidadId}/ejercicio`, { token }),
+  responder: (token: string, servidoId: string, respuesta: string, tiempoSegundos: number) =>
+    pedir<RespuestaTutor>('POST', `/estudiante/servidos/${servidoId}/respuestas`, {
+      token,
+      cuerpo: { respuesta, tiempoSegundos },
+    }),
+  pedirPista: (token: string, servidoId: string) =>
+    pedir<Esquemas['PistaTutor']>('POST', `/estudiante/servidos/${servidoId}/pistas`, { token }),
+  noEntiendo: (token: string, servidoId: string) =>
+    pedir<{ mensaje: string }>('POST', `/estudiante/servidos/${servidoId}/no-entiendo`, {
+      token,
+    }),
+  resolverJuntos: (token: string, servidoId: string) =>
+    pedir<Esquemas['ExplicacionGuiada']>(
+      'POST',
+      `/estudiante/servidos/${servidoId}/resolver-juntos`,
+      { token },
+    ),
 };
+
+export type EjercicioServido = Esquemas['EjercicioParaEstudiante'];
+export type RespuestaTutor = Esquemas['RespuestaTutor'];
 
 // Compatibilidad con la pantalla de diagnóstico (tarea 36).
 export const obtenerSalud = api.salud;

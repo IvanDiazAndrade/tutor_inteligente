@@ -1,6 +1,6 @@
 // Datos de ejemplo del prototipo (tarea 42), sintéticos (RNF-S4). Desde la tarea 50 el acceso,
-// la home y el perfil usan la API; esto queda solo para el panel del apoderado (tarea 65) y
-// los puntos iniciales del ejercicio (tareas 56-61).
+// la home, el perfil y el ejercicio usan la API; esto queda solo para el panel del apoderado
+// (tarea 65).
 import type { Dominio, Unidad } from '@/modelo/progreso';
 
 // Estudiante de ejemplo para los indicadores del panel del apoderado (hasta la tarea 65).
@@ -139,5 +139,3 @@ export const DOMINIOS_EJEMPLO: Dominio[] = [
   { unidadId: '5B-OA7', indice: 0.64, fechaUltimoIntento: haceDias(25) },
   { unidadId: '5B-OA9', indice: 0.32, fechaUltimoIntento: haceDias(1) },
 ];
-
-export const PUNTOS_EJEMPLO = 1250;
