@@ -1,8 +1,9 @@
 """Servir y resolver ejercicios: flujos F1, F2, F3 y RF-P7 (docs/diagramas_secuencia.md).
 
-Reúne el banco (F1), el corrector (AD-2), el motor adaptativo y la gamificación. Los mensajes
-del tutor son por ahora los locales (tutor/mensajes.py); el LLM se agrega en las tareas 55 y 59
-sin cambiar este flujo.
+Reúne el banco (F1), el corrector (AD-2), el motor adaptativo y la gamificación. El LLM solo
+redacta: la corrección, los puntos y el índice ya están decididos antes de llamarlo. Todo texto
+del LLM pasa por los filtros deterministas (§6 de modelo_pedagogico.md) antes de personalizarse
+con el alias; si falta la clave, falla o se filtra, se usa el mensaje local (F6).
 """
 
 import uuid
@@ -20,16 +21,19 @@ from tutor.esquemas import (
     PistaTutor,
     RespuestaTutor,
 )
+from tutor.llm.adaptador import AdaptadorLLM, ContextoEjercicio, ContextoError, ContextoPista
 from tutor.modelos import (
     DominioOA,
     Ejercicio,
     EjercicioServido,
     Estudiante,
+    EventoFiltro,
     Intento,
     Sesion,
     Unidad,
 )
 from tutor.motor import ESTADO_INICIAL, EstadoMotor, registrar_intento
+from tutor.progreso import banda
 
 
 class NoEncontrado(Exception):
@@ -48,6 +52,41 @@ def puntos_por(nivel: int, pistas: int) -> int:
     """Puntos provisorios (RF-G1): 10 por nivel, con el mismo descuento por pista que el índice
     (−15 % por pista, piso 40 %). La fórmula definitiva se fija con la gamificación (tarea 64)."""
     return round(10 * nivel * max(0.4, 1 - 0.15 * pistas))
+
+
+# LLM: contexto y filtros --------------------------------------------------------------------
+
+
+def _contexto(sesion: Session, estudiante: Estudiante, ejercicio: Ejercicio) -> dict:
+    """Solo contenido matemático y variables pedagógicas: nada que identifique al niño."""
+    dominio = _dominio(sesion, estudiante, ejercicio.unidad_id)
+    return dict(
+        curso=sesion.get(Unidad, ejercicio.unidad_id).curso,
+        enunciado=ejercicio.enunciado,
+        solucion=list(ejercicio.solucion_referencia),
+        banda=banda(dominio.indice),
+        racha=dominio.racha_correctas,
+    )
+
+
+def _filtro(sesion: Session, servido: EjercicioServido, operacion: str, rechaza):
+    """Filtro para el adaptador: lo rechazado se registra (evento_filtro) y no se muestra."""
+
+    def aceptable(texto: str) -> bool:
+        if rechaza(texto):
+            sesion.add(
+                EventoFiltro(
+                    ejercicio_servido_id=servido.id, operacion=operacion, texto_bloqueado=texto
+                )
+            )
+            return False
+        return True
+
+    return aceptable
+
+
+def _habilitado(adaptador: AdaptadorLLM | None) -> bool:
+    return adaptador is not None and adaptador.habilitado
 
 
 # Servir (F1) -----------------------------------------------------------------------------
@@ -177,6 +216,7 @@ def responder(
     servido_id: uuid.UUID,
     respuesta: str,
     tiempo_segundos: int,
+    adaptador: AdaptadorLLM | None = None,
 ) -> RespuestaTutor:
     ajustes = get_settings()
     servido = _servido_en_curso(sesion, estudiante, servido_id)
@@ -192,7 +232,7 @@ def responder(
             pistas_restantes=restantes,
             ofrece_resolver_juntos=servido.fallos >= ajustes.fallos_para_resolver_juntos,
             cambio_nivel=None,
-            degradado=True,
+            degradado=not _habilitado(adaptador),
         )
 
     ahora = datetime.now(UTC)
@@ -231,6 +271,8 @@ def responder(
     dominio.fecha_ultimo_intento = ahora
 
     if correcta:
+        # El refuerzo es siempre local: la ruta correcta no gasta tokens (§3).
+        degradado = not _habilitado(adaptador)
         servido.estado = "resuelto"
         servido.terminado_en = ahora
         estudiante.puntaje_total += puntos
@@ -242,9 +284,29 @@ def responder(
         mensaje += f" Ganaste {puntos} puntos."
     else:
         servido.fallos += 1
-        mensaje = mensajes.error_local(
-            resultado.error_comun, ejercicio.solucion_referencia, ejercicio.respuesta_final
-        )
+        mensaje = None
+        if _habilitado(adaptador):
+            ctx = ContextoError(
+                **_contexto(sesion, estudiante, ejercicio),
+                # Solo llega aquí una respuesta que el corrector leyó como número o fracción.
+                respuesta_estudiante=respuesta.strip(),
+                causa=resultado.error_comun["causa"] if resultado.error_comun else None,
+                pistas_vistas=servido.pistas_usadas,
+                fallos=servido.fallos,
+            )
+            aceptable = _filtro(
+                sesion,
+                servido,
+                "generarRetroalimentacion",
+                lambda t: mensajes.revela(t, ejercicio.respuesta_final),
+            )
+            mensaje = adaptador.retroalimentacion(sesion, ctx, servido.sesion_id, aceptable)
+        degradado = mensaje is None
+        if mensaje is None:
+            mensaje = mensajes.error_local(
+                resultado.error_comun, ejercicio.solucion_referencia, ejercicio.respuesta_final
+            )
+        mensaje = mensajes.personalizar(mensaje, estudiante.alias)
     sesion.commit()
     return RespuestaTutor(
         resultado=resultado.estado,
@@ -255,14 +317,52 @@ def responder(
             not correcta and servido.fallos >= ajustes.fallos_para_resolver_juntos
         ),
         cambio_nivel=cambio,
-        degradado=True,
+        degradado=degradado,
     )
 
 
 # Pistas (F3) y "No entiendo" ---------------------------------------------------------------
 
 
-def pedir_pista(sesion: Session, estudiante: Estudiante, servido_id: uuid.UUID) -> PistaTutor:
+def _pista_llm(
+    sesion: Session,
+    estudiante: Estudiante,
+    servido: EjercicioServido,
+    ejercicio: Ejercicio,
+    adaptador: AdaptadorLLM | None,
+    numero: int,
+    simplificar: bool,
+) -> str | None:
+    """Reformula la pista `numero` del banco. Sin números nuevos (no adelanta pasos) y sin
+    revelar la respuesta; si no pasa, None y se usa la pista del banco."""
+    if not _habilitado(adaptador):
+        return None
+    vistas = ejercicio.pistas[:numero]
+    ctx = ContextoPista(
+        **_contexto(sesion, estudiante, ejercicio),
+        pista=ejercicio.pistas[numero - 1],
+        numero=numero,
+        pistas_anteriores=list(vistas[:-1]),
+        simplificar=simplificar,
+    )
+    permitido = " ".join([ejercicio.enunciado, *vistas])
+    aceptable = _filtro(
+        sesion,
+        servido,
+        "generarPista",
+        lambda t: (
+            mensajes.revela(t, ejercicio.respuesta_final) or mensajes.numeros_nuevos(t, permitido)
+        ),
+    )
+    return adaptador.pista(sesion, ctx, servido.sesion_id, aceptable)
+
+
+def pedir_pista(
+    sesion: Session,
+    estudiante: Estudiante,
+    servido_id: uuid.UUID,
+    adaptador: AdaptadorLLM | None = None,
+) -> PistaTutor:
     ajustes = get_settings()
     servido = _servido_en_curso(sesion, estudiante, servido_id)
     if servido.pistas_usadas >= ajustes.max_pistas:
@@ -270,7 +370,10 @@ def pedir_pista(sesion: Session, estudiante: Estudiante, servido_id: uuid.UUID) 
     ejercicio = sesion.get(Ejercicio, servido.ejercicio_id)
     servido.pistas_usadas += 1  # el descuento se aplica al responder (RF-G1, §1 del modelo)
     numero = servido.pistas_usadas
-    texto = mensajes.sin_revelar(ejercicio.pistas[numero - 1], ejercicio.respuesta_final)
+    texto = _pista_llm(sesion, estudiante, servido, ejercicio, adaptador, numero, False)
+    if texto is None:
+        texto = mensajes.sin_revelar(ejercicio.pistas[numero - 1], ejercicio.respuesta_final)
+    texto = mensajes.personalizar(texto, estudiante.alias)
     sesion.commit()
     return PistaTutor(
         numero=numero,
@@ -279,18 +382,32 @@ def pedir_pista(sesion: Session, estudiante: Estudiante, servido_id: uuid.UUID) 
     )
 
 
-def no_entiendo(sesion: Session, estudiante: Estudiante, servido_id: uuid.UUID) -> str:
-    """Re-explicación: no descuenta (pedir aclaración no es pedir ayuda extra)."""
+def no_entiendo(
+    sesion: Session,
+    estudiante: Estudiante,
+    servido_id: uuid.UUID,
+    adaptador: AdaptadorLLM | None = None,
+) -> str:
+    """Re-explicación: no descuenta (pedir aclaración no es pedir ayuda extra). Explica más
+    simple la última pista vista (o la estrategia, si aún no pidió pistas), sin avanzar."""
     servido = _servido_en_curso(sesion, estudiante, servido_id)
     ejercicio = sesion.get(Ejercicio, servido.ejercicio_id)
-    return mensajes.reexplicacion_local(ejercicio.pistas, ejercicio.respuesta_final)
+    numero = max(servido.pistas_usadas, 1)
+    texto = _pista_llm(sesion, estudiante, servido, ejercicio, adaptador, numero, True)
+    if texto is None:
+        texto = mensajes.reexplicacion_local(ejercicio.pistas, ejercicio.respuesta_final)
+    sesion.commit()  # registros de llamada_llm y evento_filtro
+    return mensajes.personalizar(texto, estudiante.alias)
 
 
 # Resolvamos juntos (RF-P7) -----------------------------------------------------------------
 
 
 def resolver_juntos(
-    sesion: Session, estudiante: Estudiante, servido_id: uuid.UUID
+    sesion: Session,
+    estudiante: Estudiante,
+    servido_id: uuid.UUID,
+    adaptador: AdaptadorLLM | None = None,
 ) -> ExplicacionGuiada:
     """Tras N fallos: se narra la solución del ejercicio original (ahí sí puede verse su
     respuesta) y se sirve un análogo de la misma celda, que cuenta como intento normal. El
@@ -300,6 +417,21 @@ def resolver_juntos(
     if servido.fallos < ajustes.fallos_para_resolver_juntos:
         raise NoPermitido("Primero intenta resolverlo.")
     ejercicio = sesion.get(Ejercicio, servido.ejercicio_id)
+    pasos = None
+    if _habilitado(adaptador):
+        # La narración puede mostrar la respuesta, pero no inventar ni cambiar números.
+        permitido = " ".join([ejercicio.enunciado, *ejercicio.solucion_referencia])
+        aceptable = _filtro(
+            sesion,
+            servido,
+            "narrarExplicacionGuiada",
+            lambda t: mensajes.numeros_nuevos(t, permitido),
+        )
+        ctx = ContextoEjercicio(**_contexto(sesion, estudiante, ejercicio))
+        pasos = adaptador.explicacion_guiada(sesion, ctx, servido.sesion_id, aceptable)
+    if pasos is None:
+        pasos = list(ejercicio.solucion_referencia)
+    pasos = [mensajes.personalizar(paso, estudiante.alias) for paso in pasos]
     servido.estado = "explicado"
     servido.terminado_en = datetime.now(UTC)
 
@@ -321,4 +453,4 @@ def resolver_juntos(
         sesion.flush()
         para_estudiante = _para_estudiante(nuevo, analogo, unidad)
     sesion.commit()
-    return ExplicacionGuiada(pasos=list(ejercicio.solucion_referencia), analogo=para_estudiante)
+    return ExplicacionGuiada(pasos=pasos, analogo=para_estudiante)

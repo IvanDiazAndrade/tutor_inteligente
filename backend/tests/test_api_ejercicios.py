@@ -1,13 +1,9 @@
 """Flujo del ejercicio de punta a punta: F1, F2, F3 y resolvamos juntos."""
 
-import random
 import uuid
 from decimal import Decimal
 
-import pytest
-
-from tutor.catalogo import RUTA_POR_DEFECTO, cargar_catalogo, leer_catalogo
-from tutor.dominio.banco import aprobar_plantilla, registrar_plantillas, reponer_parametricos
+from tests.conftest import UNIDAD
 from tutor.modelos import (
     Apoderado,
     DominioOA,
@@ -17,30 +13,6 @@ from tutor.modelos import (
     Intento,
 )
 from tutor.seguridad import crear_token
-
-UNIDAD = "5B-OA4"  # división con resto: respuesta numérica
-
-
-@pytest.fixture
-def estudiante(sesion) -> Estudiante:
-    cargar_catalogo(sesion, leer_catalogo(RUTA_POR_DEFECTO))
-    registrar_plantillas(sesion)
-    aprobar_plantilla(sesion, "5B-OA4-div-resto", revisor="Pruebas")
-    reponer_parametricos(sesion, random.Random(11))
-    estudiante = Estudiante(
-        apoderado=Apoderado(email="e@ejemplo.cl", password_hash="x"),
-        alias="Vale",
-        curso=5,
-        pin_hash="x",
-    )
-    sesion.add(estudiante)
-    sesion.commit()
-    return estudiante
-
-
-@pytest.fixture
-def cabecera(estudiante) -> dict[str, str]:
-    return {"Authorization": f"Bearer {crear_token(estudiante.id, 'estudiante')}"}
 
 
 def _servir(cliente, cabecera, unidad=UNIDAD):

@@ -2,6 +2,7 @@
 
 from decimal import Decimal
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,9 +33,25 @@ class Settings(BaseSettings):
     # Política de intentos (modelo_pedagogico.md §5; RF-P7).
     max_pistas: int = 3
     fallos_para_resolver_juntos: int = 3
+    # LLM (estrategia_llm.md). Sin OPENAI_API_KEY el tutor funciona con sus mensajes locales
+    # (modo degradado F6), así que la app se puede usar y probar sin clave.
     openai_api_key: SecretStr = SecretStr("")
+    # Fijar aquí el snapshot exacto al configurar la cuenta (estrategia_llm.md §2).
     llm_modelo: str = "gpt-5.4-nano"
+    llm_timeout_segundos: float = 8.0  # deja margen dentro del ≤ 10 s p90 de RNF-R1
+    llm_reintentos: int = 2  # solo ante errores transitorios (timeout, 429, 5xx)
+    llm_fallos_para_corte: int = 5  # circuit breaker: fallos seguidos antes de cortar
+    llm_segundos_de_corte: int = 60
+    # Algunos modelos de razonamiento no aceptan temperatura: en ese caso, False.
+    llm_usar_temperatura: bool = True
+    # Tope mensual de gasto (stack_tecnologico.md §4): alerta al 80 %, corte al 100 %.
     llm_tope_usd: Decimal = Decimal("5")
+    llm_alerta_fraccion: Decimal = Decimal("0.8")
+    # Precios de referencia por millón de tokens: verificar en la página oficial de OpenAI.
+    llm_precio_entrada_usd_mtok: Decimal = Decimal("0.20")
+    llm_precio_salida_usd_mtok: Decimal = Decimal("1.25")
+    # Carpeta de las plantillas de prompts (RNF-M1: editables sin recompilar).
+    prompts_dir: str = str(Path(__file__).resolve().parents[2] / "prompts")
 
 
 @lru_cache

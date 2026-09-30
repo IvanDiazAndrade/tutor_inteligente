@@ -1,14 +1,16 @@
 """Mensajes locales del tutor, sin LLM (modelo_pedagogico.md §3 y §7).
 
 El refuerzo de una respuesta correcta siempre es local (la ruta correcta no llama al LLM).
-La retroalimentación de error y la re-explicación usan aquí su versión de respaldo, la misma
-que se usa cuando el LLM no está disponible (F6); el LLM se conecta en las tareas 55 y 59.
-Todo texto dirigido al estudiante pasa por `sin_revelar` antes de salir (§6).
+La retroalimentación de error, las pistas y la re-explicación tienen aquí su versión local,
+la que se usa cuando el LLM no está disponible o su texto no pasa los filtros (F6).
+Todo texto dirigido al estudiante pasa por el filtro de no revelación antes de salir (§6).
 """
 
 import random
+import re
 from typing import Any
 
+from tutor.dominio.corrector import FormatoInvalido, fraccion, numero
 from tutor.dominio.plantillas import menciona
 
 REFUERZOS = [
@@ -51,9 +53,60 @@ def reexplicacion_local(pistas: list[str], respuesta: str) -> str:
 
 RESPALDO = "Revisa tu procedimiento paso a paso. ¡Tú puedes!"
 
+# Números, fracciones y números mixtos que aparecen en un texto ("1 1/2", "6/8", "0,75", "12.500").
+_CANTIDADES = re.compile(r"\d+\s+\d+\s*/\s*\d+|\d+\s*/\s*\d+|\d+(?:[.,]\d+)*")
+
+
+def revela(texto: str, respuesta: str) -> bool:
+    """¿El texto contiene la respuesta final, literal o en una forma equivalente aceptada?
+
+    Si la respuesta es una fracción se comparan las fracciones y los decimales del texto (6/8 y
+    0,75 revelan 3/4), pero no los enteros sueltos, que suelen ser operandos ("Suma 1 + 3").
+    Si es un número, cualquier número de igual valor.
+    Las respuestas en palabras ("tres cuartos") se agregan con el filtro completo (tarea 66).
+    """
+    if menciona(texto, respuesta):
+        return True
+    es_fraccion = "/" in respuesta
+    try:
+        esperado = fraccion(respuesta) if es_fraccion else numero(respuesta)
+    except FormatoInvalido:
+        return False
+    for cantidad in _CANTIDADES.findall(texto):
+        if es_fraccion and re.fullmatch(r"\d+", cantidad):
+            continue  # en respuestas fraccionarias, un entero suelto suele ser un operando
+        try:
+            valor = fraccion(cantidad) if "/" in cantidad else numero(cantidad, respuesta)
+        except FormatoInvalido:
+            continue
+        if valor == esperado:
+            return True
+    return False
+
+
+def _valores(texto: str) -> set:
+    valores = set()
+    for cantidad in _CANTIDADES.findall(texto):
+        try:
+            valores.add(fraccion(cantidad) if "/" in cantidad else numero(cantidad))
+        except FormatoInvalido:
+            continue
+    return valores
+
+
+def numeros_nuevos(texto: str, permitido: str) -> bool:
+    """¿El texto trae números que no están en `permitido`? Una pista reformulada o una
+    narración que inventa números puede adelantar pasos o cambiar la solución verificada."""
+    return not _valores(texto) <= _valores(permitido)
+
 
 def sin_revelar(texto: str, respuesta: str) -> str:
-    """Filtro de no revelación (§6, capa determinista): si el texto nombra la respuesta final,
-    se reemplaza por un mensaje seguro. La versión completa (equivalentes y palabras) llega
-    con el orquestador y el LLM (tareas 59 y 66)."""
-    return RESPALDO if menciona(texto, respuesta) else texto
+    """Filtro de no revelación (§6, capa determinista): si el texto revela la respuesta final,
+    se reemplaza por un mensaje seguro."""
+    return RESPALDO if revela(texto, respuesta) else texto
+
+
+def personalizar(texto: str, alias: str) -> str:
+    """El LLM escribe {nombre}; el alias se inserta aquí, en el servidor y después del filtro,
+    así nunca viaja al proveedor (estrategia_llm.md §4)."""
+    return texto.replace("{nombre}", alias)

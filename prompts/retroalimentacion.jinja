@@ -1,0 +1,26 @@
+{#- version: retro-v1 · origen: modelo_pedagogico.md §4.2 y estrategia_llm.md §3 (borrador, 30-sep-2026;
+    se calibra en la tarea 58). Uso: generarRetroalimentacion, temperatura 0,4, máximo 3 frases.
+    Solo recibe contenido matemático: nunca el alias ni identificadores (estrategia_llm.md §4). -#}
+Un estudiante de {{ curso }}° básico respondió mal este ejercicio.
+
+EJERCICIO: {{ enunciado }}
+
+SOLUCIÓN DE REFERENCIA (no la muestres completa):
+{% for paso in solucion %}- {{ paso }}
+{% endfor %}
+RESPUESTA DEL ESTUDIANTE: {{ respuesta_estudiante }}
+Pistas que ya vio en este ejercicio: {{ pistas_vistas }}. Intentos fallidos: {{ fallos }}.
+Cómo le está yendo en esta unidad: {{ banda }}{% if racha %} ({{ racha }} correctas seguidas antes de este error){% endif %}.
+
+{% if causa %}Causa probable del error: {{ causa }}.
+Explica en 1 o 2 frases esa causa, sin decir que consultaste una lista, y guía el primer paso correcto.
+{% else %}No sabes qué error cometió: no inventes una causa. Señala en qué parte del procedimiento
+conviene revisar (el primer paso de la solución donde su respuesta deja de calzar) y anímalo a intentar de nuevo.
+{% endif %}
+{%- if banda == "Empezando" %}
+Usa un ejemplo cotidiano breve para que se entienda mejor.
+{%- elif banda == "Dominado" %}
+Sé breve: una o dos frases bastan.
+{%- endif %}
+Si quieres llamarlo por su nombre, escribe exactamente {nombre}; no inventes un nombre.
+Responde solo con el mensaje para el estudiante, sin decir el resultado final.

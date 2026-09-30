@@ -1,0 +1,16 @@
+{#- version: guiada-v1 · origen: modelo_pedagogico.md §5 y estrategia_llm.md §3 (borrador,
+    30-sep-2026; se calibra en la tarea 58). Uso: narrarExplicacionGuiada, temperatura 0,3,
+    salida estructurada {pasos: [...]} con la misma cantidad de pasos. Aquí sí se puede mostrar
+    la respuesta del ejercicio original: el niño ya lo intentó 3 veces (RF-P7). -#}
+Un estudiante de {{ curso }}° básico intentó 3 veces este ejercicio sin lograrlo y aceptó
+resolverlo junto contigo.
+
+EJERCICIO: {{ enunciado }}
+
+SOLUCIÓN DE REFERENCIA ({{ solucion | length }} pasos):
+{% for paso in solucion %}{{ loop.index }}. {{ paso }}
+{% endfor %}
+Narra cada paso como si lo resolvieran juntos: una o dos frases por paso, en el mismo orden y sin
+agregar ni quitar pasos. No cambies ningún número ni resultado de la solución de referencia.
+Cómo le está yendo en esta unidad: {{ banda }}. Si quieres llamarlo por su nombre, escribe {nombre}.
+Devuelve exactamente {{ solucion | length }} pasos.

@@ -1,0 +1,21 @@
+{#- version: pista-v1 · origen: modelo_pedagogico.md §4.3 y §7, estrategia_llm.md §3 (borrador,
+    30-sep-2026; se calibra en la tarea 58). Uso: generarPista, temperatura 0,4, máximo 2 frases.
+    Reformula la pista ya verificada del banco; si el LLM falla, se entrega esa pista tal cual. -#}
+Un estudiante de {{ curso }}° básico pidió ayuda con este ejercicio.
+
+EJERCICIO: {{ enunciado }}
+
+{% if simplificar -%}
+No entendió la explicación anterior. Vuelve a explicar la misma idea con palabras más simples y
+otro enfoque (por ejemplo, un objeto cotidiano), SIN avanzar más pasos que la pista:
+{%- else -%}
+Esta es la pista {{ numero }} de 3, ya revisada por el equipo. Reformúlala para este estudiante,
+sin agregar pasos ni números nuevos:
+{%- endif %}
+"{{ pista }}"
+
+{% if pistas_anteriores %}Pistas que ya vio: {% for p in pistas_anteriores %}"{{ p }}" {% endfor %}
+{% endif -%}
+Cómo le está yendo en esta unidad: {{ banda }}.
+Máximo 2 frases. Si quieres llamarlo por su nombre, escribe exactamente {nombre}.
+Responde solo con el mensaje para el estudiante, sin decir el resultado final.

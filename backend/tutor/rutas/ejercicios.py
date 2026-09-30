@@ -2,8 +2,9 @@
 (docs/diagramas_secuencia.md §1 y §3-6)."""
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from tutor import ejercicios
@@ -14,7 +15,11 @@ from tutor.esquemas import (
     RespuestaEstudiante,
     RespuestaTutor,
 )
+from tutor.llm.adaptador import AdaptadorLLM, get_adaptador
 from tutor.seguridad import EstudianteActual, SesionBD
+
+# Sin OPENAI_API_KEY el adaptador existe pero sin proveedor: todo responde en modo local.
+LLM = Annotated[AdaptadorLLM, Depends(get_adaptador)]
 
 router = APIRouter(prefix="/estudiante", tags=["ejercicios"])
 
@@ -53,34 +58,37 @@ def responder(
     datos: RespuestaEstudiante,
     estudiante: EstudianteActual,
     sesion: SesionBD,
+    llm: LLM,
 ):
     try:
         return ejercicios.responder(
-            sesion, estudiante, servido_id, datos.respuesta, datos.tiempo_segundos
+            sesion, estudiante, servido_id, datos.respuesta, datos.tiempo_segundos, llm
         )
     except ERRORES as error:
         raise _http(error) from error
 
 
 @router.post("/servidos/{servido_id}/pistas", response_model=PistaTutor)
-def pedir_pista(servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD):
+def pedir_pista(servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD, llm: LLM):
     try:
-        return ejercicios.pedir_pista(sesion, estudiante, servido_id)
+        return ejercicios.pedir_pista(sesion, estudiante, servido_id, llm)
     except ERRORES as error:
         raise _http(error) from error
 
 
 @router.post("/servidos/{servido_id}/no-entiendo", response_model=Mensaje)
-def no_entiendo(servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD):
+def no_entiendo(servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD, llm: LLM):
     try:
-        return Mensaje(mensaje=ejercicios.no_entiendo(sesion, estudiante, servido_id))
+        return Mensaje(mensaje=ejercicios.no_entiendo(sesion, estudiante, servido_id, llm))
     except ERRORES as error:
         raise _http(error) from error
 
 
 @router.post("/servidos/{servido_id}/resolver-juntos", response_model=ExplicacionGuiada)
-def resolver_juntos(servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD):
+def resolver_juntos(
+    servido_id: uuid.UUID, estudiante: EstudianteActual, sesion: SesionBD, llm: LLM
+):
     try:
-        return ejercicios.resolver_juntos(sesion, estudiante, servido_id)
+        return ejercicios.resolver_juntos(sesion, estudiante, servido_id, llm)
     except ERRORES as error:
         raise _http(error) from error
