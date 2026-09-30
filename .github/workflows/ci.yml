@@ -1,0 +1,62 @@
+# Integración continua (stack_tecnologico.md §2: GitHub Actions filtrado por carpeta).
+# Backend: estilo (ruff) y pruebas (pytest) contra un PostgreSQL 16 real.
+# App: tipos (TypeScript), ESLint y formato (Prettier).
+# Las pruebas nunca llaman al LLM: la CI no gasta tokens (diagrama_despliegue.md §4).
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", "app/**", ".github/workflows/ci.yml"]
+  pull_request:
+    paths: ["backend/**", "app/**", ".github/workflows/ci.yml"]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: tutor
+          POSTGRES_PASSWORD: tutor
+          POSTGRES_DB: tutor
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tutor -d tutor"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Estilo
+        run: ruff check . && ruff format --check .
+      - name: Pruebas
+        run: pytest -q
+
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Tipos
+        run: npx tsc --noEmit
+      - name: ESLint
+        run: npx expo lint
+      - name: Formato
+        run: npx prettier --check "src/**/*.{ts,tsx}"

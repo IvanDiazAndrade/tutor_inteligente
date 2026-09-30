@@ -1,0 +1,3 @@
+# Saltos de línea LF en todas las copias, también en Windows: el repositorio ya los guarda así,
+# y Prettier y ruff esperan LF. Los binarios (imágenes) se detectan solos.
+* text=auto eol=lf
