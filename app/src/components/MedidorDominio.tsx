@@ -1,6 +1,8 @@
 import { Text, View } from 'react-native';
 
-import type { Banda } from '@/modelo/progreso';
+import type { Esquemas } from '@/api/cliente';
+
+type Banda = Esquemas['MedidorUnidad']['banda'];
 
 const COLOR_BANDA: Record<Banda, string> = {
   Dominado: 'bg-banda-dominado',

@@ -1,21 +1,19 @@
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Redirect, router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { api, ErrorApi } from '@/api/cliente';
+import { EstadoConsulta } from '@/components/EstadoConsulta';
 import { GraficoSemanal } from '@/components/GraficoSemanal';
 import { MedidorDominio } from '@/components/MedidorDominio';
 import { Octavio } from '@/components/Octavio';
-import { PISTAS_PROMEDIO_EJEMPLO, type Periodo, RESUMENES_EJEMPLO } from '@/datos/apoderado';
-import { DOMINIOS_EJEMPLO, ESTUDIANTE_EJEMPLO, UNIDADES } from '@/datos/ejemplo';
 import { useDistribucion } from '@/hooks/useDistribucion';
-import { api } from '@/api/cliente';
 import { Protegida } from '@/sesion/Protegida';
 import { useSesion } from '@/sesion/SesionContext';
 import { useConsulta } from '@/sesion/useConsulta';
-import { banda, type Dominio, paraRepasar, type Unidad, unidadSugerida } from '@/modelo/progreso';
 
-const PISTAS_ALTAS = 1.5;
+type Periodo = 'esta' | 'pasada';
 
 const duracion = (minutos: number) => {
   const h = Math.floor(minutos / 60);
@@ -24,57 +22,40 @@ const duracion = (minutos: number) => {
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 };
 
-const minuscula = (texto: string) => texto.charAt(0).toLowerCase() + texto.slice(1);
-
-// Comentario en lenguaje simple por unidad, por reglas (RF-DA5): nada de LLM en el panel (AD-6).
-function comentarioDe(dominio: Dominio, pistas: number, hoy: Date): string {
-  const b = banda(dominio.indice);
-  if (b === 'Dominado') return 'Lo maneja muy bien, ya casi no necesita pistas.';
-  if (pistas >= PISTAS_ALTAS) return 'Le está costando un poco: usa hartas pistas aquí.';
-  if (paraRepasar(dominio, hoy)) return 'Hace más de 3 semanas que no practica este tema.';
-  if (b === 'Practicando') return 'Va avanzando parejo, con práctica regular.';
-  return 'Recién está partiendo con este tema, es normal ir lento.';
-}
-
-// Panel del apoderado (CU-10; mockup "Dashboard Apoderado"): resumen semanal, qué está
-// aprendiendo y sugerencia de la semana. Pocos indicadores y encuadre de avance (RF-DA4, DA6).
-// El nombre del estudiante viene del servidor; los indicadores siguen siendo de ejemplo hasta
-// que el servicio dashboard (F4) esté disponible (tarea 65).
+// Panel del apoderado (CU-10, F4): resumen semanal, qué está aprendiendo y sugerencia de la
+// semana. Pocos indicadores y encuadre de avance (RF-DA4, DA6). Todo viene calculado del
+// servidor por reglas, sin LLM (AD-6): la app solo lo muestra.
 function Panel() {
   const { dosColumnas, esTablet: g } = useDistribucion();
   const [periodo, setPeriodo] = useState<Periodo>('esta');
   const { cerrar } = useSesion();
-  const perfil = useConsulta('estudiante-del-apoderado', api.estudianteDelApoderado);
-  const estudiante = { ...ESTUDIANTE_EJEMPLO, alias: perfil.data?.alias ?? '…' };
-  const resumen = RESUMENES_EJEMPLO[periodo];
+  const consulta = useConsulta('panel-apoderado', api.panelApoderado);
 
-  const { medidores, sugerencia } = useMemo(() => {
-    const hoy = new Date();
-    const dominios = new Map(DOMINIOS_EJEMPLO.map((d) => [d.unidadId, d]));
-    const visibles = UNIDADES.filter((u) => u.curso <= estudiante.curso);
-    const iniciadas = visibles.filter((u) => u.curso === estudiante.curso && dominios.has(u.id));
-    const medidores = iniciadas.map((u) => {
-      const d = dominios.get(u.id)!;
-      return {
-        unidad: u,
-        dominio: d,
-        comentario: comentarioDe(d, PISTAS_PROMEDIO_EJEMPLO[u.id] ?? 0, hoy),
-      };
-    });
-    const sugerida = unidadSugerida(visibles, dominios, hoy, estudiante.curso);
-    const textoSugerencia = (u: Unidad) => {
-      const d = dominios.get(u.id);
-      if (!d) return `Esta semana pueden empezar con ${minuscula(u.ciudadana)}.`;
-      if (paraRepasar(d, hoy)) return `Esta semana conviene repasar ${minuscula(u.ciudadana)}.`;
-      return `Esta semana conviene practicar ${minuscula(u.ciudadana)}.`;
-    };
-    return { medidores, sugerencia: sugerida && textoSugerencia(sugerida) };
-  }, [estudiante.curso]);
+  if (consulta.isPending) {
+    return <EstadoConsulta texto="Octavio está reuniendo el avance…" esTablet={g} />;
+  }
+  if (consulta.error instanceof ErrorApi && consulta.error.estado === 404) {
+    // La cuenta todavía no tiene estudiante: primero se crea su perfil (CU-9).
+    return <Redirect href="/apoderado/perfil" />;
+  }
+  if (consulta.isError) {
+    return (
+      <EstadoConsulta
+        texto={consulta.error.message}
+        esTablet={g}
+        onReintentar={() => consulta.refetch()}
+      />
+    );
+  }
 
+  const panel = consulta.data;
+  const estudiante = { alias: panel.alias };
+  const resumen = periodo === 'esta' ? panel.estaSemana : panel.semanaPasada;
+  const { medidores, sugerencia } = panel;
   const minutos = resumen.minutosPorDia.reduce((a, b) => a + b, 0);
   const dias = resumen.minutosPorDia.filter((m) => m > 0).length;
-  const deCadaDiez = resumen.ejercicios
-    ? Math.round((resumen.correctos / resumen.ejercicios) * 10)
+  const deCadaDiez = resumen.respuestas
+    ? Math.round((resumen.correctas / resumen.respuestas) * 10)
     : 0;
 
   const tituloTarjeta = (texto: string) => (
@@ -135,8 +116,8 @@ function Panel() {
     <View className={`rounded-[20px] bg-white ${g ? 'gap-4 p-6' : 'gap-3 p-4'}`}>
       {tituloTarjeta('Resumen semanal')}
       <View className="flex-row flex-wrap justify-between gap-y-3">
-        {indicador(String(resumen.ejercicios), 'ejercicios resueltos')}
-        {indicador(`${deCadaDiez} de 10`, 'ejercicios correctos')}
+        {indicador(String(resumen.ejercicios), 'ejercicios practicados')}
+        {indicador(resumen.respuestas ? `${deCadaDiez} de 10` : '—', 'respuestas correctas')}
         {indicador(duracion(minutos), 'de práctica')}
         {indicador(
           `${dias} ${dias === 1 ? 'día' : 'días'}`,
@@ -152,13 +133,18 @@ function Panel() {
   const tarjetaAprendiendo = (
     <View className={`rounded-[20px] bg-white ${g ? 'gap-5 p-6' : 'gap-3.5 p-4'}`}>
       {tituloTarjeta('Qué está aprendiendo')}
-      {medidores.map(({ unidad, dominio, comentario }) => (
+      {medidores.length === 0 && (
+        <Text className={`font-nunito-bold text-apagado-oscuro ${g ? 'text-base' : 'text-[13px]'}`}>
+          Cuando {estudiante.alias} practique, aquí verás cómo avanza en cada tema.
+        </Text>
+      )}
+      {medidores.map((m) => (
         <MedidorDominio
-          key={unidad.id}
-          descripcion={unidad.ciudadana}
-          indice={dominio.indice}
-          banda={banda(dominio.indice)}
-          comentario={comentario}
+          key={m.unidadId}
+          descripcion={m.descripcion}
+          indice={m.indice}
+          banda={m.banda}
+          comentario={m.comentario}
           grande={g}
         />
       ))}
@@ -215,11 +201,6 @@ function Panel() {
         }`}
       >
         {encabezado}
-        <View className="rounded-xl border-[1.5px] border-ambar-borde bg-ambar-fondo px-3 py-2">
-          <Text className={`font-nunito-bold text-ambar ${g ? 'text-base' : 'text-xs'}`}>
-            Vista previa: los indicadores son de ejemplo hasta conectar el panel (tarea 65).
-          </Text>
-        </View>
         {dosColumnas ? (
           <View className={`flex-row items-start ${g ? 'gap-5' : 'gap-3'}`}>
             <View className={`flex-1 ${g ? 'gap-5' : 'gap-3'}`}>

@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     motor_racha_subir: int = 3
     motor_descuento_pista: Decimal = Decimal("0.15")
     motor_piso_con_pistas: Decimal = Decimal("0.4")
+    # Panel del apoderado: semanas de lunes a domingo en hora de Chile.
+    zona_horaria: str = "America/Santiago"
     # Política de intentos (modelo_pedagogico.md §5; RF-P7).
     max_pistas: int = 3
     fallos_para_resolver_juntos: int = 3

@@ -144,3 +144,31 @@ class PistaTutor(Esquema):
 class ExplicacionGuiada(Esquema):
     pasos: list[str]
     analogo: EjercicioParaEstudiante | None
+
+
+# Panel del apoderado (F4) ------------------------------------------------------------------
+
+
+class ResumenSemana(Esquema):
+    ejercicios: int  # ejercicios distintos que respondió
+    respuestas: int
+    correctas: int
+    minutos_por_dia: list[int] = Field(min_length=7, max_length=7)  # lunes a domingo
+
+
+class MedidorUnidad(Esquema):
+    unidad_id: str
+    descripcion: str  # descripción ciudadana del OA (RF-DA2)
+    indice: float
+    banda: Literal["Empezando", "Practicando", "Dominado"]
+    comentario: str
+    necesita_apoyo: bool  # unidad con más errores o pistas (RF-DA3)
+
+
+class PanelApoderado(Esquema):
+    alias: str
+    curso: int
+    esta_semana: ResumenSemana
+    semana_pasada: ResumenSemana
+    medidores: list[MedidorUnidad]
+    sugerencia: str | None

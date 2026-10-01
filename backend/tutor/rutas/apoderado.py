@@ -1,8 +1,9 @@
-"""Gestión del perfil del estudiante por su apoderado (CU-9; RF-A1, A4, A5)."""
+"""Rutas del apoderado: perfil del estudiante (CU-9; RF-A1, A4, A5) y panel (CU-10)."""
 
 from fastapi import APIRouter, HTTPException, status
 
-from tutor.esquemas import EstudianteCambios, EstudianteNuevo, PerfilEstudiante
+from tutor import dashboard
+from tutor.esquemas import EstudianteCambios, EstudianteNuevo, PanelApoderado, PerfilEstudiante
 from tutor.modelos import Estudiante
 from tutor.seguridad import ApoderadoActual, SesionBD, hashear
 
@@ -31,6 +32,14 @@ def ver_estudiante(apoderado: ApoderadoActual) -> Estudiante:
     if apoderado.estudiante is None:
         raise SIN_PERFIL
     return apoderado.estudiante
+
+
+@router.get("/dashboard", response_model=PanelApoderado)
+def ver_dashboard(apoderado: ApoderadoActual, sesion: SesionBD) -> PanelApoderado:
+    """Panel de progreso (CU-10, F4): agregación determinista, sin LLM."""
+    if apoderado.estudiante is None:
+        raise SIN_PERFIL
+    return dashboard.panel(sesion, apoderado.estudiante)
 
 
 @router.patch("/estudiante", response_model=PerfilEstudiante)

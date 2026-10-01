@@ -7,6 +7,7 @@ export type Esquemas = components['schemas'];
 export type PerfilEstudiante = Esquemas['PerfilEstudiante'];
 export type UnidadEstudiante = Esquemas['UnidadEstudiante'];
 export type Token = Esquemas['Token'];
+export type PanelApoderado = Esquemas['PanelApoderado'];
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000';
 
@@ -75,6 +76,8 @@ export const api = {
     pedir<PerfilEstudiante>('GET', '/apoderado/estudiante', { token }),
   crearEstudiante: (token: string, datos: Esquemas['EstudianteNuevo']) =>
     pedir<PerfilEstudiante>('POST', '/apoderado/estudiante', { token, cuerpo: datos }),
+  panelApoderado: (token: string) =>
+    pedir<PanelApoderado>('GET', '/apoderado/dashboard', { token }),
 
   perfilEstudiante: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/estudiante/perfil', { token }),

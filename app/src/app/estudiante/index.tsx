@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { api, type UnidadEstudiante } from '@/api/cliente';
+import { EstadoConsulta } from '@/components/EstadoConsulta';
 import { Octavio } from '@/components/Octavio';
 import { SugerenciaOctavio } from '@/components/SugerenciaOctavio';
 import { TarjetaUnidad } from '@/components/TarjetaUnidad';
@@ -24,11 +25,11 @@ export default function HomeEstudiante() {
   const unidades = useConsulta('unidades', api.unidades);
 
   if (perfil.isPending || unidades.isPending) {
-    return <Estado texto="Octavio está preparando tus unidades…" esTablet={esTablet} />;
+    return <EstadoConsulta texto="Octavio está preparando tus unidades…" esTablet={esTablet} />;
   }
   if (perfil.isError || unidades.isError) {
     return (
-      <Estado
+      <EstadoConsulta
         texto={(perfil.error ?? unidades.error)?.message ?? 'Algo salió mal.'}
         esTablet={esTablet}
         onReintentar={() => {
@@ -162,36 +163,6 @@ export default function HomeEstudiante() {
           {mapa}
           {salir}
         </ScrollView>
-      )}
-    </SafeAreaView>
-  );
-}
-
-// Carga o error, con Octavio y un botón para reintentar.
-function Estado({
-  texto,
-  esTablet,
-  onReintentar,
-}: {
-  texto: string;
-  esTablet: boolean;
-  onReintentar?: () => void;
-}) {
-  return (
-    <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-panel p-6">
-      <Octavio tamano={esTablet ? 120 : 88} conVarita />
-      <Text
-        className={`text-center font-nunito-bold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-base'}`}
-      >
-        {texto}
-      </Text>
-      {onReintentar && (
-        <Pressable
-          onPress={onReintentar}
-          className="rounded-full bg-primario px-6 py-3 active:bg-primario-oscuro"
-        >
-          <Text className="font-nunito-black text-white">Reintentar</Text>
-        </Pressable>
       )}
     </SafeAreaView>
   );

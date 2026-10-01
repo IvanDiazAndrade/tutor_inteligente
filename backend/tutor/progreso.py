@@ -1,8 +1,7 @@
 """Reglas del modelo del estudiante que se muestran al usuario (modelo_estudiante.md §5 y §6).
 
 Funciones puras, sin base de datos: banda del índice, estrellas, marca "para repasar" y
-unidad sugerida. La app las recibe ya calculadas (el prototipo las replica en
-app/src/modelo/progreso.ts solo para funcionar sin servidor).
+unidad sugerida. La app las recibe ya calculadas: no las replica.
 """
 
 from collections.abc import Mapping, Sequence

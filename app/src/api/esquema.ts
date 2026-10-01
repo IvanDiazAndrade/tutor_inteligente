@@ -78,6 +78,26 @@ export interface paths {
     patch: operations['editar_estudiante_apoderado_estudiante_patch'];
     trace?: never;
   };
+  '/apoderado/dashboard': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Ver Dashboard
+     * @description Panel de progreso (CU-10, F4): agregación determinista, sin LLM.
+     */
+    get: operations['ver_dashboard_apoderado_dashboard_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/estudiante/perfil': {
     parameters: {
       query?: never;
@@ -351,10 +371,41 @@ export interface components {
       /** Pin */
       pin: string;
     };
+    /** MedidorUnidad */
+    MedidorUnidad: {
+      /** Unidadid */
+      unidadId: string;
+      /** Descripcion */
+      descripcion: string;
+      /** Indice */
+      indice: number;
+      /**
+       * Banda
+       * @enum {string}
+       */
+      banda: 'Empezando' | 'Practicando' | 'Dominado';
+      /** Comentario */
+      comentario: string;
+      /** Necesitaapoyo */
+      necesitaApoyo: boolean;
+    };
     /** Mensaje */
     Mensaje: {
       /** Mensaje */
       mensaje: string;
+    };
+    /** PanelApoderado */
+    PanelApoderado: {
+      /** Alias */
+      alias: string;
+      /** Curso */
+      curso: number;
+      estaSemana: components['schemas']['ResumenSemana'];
+      semanaPasada: components['schemas']['ResumenSemana'];
+      /** Medidores */
+      medidores: components['schemas']['MedidorUnidad'][];
+      /** Sugerencia */
+      sugerencia: string | null;
     };
     /**
      * PerfilEstudiante
@@ -415,6 +466,17 @@ export interface components {
       cambioNivel: ('sube' | 'baja') | null;
       /** Degradado */
       degradado: boolean;
+    };
+    /** ResumenSemana */
+    ResumenSemana: {
+      /** Ejercicios */
+      ejercicios: number;
+      /** Respuestas */
+      respuestas: number;
+      /** Correctas */
+      correctas: number;
+      /** Minutospordia */
+      minutosPorDia: number[];
     };
     /** SesionPractica */
     SesionPractica: {
@@ -659,6 +721,26 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  ver_dashboard_apoderado_dashboard_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PanelApoderado'];
         };
       };
     };
