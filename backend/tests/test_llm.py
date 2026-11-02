@@ -94,7 +94,7 @@ def test_retroalimentacion_del_llm_personalizada_sin_enviar_el_alias(
     assert incorrecta in enviado.entrada
     [llamada] = _llamadas(sesion)
     assert llamada.operacion == "generarRetroalimentacion" and llamada.resultado == "ok"
-    assert llamada.version_prompt == "retro-v1" and llamada.costo_usd > 0
+    assert llamada.version_prompt == "retro-v2" and llamada.costo_usd > 0
     assert llamada.sesion_id is not None
 
 
