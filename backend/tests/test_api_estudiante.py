@@ -18,7 +18,6 @@ def estudiante(sesion) -> Estudiante:
         apoderado=Apoderado(email="p@ejemplo.cl", password_hash="x"),
         alias="Vale",
         curso=5,
-        pin_hash="x",
     )
     sesion.add(estudiante)
     sesion.commit()

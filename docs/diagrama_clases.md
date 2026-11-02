@@ -17,14 +17,14 @@ classDiagram
         +UUID id
         +str email
         -str passwordHash
+        -str pinHash
+        +estaBloqueado(ahora) bool
     }
     class Estudiante {
         +UUID id
         +str alias
         +int curso
-        -str pinHash
         +int puntajeTotal
-        +estaBloqueado(ahora) bool
         +cursosVisibles() list~int~
     }
     class Unidad {
@@ -140,10 +140,11 @@ classDiagram
     direction TB
 
     class ServicioAuth {
-        +registrarApoderado(email, password) Apoderado
-        +loginApoderado(email, password) Token
-        +loginEstudiante(estudianteId, pin) Token
-        +crearEstudiante(apoderado, alias, curso, pin) Estudiante
+        +registrarApoderado(email, password, pin) Apoderado
+        +loginApoderado(email, password) Token + TokenDispositivo
+        +entrarComoEstudiante(dispositivo) Token
+        +abrirPanel(dispositivo, pin) Token
+        +crearEstudiante(apoderado, alias, curso) Estudiante
         +cambiarCurso(apoderado, curso)
         +cambiarPin(apoderado, pin)
     }

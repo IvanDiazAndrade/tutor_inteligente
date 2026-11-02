@@ -12,28 +12,23 @@ import { useSesion } from '@/sesion/SesionContext';
 
 const CURSOS = [4, 5, 6] as const;
 
-// Crear el perfil del estudiante (CU-9; RF-A1, A3, A5): solo alias, curso y un PIN corto.
-// No se piden nombre completo, RUT, colegio ni fecha de nacimiento (RNF-S2).
+// Crear el perfil del estudiante (CU-9; RF-A1, A5): solo alias y curso. No se piden nombre
+// completo, RUT, colegio ni fecha de nacimiento (RNF-S2). El estudiante no tiene PIN: entra
+// tocando su perfil en el dispositivo vinculado (RF-A3).
 function CrearPerfil() {
   const { sesion, recordarPerfil } = useSesion();
   const [alias, setAlias] = useState('');
   const [curso, setCurso] = useState<number | null>(null);
-  const [pin, setPin] = useState('');
-  const [pinRepetido, setPinRepetido] = useState('');
   const [aviso, setAviso] = useState('');
   const [enviando, setEnviando] = useState(false);
-
-  const soloDigitos = (v: string) => v.replace(/\D/g, '').slice(0, 4);
 
   const crear = async () => {
     if (alias.trim().length === 0) return setAviso('Escribe cómo quiere que lo llamen.');
     if (curso === null) return setAviso('Elige el curso.');
-    if (pin.length !== 4) return setAviso('El PIN debe tener 4 números.');
-    if (pin !== pinRepetido) return setAviso('Los PIN no coinciden.');
     setAviso('');
     setEnviando(true);
     try {
-      const perfil = await api.crearEstudiante(sesion!.token, { alias: alias.trim(), curso, pin });
+      const perfil = await api.crearEstudiante(sesion!.token, { alias: alias.trim(), curso });
       await recordarPerfil({ id: perfil.id, alias: perfil.alias, curso: perfil.curso });
       router.replace('/apoderado');
     } catch (e) {
@@ -58,7 +53,8 @@ function CrearPerfil() {
               </Text>
             </View>
             <Text className="font-nunito-bold text-sm text-apagado-oscuro">
-              Solo pedimos un apodo y el curso. Con el PIN, el estudiante entra sin correo.
+              Solo pedimos un apodo y el curso. El estudiante entra tocando su perfil, sin correo ni
+              PIN.
             </Text>
             <CampoTexto
               placeholder="Apodo (por ejemplo, Vale)"
@@ -88,21 +84,6 @@ function CrearPerfil() {
                 </Pressable>
               ))}
             </View>
-            <CampoTexto
-              placeholder="PIN de 4 números"
-              value={pin}
-              onChangeText={(v) => setPin(soloDigitos(v))}
-              keyboardType="number-pad"
-              secureTextEntry
-            />
-            <CampoTexto
-              placeholder="Repite el PIN"
-              value={pinRepetido}
-              onChangeText={(v) => setPinRepetido(soloDigitos(v))}
-              keyboardType="number-pad"
-              secureTextEntry
-              onSubmitEditing={crear}
-            />
             {aviso !== '' && (
               <Text className="font-nunito-bold text-sm text-amber-700">{aviso}</Text>
             )}

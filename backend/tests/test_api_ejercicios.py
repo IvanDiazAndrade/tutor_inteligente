@@ -176,7 +176,6 @@ def test_no_puede_responder_el_ejercicio_de_otro(cliente, cabecera, sesion):
         apoderado=Apoderado(email="otro@ejemplo.cl", password_hash="x"),
         alias="Tomás",
         curso=5,
-        pin_hash="x",
     )
     sesion.add(otro)
     sesion.commit()

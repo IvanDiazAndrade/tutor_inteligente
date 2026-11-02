@@ -21,7 +21,7 @@ def _unidad(sesion) -> Unidad:
 
 
 def _estudiante(sesion, apoderado: Apoderado) -> Estudiante:
-    estudiante = Estudiante(apoderado=apoderado, alias="Vale", curso=5, pin_hash="x")
+    estudiante = Estudiante(apoderado=apoderado, alias="Vale", curso=5)
     sesion.add(estudiante)
     return estudiante
 
@@ -46,7 +46,7 @@ def test_un_apoderado_tiene_un_solo_estudiante(sesion):
     _estudiante(sesion, apoderado)
     sesion.flush()
 
-    sesion.add(Estudiante(apoderado_id=apoderado.id, alias="Tomás", curso=4, pin_hash="x"))
+    sesion.add(Estudiante(apoderado_id=apoderado.id, alias="Tomás", curso=4))
     with pytest.raises(IntegrityError):
         sesion.flush()
 

@@ -27,7 +27,7 @@ Correo = Annotated[
     StringConstraints(strip_whitespace=True, max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$"),
 ]
 Contrasena = Annotated[str, Field(min_length=8), AfterValidator(_cabe_en_bcrypt)]
-Pin = Annotated[str, Field(pattern=r"^\d{4}$")]  # PIN corto definido por el apoderado (RF-A3)
+Pin = Annotated[str, Field(pattern=r"^\d{4}$")]  # PIN del panel del apoderado (RF-A3)
 Alias = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]
 Curso = Annotated[int, Field(ge=4, le=6)]
 
@@ -38,6 +38,7 @@ Curso = Annotated[int, Field(ge=4, le=6)]
 class RegistroApoderado(Esquema):
     email: Correo
     contrasena: Contrasena
+    pin: Pin
 
 
 class IngresoApoderado(Esquema):
@@ -45,14 +46,20 @@ class IngresoApoderado(Esquema):
     contrasena: str
 
 
-class IngresoEstudiante(Esquema):
-    estudiante_id: uuid.UUID
+class PinPanel(Esquema):
     pin: Pin
 
 
 class Token(Esquema):
     token: str
     rol: Literal["apoderado", "estudiante"]
+
+
+class IngresoConDispositivo(Token):
+    """Respuesta del login con correo y contraseña: el token del panel y el que vincula el
+    dispositivo a la cuenta (RF-A2, RF-A3)."""
+
+    token_dispositivo: str
 
 
 class ApoderadoCreado(Esquema):
@@ -68,13 +75,11 @@ class EstudianteNuevo(Esquema):
 
     alias: Alias
     curso: Curso
-    pin: Pin
 
 
 class EstudianteCambios(Esquema):
     alias: Alias | None = None
     curso: Curso | None = None  # promover de curso conserva el historial (RF-A4)
-    pin: Pin | None = None
 
 
 class PerfilEstudiante(Esquema):

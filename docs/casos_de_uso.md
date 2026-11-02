@@ -9,8 +9,8 @@
 
 | Actor | Tipo | Descripción |
 |---|---|---|
-| **Estudiante** | primario, humano | Niño/a de 4°–6° básico. Entra con perfil + PIN, practica, pide ayuda y ve su progreso gamificado. |
-| **Apoderado** | primario, humano | Titular de la cuenta. Crea el perfil del estudiante, define el curso y el PIN, y consulta el dashboard. |
+| **Estudiante** | primario, humano | Niño/a de 4°–6° básico. Entra tocando su perfil en el teléfono vinculado (sin PIN), practica, pide ayuda y ve su progreso gamificado. |
+| **Apoderado** | primario, humano | Titular de la cuenta. Vincula el teléfono, define el PIN del panel, crea el perfil del estudiante con su curso y consulta el dashboard. |
 | **Revisor de contenido** | primario, humano | Integrante del equipo que ejecuta la compuerta editorial (capa 4 del pipeline, `modelo_dominio.md` §8) y aprueba las plantillas paramétricas. No es un rol de la app (el administrador sigue fuera de alcance): opera con una herramienta de línea de comandos del backend (§4). |
 | **Planificador** | primario, sistema | Proceso periódico (APScheduler) que detecta celdas unidad×nivel con stock bajo y dispara la reposición (F5). |
 | **Proveedor LLM** (GPT-5.4 nano) | secundario, sistema | API externa, siempre detrás del Adaptador. Genera ejercicios verbales, retroalimentación, pistas reformuladas y la narración guiada. **No corrige respuestas.** |
@@ -73,7 +73,7 @@ flowchart LR
 
 | CU | Nombre | Actor | Resumen del flujo principal | Requisitos |
 |---|---|---|---|---|
-| CU-1 | Iniciar sesión | Estudiante, Apoderado | La pantalla de acceso separa las dos entradas. Apoderado: correo + contraseña. Estudiante: elige su perfil en el dispositivo e ingresa el PIN. El servidor emite un JWT con el rol. | RF-A2, RF-A3, RNF-S1 |
+| CU-1 | Iniciar sesión | Estudiante, Apoderado | Sin teléfono vinculado, la app abre el inicio de sesión: el apoderado entra con correo + contraseña y el teléfono queda vinculado a su cuenta (token de dispositivo). Con el teléfono vinculado, la pantalla de acceso separa las dos entradas: el estudiante toca su perfil y entra sin PIN; el apoderado entra al panel con su PIN de 4 números. El servidor emite un JWT con el rol. *(Actualizado 2-nov-2026, RF-A3.)* | RF-A2, RF-A3, RNF-S1 |
 | CU-2 | Seleccionar unidad | Estudiante | Ve las unidades de su curso y de los anteriores con su nivel en estrellas y la **unidad sugerida** destacada; elige libremente. | RF-D1, RF-E5; `modelo_estudiante.md` §5 |
 | CU-3 | Resolver ejercicio | Estudiante | El sistema sirve un ejercicio `activo` no visto de la celda unidad×nivel actual (sin LLM). El estudiante responde; se incluyen la corrección (CU-8) y la adaptación (CU-12). Puede pasar a "otro ejercicio" sin penalización. | RF-D7, RF-E1, RNF-R2 |
 | CU-4 | Recibir retroalimentación | Estudiante (vía CU-8) | Correcta: refuerzo desde plantillas locales + puntos, sin LLM. Incorrecta: el LLM explica la causa probable sin revelar la respuesta; la salida pasa el filtro de no revelación. Incluye la acción "no entiendo" (re-explicación). Sin LLM disponible: plantilla local (F6). | RF-P1, RF-P2, RF-P4–P6, RNF-P2, RNF-R3 |
@@ -81,7 +81,7 @@ flowchart LR
 | CU-6 | Ver puntaje y progreso | Estudiante | Muestra puntos, estrellas e insignias por unidad. Solo progreso personal, sin comparación. | RF-E5, RF-G3, RF-G4 |
 | CU-7 | Reponer banco de ejercicios | Planificador | Detecta celdas con stock `activo` < 5. Paramétricas: instancia la plantilla aprobada y el ejercicio queda `activo`. Verbales: genera con el LLM (doble pasada en fracciones) y aplica las capas 1–3 del pipeline; el resultado queda `verificado` esperando al revisor. *Redefine el CU-7 "Generar contenido (GPT)".* | RF-D2–D6, AD-3, AD-9 |
 | CU-8 | Corregir respuesta | Sistema (incluido en CU-3) | Normaliza la entrada y compara con `respuestaFinal` con aritmética exacta; detecta el patrón de error común si lo hay. Las respuestas no parseables se rechazan sin contar como intento. *Redefine el CU-8 "Evaluar respuesta (GPT)": ya no participa el LLM (AD-2).* | RF-D7, AD-2 |
-| CU-9 | Gestionar cuenta del estudiante | Apoderado | Registrarse, crear el perfil (alias + curso), fijar o cambiar el PIN y editar el curso sin perder historial. | RF-A1, RF-A4, RF-A5, RNF-S2 |
+| CU-9 | Gestionar cuenta del estudiante | Apoderado | Registrarse (correo, contraseña y PIN del panel), crear el perfil (alias + curso), cambiar el PIN del panel y editar el curso sin perder historial. | RF-A1, RF-A3, RF-A4, RF-A5, RNF-S2 |
 | CU-10 | Consultar dashboard | Apoderado | Resumen semanal, skill meters por OA en tres bandas, unidades más difíciles y sugerencias por reglas. Agregación determinista, sin LLM. | RF-DA1–DA7, AD-6 |
 | CU-11 | Solicitar pista | Estudiante | Hasta 3 pistas por ejercicio; cada una descuenta puntos e índice. El LLM puede reformular la pista pre-generada; sin LLM se sirve tal cual. | RF-P3, RF-G1 |
 | CU-12 | Adaptar dificultad | Sistema (incluido en CU-3) | Tras cada intento actualiza `DominioOA` (promedio móvil exponencial) y sube o baja el nivel según los umbrales 0,8 / 0,4. | RF-E2–E4 |

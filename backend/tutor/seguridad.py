@@ -18,7 +18,9 @@ from tutor.config import get_settings
 from tutor.db import get_session
 from tutor.modelos import Apoderado, Estudiante
 
-Rol = Literal["apoderado", "estudiante"]
+# "dispositivo": token de larga duración que vincula un teléfono a la cuenta del apoderado.
+# Solo abre /auth/dispositivo/* (entrar como el estudiante o abrir el panel con el PIN).
+Rol = Literal["apoderado", "estudiante", "dispositivo"]
 ALGORITMO = "HS256"
 
 # bcrypt solo considera los primeros 72 bytes: se valida el largo antes de llegar aquí.
@@ -35,9 +37,11 @@ def verificar(secreto: str, hash_guardado: str) -> bool:
 
 def crear_token(sujeto: uuid.UUID, rol: Rol) -> str:
     ajustes = get_settings()
-    minutos = (
-        ajustes.jwt_minutos_apoderado if rol == "apoderado" else ajustes.jwt_minutos_estudiante
-    )
+    minutos = {
+        "apoderado": ajustes.jwt_minutos_apoderado,
+        "estudiante": ajustes.jwt_minutos_estudiante,
+        "dispositivo": ajustes.jwt_dias_dispositivo * 24 * 60,
+    }[rol]
     ahora = datetime.now(UTC)
     carga = {
         "sub": str(sujeto),
@@ -87,6 +91,13 @@ def apoderado_actual(credenciales: Credenciales, sesion: SesionBD) -> Apoderado:
     return apoderado
 
 
+def apoderado_del_dispositivo(credenciales: Credenciales, sesion: SesionBD) -> Apoderado:
+    apoderado = sesion.get(Apoderado, _sujeto_del_token(credenciales, "dispositivo"))
+    if apoderado is None:
+        raise NO_AUTENTICADO
+    return apoderado
+
+
 def estudiante_actual(credenciales: Credenciales, sesion: SesionBD) -> Estudiante:
     estudiante = sesion.get(Estudiante, _sujeto_del_token(credenciales, "estudiante"))
     if estudiante is None:
@@ -95,4 +106,5 @@ def estudiante_actual(credenciales: Credenciales, sesion: SesionBD) -> Estudiant
 
 
 ApoderadoActual = Annotated[Apoderado, Depends(apoderado_actual)]
+ApoderadoDelDispositivo = Annotated[Apoderado, Depends(apoderado_del_dispositivo)]
 EstudianteActual = Annotated[Estudiante, Depends(estudiante_actual)]

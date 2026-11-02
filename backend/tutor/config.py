@@ -14,10 +14,13 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://tutor:tutor@127.0.0.1:5432/tutor"
     # En Render se define JWT_SECRET con un valor aleatorio largo; este es solo para desarrollo.
     jwt_secret: SecretStr = SecretStr("solo-para-desarrollo-no-usar-en-produccion-0123456789")
-    # Vigencia de los tokens (RNF-S1: sesiones con expiración).
-    jwt_minutos_apoderado: int = 24 * 60
+    # Vigencia de los tokens (RNF-S1: sesiones con expiración). El del dispositivo vincula el
+    # teléfono a la cuenta (RF-A3) y solo sirve para entrar como el estudiante o abrir el panel
+    # con el PIN; el del panel dura poco porque se pide de nuevo con el PIN.
+    jwt_minutos_apoderado: int = 60
     jwt_minutos_estudiante: int = 8 * 60
-    # PIN del estudiante: bloqueo temporal tras varios fallos (diagramas_secuencia.md §2).
+    jwt_dias_dispositivo: int = 30
+    # PIN del panel del apoderado: bloqueo temporal tras varios fallos (diagramas_secuencia.md §2).
     pin_max_fallos: int = 5
     pin_minutos_bloqueo: int = 5
     # Motor adaptativo (modelo_estudiante.md §1-4). En configuración y no en código: se

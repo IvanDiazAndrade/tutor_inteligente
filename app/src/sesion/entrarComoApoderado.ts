@@ -1,19 +1,25 @@
 import { router } from 'expo-router';
 
-import { api, ErrorApi } from '@/api/cliente';
+import { api, ErrorApi, type Esquemas } from '@/api/cliente';
 import type { PerfilRecordado, Rol } from '@/sesion/SesionContext';
 
-// Después de ingresar: si la cuenta ya tiene estudiante, se recuerda su perfil en este
-// dispositivo (para que el niño lo elija en el acceso) y se abre el panel; si no, se pide
-// crearlo (CU-9).
+type Acciones = {
+  vincular: (tokenDispositivo: string) => Promise<void>;
+  iniciar: (token: string, rol: Rol) => Promise<void>;
+  recordarPerfil: (perfil: PerfilRecordado) => Promise<void>;
+};
+
+// Después de iniciar sesión con correo y contraseña: el teléfono queda vinculado a la cuenta
+// (RF-A2, RF-A3) y se abre el panel. Si la cuenta ya tiene estudiante, se recuerda su perfil
+// para que el niño lo elija en el acceso; si no, se pide crearlo (CU-9).
 export async function entrarComoApoderado(
-  token: string,
-  iniciar: (token: string, rol: Rol) => Promise<void>,
-  recordarPerfil: (perfil: PerfilRecordado) => Promise<void>,
+  ingreso: Esquemas['IngresoConDispositivo'],
+  { vincular, iniciar, recordarPerfil }: Acciones,
 ) {
-  await iniciar(token, 'apoderado');
+  await vincular(ingreso.tokenDispositivo);
+  await iniciar(ingreso.token, 'apoderado');
   try {
-    const { id, alias, curso } = await api.estudianteDelApoderado(token);
+    const { id, alias, curso } = await api.estudianteDelApoderado(ingreso.token);
     await recordarPerfil({ id, alias, curso });
     router.replace('/apoderado');
   } catch (e) {

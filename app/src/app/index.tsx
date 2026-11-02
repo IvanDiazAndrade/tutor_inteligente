@@ -11,18 +11,17 @@ import { LARGO_PIN, TecladoPin } from '@/components/TecladoPin';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { useSesion } from '@/sesion/SesionContext';
 
-// Pantalla de acceso (CU-1, RF-A2, RF-A3; mockup "Acceso"). El estudiante elige uno de los
-// perfiles recordados en este teléfono y escribe su PIN, que valida el servidor. El apoderado
-// entra por el enlace inferior con correo y contraseña.
+// Pantalla de acceso (CU-1, RF-A2, RF-A3; mockup "Acceso"). Sin un dispositivo vinculado abre
+// directamente el inicio de sesión. Con el dispositivo vinculado, el estudiante toca su perfil
+// y entra sin PIN; el apoderado entra al panel con su PIN de 4 números, que valida el servidor.
 export default function Acceso() {
   const { dosColumnas, esTablet } = useDistribucion();
   const compacta = dosColumnas && !esTablet;
-  const { cargando, sesion, perfiles, iniciar } = useSesion();
-  const [perfilId, setPerfilId] = useState<string | null>(null);
+  const { cargando, dispositivo, sesion, perfiles, iniciar, desvincular } = useSesion();
+  const [pidiendoPin, setPidiendoPin] = useState(false);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [verificando, setVerificando] = useState(false);
-  const perfil = perfiles.find((p) => p.id === perfilId) ?? perfiles[0];
+  const [entrando, setEntrando] = useState<string | null>(null); // id del perfil o 'panel'
 
   const temporizador = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(temporizador.current), []);
@@ -30,8 +29,30 @@ export default function Acceso() {
   if (cargando) return null;
   if (sesion?.rol === 'estudiante') return <Redirect href="/estudiante" />;
   if (sesion?.rol === 'apoderado') return <Redirect href="/apoderado" />;
+  if (!dispositivo) return <Redirect href="/apoderado/ingreso" />;
 
-  const mostrarError = (mensaje: string) => {
+  // El token del dispositivo vence a los 30 días o pudo revocarse: se vuelve a iniciar sesión.
+  const manejarError = (e: unknown, mostrar: (mensaje: string) => void) => {
+    if (e instanceof ErrorApi && (e.estado === 401 || e.estado === 403)) desvincular();
+    else mostrar(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
+  };
+
+  const entrarComoEstudiante = async (perfilId: string) => {
+    if (entrando) return;
+    setEntrando(perfilId);
+    setError(null);
+    try {
+      const { token } = await api.entrarComoEstudiante(dispositivo);
+      await iniciar(token, 'estudiante');
+      router.replace('/estudiante');
+    } catch (e) {
+      manejarError(e, setError);
+    } finally {
+      setEntrando(null);
+    }
+  };
+
+  const mostrarErrorPin = (mensaje: string) => {
     setError(mensaje);
     // Los puntos quedan en naranjo un momento y luego se limpian para reintentar.
     temporizador.current = setTimeout(() => {
@@ -42,43 +63,41 @@ export default function Acceso() {
 
   // Se envía el PIN al escribir el último dígito.
   const cambiarPin = async (nuevo: string) => {
-    if (error || verificando || !perfil) return;
+    if (error || entrando) return;
     setPin(nuevo);
     if (nuevo.length < LARGO_PIN) return;
-    setVerificando(true);
+    setEntrando('panel');
     try {
-      const { token } = await api.ingresarEstudiante(perfil.id, nuevo);
-      await iniciar(token, 'estudiante');
-      router.replace('/estudiante');
+      const { token } = await api.abrirPanel(dispositivo, nuevo);
+      await iniciar(token, 'apoderado');
+      router.replace(perfiles.length === 0 ? '/apoderado/perfil' : '/apoderado');
     } catch (e) {
       if (e instanceof ErrorApi && e.estado === 401)
-        mostrarError('¡Uy! Ese PIN no es. Prueba otra vez');
+        mostrarErrorPin('Ese PIN no es. Prueba otra vez');
       else if (e instanceof ErrorApi && e.estado === 423)
-        mostrarError('Espera un momento e intenta otra vez');
-      else mostrarError(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
+        mostrarErrorPin('Espera un momento e intenta otra vez');
+      else manejarError(e, mostrarErrorPin);
     } finally {
-      setVerificando(false);
+      setEntrando(null);
     }
   };
 
-  const elegirPerfil = (id: string) => {
+  const alternarPin = (pedir: boolean) => {
     clearTimeout(temporizador.current);
-    setPerfilId(id);
+    setPidiendoPin(pedir);
     setPin('');
     setError(null);
   };
 
+  const textoTitulo = `font-nunito-black text-tinta ${esTablet ? 'text-2xl' : 'text-lg'}`;
+  const textoAyuda = `font-nunito-bold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`;
+
   const listaPerfiles = (
     <View className="gap-2.5">
-      <Text className={`font-nunito-black text-tinta ${esTablet ? 'text-2xl' : 'text-lg'}`}>
-        ¿Quién va a practicar?
-      </Text>
+      <Text className={textoTitulo}>¿Quién va a practicar?</Text>
       {perfiles.length === 0 ? (
-        <Text
-          className={`font-nunito-bold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}
-        >
-          Todavía no hay perfiles en este dispositivo. El apoderado entra primero y crea el perfil
-          del estudiante.
+        <Text className={textoAyuda}>
+          Todavía no hay un perfil de estudiante. Entra como apoderado para crearlo.
         </Text>
       ) : (
         perfiles.map((p) => (
@@ -86,37 +105,59 @@ export default function Acceso() {
             key={p.id}
             alias={p.alias}
             curso={p.curso}
-            seleccionado={p.id === perfil?.id}
-            onPress={() => elegirPerfil(p.id)}
+            seleccionado={entrando === p.id}
+            onPress={() => entrarComoEstudiante(p.id)}
             compacta={compacta}
             grande={esTablet}
           />
         ))
       )}
+      {error && !pidiendoPin && (
+        <Text className="font-nunito-bold text-sm text-amber-700">{error}</Text>
+      )}
     </View>
   );
 
-  const bloquePin = perfil && (
+  const bloquePin = (
     <View className="items-center gap-2.5 rounded-[18px] bg-white px-4 py-3">
       <View className="flex-row items-center gap-2">
         <Octavio tamano={esTablet ? 56 : 40} guino />
         <Text
           className={`shrink font-nunito-black text-tinta ${esTablet ? 'text-xl' : 'text-base'}`}
         >
-          {error ?? (verificando ? 'Revisando…' : `Hola ${perfil.alias}, escribe tu PIN`)}
+          {error ?? (entrando === 'panel' ? 'Revisando…' : 'Escribe tu PIN de apoderado')}
         </Text>
       </View>
       <TecladoPin pin={pin} onCambio={cambiarPin} error={error !== null} grande={esTablet} />
+      <Pressable accessibilityRole="button" onPress={() => alternarPin(false)} className="py-1">
+        <Text
+          className={`font-nunito-extrabold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}
+        >
+          ← Volver a los perfiles
+        </Text>
+      </Pressable>
+    </View>
+  );
+
+  // En dos columnas, a la derecha va el PIN del apoderado o una bienvenida de Octavio.
+  const bienvenida = (
+    <View className="items-center gap-3 rounded-[18px] bg-white px-4 py-6">
+      <Octavio tamano={esTablet ? 96 : 64} conVarita />
+      <Text className={`text-center ${textoTitulo}`}>
+        {perfiles.length === 0
+          ? '¡Hola! Primero hay que crear un perfil'
+          : 'Toca tu perfil para empezar'}
+      </Text>
     </View>
   );
 
   const enlaceApoderado = (
     <Pressable
       accessibilityRole="link"
-      onPress={() => router.push('/apoderado/ingreso')}
-      className={`flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl border-[1.5px] border-borde bg-white px-4 active:bg-panel ${
-        esTablet ? 'py-5' : 'py-3'
-      }`}
+      onPress={() => alternarPin(true)}
+      className={`flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl border-[1.5px] bg-white px-4 active:bg-panel ${
+        pidiendoPin ? 'border-primario-claro' : 'border-borde'
+      } ${esTablet ? 'py-5' : 'py-3'}`}
     >
       <Text
         className={`font-nunito-extrabold text-apagado-oscuro ${esTablet ? 'text-lg' : 'text-sm'}`}
@@ -124,7 +165,7 @@ export default function Acceso() {
         👤 Soy el apoderado
       </Text>
       <Text className={`font-nunito-black text-primario ${esTablet ? 'text-lg' : 'text-sm'}`}>
-        {perfiles.length === 0 ? 'entrar →' : 'ver progreso →'}
+        {perfiles.length === 0 ? 'crear perfil →' : 'ver progreso →'}
       </Text>
     </Pressable>
   );
@@ -132,14 +173,16 @@ export default function Acceso() {
   return (
     <SafeAreaView className="flex-1 bg-fondo">
       <ScrollView contentContainerClassName="grow justify-center p-3">
-        {dosColumnas && bloquePin ? (
+        {dosColumnas ? (
           <View className="w-full max-w-[1100px] flex-row gap-4 self-center">
             <View className="flex-1 justify-between gap-4 rounded-[22px] bg-panel p-4">
               <Encabezado grande={esTablet} />
               {listaPerfiles}
               {enlaceApoderado}
             </View>
-            <View className="flex-1 justify-center rounded-[22px] bg-panel p-4">{bloquePin}</View>
+            <View className="flex-1 justify-center rounded-[22px] bg-panel p-4">
+              {pidiendoPin ? bloquePin : bienvenida}
+            </View>
           </View>
         ) : (
           <View
@@ -148,9 +191,8 @@ export default function Acceso() {
             }`}
           >
             <Encabezado grande={esTablet} />
-            {listaPerfiles}
-            {bloquePin}
-            {enlaceApoderado}
+            {pidiendoPin ? bloquePin : listaPerfiles}
+            {!pidiendoPin && enlaceApoderado}
           </View>
         )}
       </ScrollView>

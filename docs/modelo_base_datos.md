@@ -9,8 +9,8 @@
 
 | Cambio | Motivo |
 |---|---|
-| `Usuario` pasa a llamarse **`apoderado`**. | Es el único usuario con credenciales. El estudiante entra por perfil + PIN y no tiene correo; el revisor usa la CLI (`casos_de_uso.md` §4). |
-| El PIN se guarda como **`pin_hash`** (bcrypt), con contador de fallos y bloqueo temporal. | Un PIN de 4 dígitos tiene 10 000 combinaciones: sin bloqueo se prueba entero en minutos (RNF-S1). |
+| `Usuario` pasa a llamarse **`apoderado`**. | Es el único usuario con credenciales. El estudiante no tiene correo ni PIN: entra tocando su perfil en el teléfono vinculado; el revisor usa la CLI (`casos_de_uso.md` §4). |
+| El PIN del panel se guarda en `apoderado` como **`pin_hash`** (bcrypt), con contador de fallos y bloqueo temporal. *(2-nov-2026: antes estaba en `estudiante`; migración `3b7e1c9d2a54` lo traspasa, RF-A3.)* | Un PIN de 4 dígitos tiene 10 000 combinaciones: sin bloqueo se prueba entero en minutos (RNF-S1). |
 | Nueva entidad **`ejercicio_servido`** entre `sesion` e `intento`. | Un ejercicio servido admite varias respuestas (RF-P7 cuenta 3 fallos **del mismo ejercicio**), pistas pedidas antes de responder y el cierre por "otro ejercicio". Sin esta entidad, el contador de pistas y fallos quedaría en el cliente, y el servidor debe ser la autoridad (AD-1). También resuelve "no visto" en F1. |
 | **`intento`** = una respuesta corregida (válida). | Coincide con `modelo_estudiante.md` §1: cada respuesta evaluada produce un intento; las rechazadas por formato no se guardan. |
 | Nueva tabla **`plantilla`**. | Registra la aprobación única de cada plantilla paramétrica (`modelo_dominio.md` §8) y da destino a `metadatos.plantillaId`. |
@@ -41,6 +41,9 @@ erDiagram
         uuid id PK
         text email UK
         text password_hash
+        text pin_hash
+        smallint pin_fallos
+        timestamptz bloqueado_hasta
         timestamptz creado_en
     }
     estudiante {
@@ -48,9 +51,6 @@ erDiagram
         uuid apoderado_id FK
         varchar alias
         smallint curso
-        text pin_hash
-        smallint pin_fallos
-        timestamptz bloqueado_hasta
         int puntaje_total
     }
     unidad {
@@ -159,6 +159,9 @@ CREATE TABLE apoderado (
     id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     email          citext NOT NULL UNIQUE,
     password_hash  text   NOT NULL,                -- bcrypt (RNF-S1)
+    pin_hash         text,                         -- PIN del panel (RF-A3); NULL solo en cuentas previas sin estudiante
+    pin_fallos       smallint NOT NULL DEFAULT 0,
+    bloqueado_hasta  timestamptz,
     creado_en      timestamptz NOT NULL DEFAULT now()
 );
 
@@ -168,9 +171,6 @@ CREATE TABLE estudiante (
                      REFERENCES apoderado(id) ON DELETE CASCADE,
     alias            varchar(30) NOT NULL,          -- sin datos identificatorios (RF-A5, RNF-S2)
     curso            smallint NOT NULL CHECK (curso BETWEEN 4 AND 6),
-    pin_hash         text NOT NULL,
-    pin_fallos       smallint NOT NULL DEFAULT 0,
-    bloqueado_hasta  timestamptz,
     puntaje_total    integer NOT NULL DEFAULT 0 CHECK (puntaje_total >= 0),
     creado_en        timestamptz NOT NULL DEFAULT now()
 );

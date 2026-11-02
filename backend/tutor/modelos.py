@@ -45,6 +45,12 @@ class Apoderado(Base):
     id: Mapped[uuid.UUID] = mapped_column(**UUID_PK)
     email: Mapped[str] = mapped_column(CITEXT, unique=True)
     password_hash: Mapped[str] = mapped_column(Text)
+    # PIN del panel del apoderado (RF-A3): el estudiante entra sin PIN en un dispositivo
+    # vinculado, y el PIN protege el panel. NULL solo en cuentas creadas antes del cambio que
+    # todavía no tienen estudiante: sin datos que proteger, el panel se abre sin PIN.
+    pin_hash: Mapped[str | None] = mapped_column(Text)
+    pin_fallos: Mapped[int] = mapped_column(SmallInteger, server_default=text("0"))
+    bloqueado_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), **AHORA)
 
     estudiante: Mapped["Estudiante | None"] = relationship(back_populates="apoderado")
@@ -64,9 +70,6 @@ class Estudiante(Base):
     )
     alias: Mapped[str] = mapped_column(String(30))  # sin datos identificatorios (RNF-S2)
     curso: Mapped[int] = mapped_column(SmallInteger)
-    pin_hash: Mapped[str] = mapped_column(Text)
-    pin_fallos: Mapped[int] = mapped_column(SmallInteger, server_default=text("0"))
-    bloqueado_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     puntaje_total: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), **AHORA)
 

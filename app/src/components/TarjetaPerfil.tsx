@@ -10,7 +10,8 @@ type Props = {
   grande?: boolean;
 };
 
-// Tarjeta de un perfil de estudiante recordado en el dispositivo (RF-A3: perfil + PIN).
+// Tarjeta de un perfil de estudiante recordado en el dispositivo: tocarla entra al perfil
+// (RF-A3, sin PIN en un dispositivo vinculado).
 export function TarjetaPerfil({
   alias,
   curso,
@@ -40,7 +41,7 @@ export function TarjetaPerfil({
           {alias} · {curso}° básico
         </Text>
         <Text className={`font-nunito-bold text-lila ${grande ? 'text-base' : 'text-xs'}`}>
-          Entra con tu PIN, sin correo
+          Toca para entrar
         </Text>
       </View>
       <Svg width={16} height={16} viewBox="0 0 18 18">

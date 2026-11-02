@@ -10,9 +10,11 @@ import { Encabezado } from '@/components/Encabezado';
 import { entrarComoApoderado } from '@/sesion/entrarComoApoderado';
 import { useSesion } from '@/sesion/SesionContext';
 
-// Ingreso del apoderado con correo y contraseña (CU-1, RF-A1, RF-A2; mockup "Acceso", panel A).
+// Inicio de sesión del apoderado con correo y contraseña (CU-1, RF-A1, RF-A2; mockup "Acceso",
+// panel A). Es la primera pantalla mientras el dispositivo no esté vinculado a una cuenta; al
+// entrar queda vinculado y después el niño entra tocando su perfil.
 export default function IngresoApoderado() {
-  const { iniciar, recordarPerfil } = useSesion();
+  const { vincular, iniciar, recordarPerfil } = useSesion();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [aviso, setAviso] = useState('');
@@ -26,8 +28,8 @@ export default function IngresoApoderado() {
     setAviso('');
     setEnviando(true);
     try {
-      const { token } = await api.ingresarApoderado(correo.trim(), contrasena);
-      await entrarComoApoderado(token, iniciar, recordarPerfil);
+      const ingreso = await api.ingresarApoderado(correo.trim(), contrasena);
+      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfil });
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {
@@ -44,7 +46,11 @@ export default function IngresoApoderado() {
         >
           <View className="w-full max-w-[440px] gap-3 self-center rounded-[22px] bg-panel p-5">
             <Encabezado />
-            <Text className="mt-1 font-nunito-black text-lg text-tinta">Ingreso del apoderado</Text>
+            <Text className="mt-1 font-nunito-black text-lg text-tinta">Inicio de sesión</Text>
+            <Text className="font-nunito-bold text-sm text-apagado-oscuro">
+              La cuenta es del apoderado. Inicias sesión una sola vez en este teléfono; después el
+              estudiante entra tocando su perfil.
+            </Text>
             <CampoTexto
               placeholder="Correo"
               value={correo}
@@ -77,19 +83,10 @@ export default function IngresoApoderado() {
               className="items-center py-1"
             >
               <Text className="font-nunito-extrabold text-sm text-primario-claro underline">
-                Crear cuenta
+                ¿No tienes cuenta? Registrarse
               </Text>
             </Pressable>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-            className="mt-4 items-center py-2"
-          >
-            <Text className="font-nunito-extrabold text-sm text-apagado-oscuro">
-              ← Volver a ¿Quién va a practicar?
-            </Text>
-          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

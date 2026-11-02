@@ -12,13 +12,18 @@ import { useSesion } from '@/sesion/SesionContext';
 
 const LARGO_MINIMO = 8;
 
-// Registro del apoderado, titular de la cuenta (CU-9, RF-A1). Tras crear la cuenta entra
-// directamente y pasa a crear el perfil del estudiante.
+const soloDigitos = (v: string) => v.replace(/\D/g, '').slice(0, 4);
+
+// Registro del apoderado, titular de la cuenta (CU-9, RF-A1). Aquí se define también el PIN
+// del panel (RF-A3). Tras registrarse entra directamente, el teléfono queda vinculado y pasa a
+// crear el perfil del estudiante.
 export default function RegistroApoderado() {
-  const { iniciar, recordarPerfil } = useSesion();
+  const { vincular, iniciar, recordarPerfil } = useSesion();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [repetida, setRepetida] = useState('');
+  const [pin, setPin] = useState('');
+  const [pinRepetido, setPinRepetido] = useState('');
   const [aviso, setAviso] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -35,12 +40,20 @@ export default function RegistroApoderado() {
       setAviso('Las contraseñas no coinciden.');
       return;
     }
+    if (pin.length !== 4) {
+      setAviso('El PIN debe tener 4 números.');
+      return;
+    }
+    if (pin !== pinRepetido) {
+      setAviso('Los PIN no coinciden.');
+      return;
+    }
     setAviso('');
     setEnviando(true);
     try {
-      await api.registrarApoderado(correo.trim(), contrasena);
-      const { token } = await api.ingresarApoderado(correo.trim(), contrasena);
-      await entrarComoApoderado(token, iniciar, recordarPerfil);
+      await api.registrarApoderado(correo.trim(), contrasena, pin);
+      const ingreso = await api.ingresarApoderado(correo.trim(), contrasena);
+      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfil });
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {
@@ -57,10 +70,9 @@ export default function RegistroApoderado() {
         >
           <View className="w-full max-w-[440px] gap-3 self-center rounded-[22px] bg-panel p-5">
             <Encabezado />
-            <Text className="mt-1 font-nunito-black text-lg text-tinta">Crear cuenta</Text>
+            <Text className="mt-1 font-nunito-black text-lg text-tinta">Registrarse</Text>
             <Text className="font-nunito-bold text-sm text-apagado-oscuro">
-              La cuenta es del apoderado. Después vas a crear el perfil del estudiante con un PIN de
-              4 números.
+              La cuenta es del apoderado. Después vas a crear el perfil del estudiante.
             </Text>
             <CampoTexto
               placeholder="Correo"
@@ -83,6 +95,23 @@ export default function RegistroApoderado() {
               onChangeText={setRepetida}
               secureTextEntry
               autoComplete="new-password"
+            />
+            <Text className="mt-1 font-nunito-bold text-sm text-apagado-oscuro">
+              PIN de apoderado: 4 números para entrar a tu panel. El estudiante entra sin PIN.
+            </Text>
+            <CampoTexto
+              placeholder="PIN de 4 números"
+              value={pin}
+              onChangeText={(v) => setPin(soloDigitos(v))}
+              keyboardType="number-pad"
+              secureTextEntry
+            />
+            <CampoTexto
+              placeholder="Repite el PIN"
+              value={pinRepetido}
+              onChangeText={(v) => setPinRepetido(soloDigitos(v))}
+              keyboardType="number-pad"
+              secureTextEntry
               onSubmitEditing={crear}
             />
             {aviso !== '' && (
@@ -90,7 +119,7 @@ export default function RegistroApoderado() {
             )}
             <View className="mt-1">
               <BotonPrimario
-                titulo={enviando ? 'Creando…' : 'Crear cuenta'}
+                titulo={enviando ? 'Registrando…' : 'Registrarse'}
                 onPress={crear}
                 deshabilitado={enviando}
               />

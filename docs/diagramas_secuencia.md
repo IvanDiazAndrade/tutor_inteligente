@@ -7,14 +7,16 @@
 
 ## 1. Contrato preliminar de la API
 
-Todas las rutas van sobre HTTPS con el JWT en la cabecera `Authorization` (salvo el registro y los dos login). El rol del token restringe las rutas: `/estudiante/*` exige rol `estudiante` y `/apoderado/*` exige rol `apoderado`.
+Todas las rutas van sobre HTTPS con el JWT en la cabecera `Authorization` (salvo el registro y el login del apoderado). El rol del token restringe las rutas: `/estudiante/*` exige rol `estudiante`, `/apoderado/*` exige rol `apoderado` y `/auth/dispositivo/*` exige el token de `dispositivo`, que vincula el teléfono a la cuenta (§2).
 
 | Método y ruta | Rol | Flujo | Respuesta (resumen) |
 |---|---|---|---|
 | `POST /auth/apoderado/registro` | — | CU-9 | apoderado creado |
-| `POST /auth/apoderado/login` | — | CU-1 | JWT de apoderado |
-| `POST /auth/estudiante/login` | — | CU-1 (§2) | JWT de estudiante |
-| `POST /apoderado/estudiante` · `PATCH /apoderado/estudiante` | apoderado | CU-9 | perfil (alias, curso); fija o cambia el PIN |
+| `POST /auth/apoderado/login` | — | CU-1 (§2) | JWT de apoderado + JWT de dispositivo |
+| `POST /auth/dispositivo/estudiante` | dispositivo | CU-1 (§2) | JWT de estudiante (sin PIN) |
+| `POST /auth/dispositivo/apoderado` | dispositivo | CU-1 (§2) | JWT de apoderado, con el PIN del panel |
+| `POST /apoderado/estudiante` · `PATCH /apoderado/estudiante` | apoderado | CU-9 | perfil (alias, curso) |
+| `PUT /apoderado/pin` | apoderado | CU-9 | cambia el PIN del panel |
 | `GET /apoderado/dashboard` | apoderado | F4 | resumen semanal, medidores, unidades difíciles, sugerencias |
 | `GET /estudiante/unidades` | estudiante | CU-2 | unidades visibles con estrellas + unidad sugerida |
 | `POST /estudiante/sesiones` · `POST /estudiante/sesiones/{id}/cierre` | estudiante | — | abre y cierra la sesión |
@@ -27,27 +29,37 @@ Todas las rutas van sobre HTTPS con el JWT en la cabecera `Authorization` (salvo
 
 `RespuestaTutor` = `{ resultado: correcta | incorrecta | formato_invalido, mensaje, puntos, pistasRestantes, ofreceResolverJuntos, cambioNivel, degradado }`. Nunca contiene la respuesta final ni la solución de referencia.
 
-## 2. Acceso del estudiante (CU-1)
+## 2. Acceso: teléfono vinculado, estudiante y panel (CU-1)
 
-El dispositivo recuerda los perfiles que entraron antes en él (solo id y alias, en `expo-secure-store`), así el niño elige su perfil sin escribir un correo.
+*Actualizado el 2-nov-2026 (RF-A3).* El apoderado inicia sesión una vez por teléfono con correo y contraseña. La respuesta trae, además del JWT del panel (60 min), un **JWT de dispositivo** (30 días) que se guarda en `expo-secure-store` y solo sirve para dos cosas: entrar como el estudiante, sin PIN, y abrir el panel con el PIN del apoderado. El teléfono recuerda el perfil del estudiante de la cuenta vinculada (solo id, alias y curso), así el niño lo toca y entra. Cerrar sesión en el teléfono borra el JWT de dispositivo y el perfil recordado.
 
 ```mermaid
 sequenceDiagram
     autonumber
+    actor A as Apoderado
     actor E as Estudiante
     participant App as App Android
     participant API as ServicioAuth
     participant DB as PostgreSQL
 
-    E->>App: elige su perfil e ingresa el PIN
-    App->>API: POST /auth/estudiante/login {estudianteId, pin}
-    API->>DB: SELECT estudiante
+    A->>App: correo + contraseña (una vez por teléfono)
+    App->>API: POST /auth/apoderado/login
+    API->>DB: SELECT apoderado (bcrypt)
+    API-->>App: JWT {rol: apoderado} + JWT {rol: dispositivo, 30 días}
+    App->>App: guarda el JWT de dispositivo en expo-secure-store
+
+    E->>App: toca su perfil
+    App->>API: POST /auth/dispositivo/estudiante (JWT de dispositivo)
+    API-->>App: JWT {rol: estudiante, sub: id del estudiante de la cuenta}
+
+    A->>App: "Soy el apoderado" + PIN de 4 números
+    App->>API: POST /auth/dispositivo/apoderado {pin} (JWT de dispositivo)
+    API->>DB: SELECT apoderado
     alt bloqueado_hasta > ahora
         API-->>App: 423 "Espera un momento e intenta otra vez"
     else PIN correcto (bcrypt)
         API->>DB: UPDATE pin_fallos = 0
-        API-->>App: JWT {rol: estudiante, sub: id, exp}
-        App->>App: guarda el JWT en expo-secure-store
+        API-->>App: JWT {rol: apoderado, 60 min}
     else PIN incorrecto
         API->>DB: UPDATE pin_fallos + 1 (≥ 5 → bloqueado_hasta = ahora + 5 min)
         API-->>App: 401

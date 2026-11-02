@@ -75,7 +75,7 @@ El LLM **no es un módulo del ITS**: es un recurso de generación de lenguaje al
 
 | Componente | Responsabilidad | Requisitos |
 |---|---|---|
-| **Auth y roles** | Registro del apoderado (titular de la cuenta), login por rol con JWT y expiración, acceso del estudiante por perfil + PIN. | RF-A1–A5, RNF-S1 |
+| **Auth y roles** | Registro del apoderado (titular de la cuenta), login por rol con JWT y expiración, teléfono vinculado a la cuenta: el estudiante entra tocando su perfil y el panel del apoderado se abre con PIN (RF-A3, actualizado 2-nov-2026). | RF-A1–A5, RNF-S1 |
 | **Catálogo curricular** | Unidades↔OA como datos (texto oficial del OA, curso, basal/complementario, anillo). Sin lógica: agregar Anillo 2 u otro curso es agregar filas. | RF-D1, RF-D8, RNF-M2 |
 | **Generador y banco de ejercicios** | Dos fuentes de ejercicios hacia un banco común: **(a) generador paramétrico** (código propio): ejercicios de cálculo directo, comparación, ordenamiento y representaciones pictóricas (SVG) sorteando operandos dentro del rango numérico del OA — correctos por construcción, costo de API cero, errores comunes predefinidos por plantilla; **(b) generador LLM**: problemas verbales y de contexto, pre-generados de forma asíncrona (prompt con texto oficial del OA, RF-D2) y sometidos al pipeline de verificación de 4 capas (aritmética exacta → chequeos curriculares/forma → LLM de triaje → revisión humana). Todo ejercicio persiste enunciado + solución de referencia paso a paso + errores comunes (RF-D3) y sigue el ciclo de vida `borrador → verificado → activo / descartado` (RF-D5). | RF-D2–D7, RNF-P1, RNF-R2 |
 | **Motor adaptativo** (modelo del estudiante) | Registra cada intento (RF-E1); actualiza el índice de dominio por OA (RF-E2); decide el nivel del siguiente ejercicio dentro de 3 niveles por unidad (RF-E3); diagnóstico inicial en frío (RF-E4). | RF-E1–E5 |
@@ -93,7 +93,7 @@ Derivado directamente de qué exigen registrar los requisitos:
 | Entidad | Atributos clave | Requisito que la exige |
 |---|---|---|
 | `Usuario` (apoderado) | id, email, hash contraseña (bcrypt), rol | RF-A1, RNF-S1 |
-| `Estudiante` | id, apoderadoId, alias, curso, PIN, puntajeTotal — **sin datos identificatorios** | RF-A1, A3, A5, RNF-S2 |
+| `Estudiante` | id, apoderadoId, alias, curso, puntajeTotal — **sin datos identificatorios** (el PIN pasó al apoderado: protege el panel, RF-A3) | RF-A1, A3, A5, RNF-S2 |
 | `Unidad` | id, oaCodigo, oaTextoOficial, basal/complementario, anillo, curso, orden | RF-D1, RNF-M2 |
 | `Ejercicio` | id, unidadId, nivelDificultad, enunciado, formatoRespuesta, respuestaFinal, solucionReferencia (pasos), erroresComunes[] {patrón, retroalimentación}, estado | RF-D3, D5, D7 |
 | `Intento` | id, estudianteId, ejercicioId, respuesta, esCorrecta, pistasUsadas, tiempoSegundos, fecha | RF-E1 |

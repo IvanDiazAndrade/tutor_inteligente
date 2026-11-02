@@ -38,7 +38,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/estudiante/login': {
+  '/auth/dispositivo/estudiante': {
     parameters: {
       query?: never;
       header?: never;
@@ -48,11 +48,31 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Ingresar Estudiante
-     * @description Perfil + PIN (RF-A3). Tras varios PIN incorrectos el perfil se bloquea unos minutos:
-     *     un PIN de 4 dígitos sin bloqueo se adivina en poco tiempo (modelo_base_datos.md §1).
+     * Entrar Como Estudiante
+     * @description El estudiante toca su perfil en un dispositivo vinculado y entra sin PIN (RF-A3).
      */
-    post: operations['ingresar_estudiante_auth_estudiante_login_post'];
+    post: operations['entrar_como_estudiante_auth_dispositivo_estudiante_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/dispositivo/apoderado': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Abrir Panel
+     * @description PIN del panel. Tras varios PIN incorrectos el panel se bloquea unos minutos: un PIN de
+     *     4 dígitos sin bloqueo se adivina en poco tiempo (modelo_base_datos.md §1).
+     */
+    post: operations['abrir_panel_auth_dispositivo_apoderado_post'];
     delete?: never;
     options?: never;
     head?: never;
@@ -76,6 +96,27 @@ export interface paths {
     head?: never;
     /** Editar Estudiante */
     patch: operations['editar_estudiante_apoderado_estudiante_patch'];
+    trace?: never;
+  };
+  '/apoderado/pin': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Cambiar Pin
+     * @description Fija o cambia el PIN del panel (RF-A3). Exige estar en el panel: ya se pidió el PIN
+     *     actual (o la contraseña) para llegar aquí.
+     */
+    put: operations['cambiar_pin_apoderado_pin_put'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/estudiante/perfil': {
@@ -308,8 +349,6 @@ export interface components {
       alias?: string | null;
       /** Curso */
       curso?: number | null;
-      /** Pin */
-      pin?: string | null;
     };
     /**
      * EstudianteNuevo
@@ -320,8 +359,6 @@ export interface components {
       alias: string;
       /** Curso */
       curso: number;
-      /** Pin */
-      pin: string;
     };
     /** ExplicacionGuiada */
     ExplicacionGuiada: {
@@ -341,15 +378,21 @@ export interface components {
       /** Contrasena */
       contrasena: string;
     };
-    /** IngresoEstudiante */
-    IngresoEstudiante: {
+    /**
+     * IngresoConDispositivo
+     * @description Respuesta del login con correo y contraseña: el token del panel y el que vincula el
+     *     dispositivo a la cuenta (RF-A2, RF-A3).
+     */
+    IngresoConDispositivo: {
+      /** Token */
+      token: string;
       /**
-       * Estudianteid
-       * Format: uuid
+       * Rol
+       * @enum {string}
        */
-      estudianteId: string;
-      /** Pin */
-      pin: string;
+      rol: 'apoderado' | 'estudiante';
+      /** Tokendispositivo */
+      tokenDispositivo: string;
     };
     /** Mensaje */
     Mensaje: {
@@ -373,6 +416,11 @@ export interface components {
       /** Puntajetotal */
       puntajeTotal: number;
     };
+    /** PinPanel */
+    PinPanel: {
+      /** Pin */
+      pin: string;
+    };
     /** PistaTutor */
     PistaTutor: {
       /** Numero */
@@ -388,6 +436,8 @@ export interface components {
       email: string;
       /** Contrasena */
       contrasena: string;
+      /** Pin */
+      pin: string;
     };
     /** RespuestaEstudiante */
     RespuestaEstudiante: {
@@ -530,7 +580,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Token'];
+          'application/json': components['schemas']['IngresoConDispositivo'];
         };
       };
       /** @description Validation Error */
@@ -544,7 +594,27 @@ export interface operations {
       };
     };
   };
-  ingresar_estudiante_auth_estudiante_login_post: {
+  entrar_como_estudiante_auth_dispositivo_estudiante_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Token'];
+        };
+      };
+    };
+  };
+  abrir_panel_auth_dispositivo_apoderado_post: {
     parameters: {
       query?: never;
       header?: never;
@@ -553,7 +623,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['IngresoEstudiante'];
+        'application/json': components['schemas']['PinPanel'];
       };
     };
     responses: {
@@ -651,6 +721,37 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PerfilEstudiante'];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  cambiar_pin_apoderado_pin_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PinPanel'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

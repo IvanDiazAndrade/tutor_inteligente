@@ -1,8 +1,9 @@
-"""Gestión del perfil del estudiante por su apoderado (CU-9; RF-A1, A4, A5)."""
+"""Gestión de la cuenta por el apoderado: perfil del estudiante y PIN del panel
+(CU-9; RF-A1, A3, A4, A5)."""
 
 from fastapi import APIRouter, HTTPException, status
 
-from tutor.esquemas import EstudianteCambios, EstudianteNuevo, PerfilEstudiante
+from tutor.esquemas import EstudianteCambios, EstudianteNuevo, PerfilEstudiante, PinPanel
 from tutor.modelos import Estudiante
 from tutor.seguridad import ApoderadoActual, SesionBD, hashear
 
@@ -18,9 +19,7 @@ def crear_estudiante(
     if apoderado.estudiante is not None:
         # Un apoderado, un estudiante (RF-A1, por ratificar con el equipo).
         raise HTTPException(status.HTTP_409_CONFLICT, "La cuenta ya tiene un estudiante.")
-    estudiante = Estudiante(
-        apoderado=apoderado, alias=datos.alias, curso=datos.curso, pin_hash=hashear(datos.pin)
-    )
+    estudiante = Estudiante(apoderado=apoderado, alias=datos.alias, curso=datos.curso)
     sesion.add(estudiante)
     sesion.commit()
     return estudiante
@@ -45,9 +44,15 @@ def editar_estudiante(
     if cambios.curso is not None:
         # El historial (intentos, dominio por OA) se conserva al cambiar de curso (RF-A4).
         estudiante.curso = cambios.curso
-    if cambios.pin is not None:
-        estudiante.pin_hash = hashear(cambios.pin)
-        estudiante.pin_fallos = 0
-        estudiante.bloqueado_hasta = None
     sesion.commit()
     return estudiante
+
+
+@router.put("/pin", status_code=status.HTTP_204_NO_CONTENT)
+def cambiar_pin(datos: PinPanel, apoderado: ApoderadoActual, sesion: SesionBD) -> None:
+    """Fija o cambia el PIN del panel (RF-A3). Exige estar en el panel: ya se pidió el PIN
+    actual (o la contraseña) para llegar aquí."""
+    apoderado.pin_hash = hashear(datos.pin)
+    apoderado.pin_fallos = 0
+    apoderado.bloqueado_hasta = None
+    sesion.commit()

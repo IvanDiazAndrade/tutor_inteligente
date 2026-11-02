@@ -43,7 +43,7 @@ function comentarioDe(dominio: Dominio, pistas: number, hoy: Date): string {
 function Panel() {
   const { dosColumnas, esTablet: g } = useDistribucion();
   const [periodo, setPeriodo] = useState<Periodo>('esta');
-  const { cerrar } = useSesion();
+  const { cerrar, desvincular } = useSesion();
   const perfil = useConsulta('estudiante-del-apoderado', api.estudianteDelApoderado);
   const estudiante = { ...ESTUDIANTE_EJEMPLO, alias: perfil.data?.alias ?? '…' };
   const resumen = RESUMENES_EJEMPLO[periodo];
@@ -193,17 +193,32 @@ function Panel() {
         🔒 Ves indicadores del avance de {estudiante.alias}. Las conversaciones con el tutor son
         privadas.
       </Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => cerrar().then(() => router.replace('/'))}
-        className="py-2"
-      >
-        <Text
-          className={`font-nunito-extrabold text-primario-claro underline ${g ? 'text-base' : 'text-[13px]'}`}
+      {/* Salir del panel deja el teléfono vinculado (el niño sigue entrando con su perfil);
+          cerrar sesión lo desvincula y la próxima vez se pide correo y contraseña. */}
+      <View className="flex-row flex-wrap justify-center gap-x-6">
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => cerrar().then(() => router.replace('/'))}
+          className="py-2"
         >
-          Cerrar sesión
-        </Text>
-      </Pressable>
+          <Text
+            className={`font-nunito-extrabold text-primario-claro underline ${g ? 'text-base' : 'text-[13px]'}`}
+          >
+            Salir del panel
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => desvincular().then(() => router.replace('/'))}
+          className="py-2"
+        >
+          <Text
+            className={`font-nunito-extrabold text-apagado-oscuro underline ${g ? 'text-base' : 'text-[13px]'}`}
+          >
+            Cerrar sesión en este teléfono
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 

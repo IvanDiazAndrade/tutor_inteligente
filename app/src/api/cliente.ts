@@ -24,7 +24,7 @@ export class ErrorApi extends Error {
 
 type Opciones = { cuerpo?: unknown; token?: string | null };
 
-async function pedir<T>(metodo: 'GET' | 'POST' | 'PATCH', ruta: string, op: Opciones = {}) {
+async function pedir<T>(metodo: 'GET' | 'POST' | 'PATCH' | 'PUT', ruta: string, op: Opciones = {}) {
   const controlador = new AbortController();
   const temporizador = setTimeout(() => controlador.abort(), TIEMPO_MAXIMO_MS);
   let respuesta: Response;
@@ -54,6 +54,7 @@ async function pedir<T>(metodo: 'GET' | 'POST' | 'PATCH', ruta: string, op: Opci
     } catch {}
     throw new ErrorApi(respuesta.status, mensaje);
   }
+  if (respuesta.status === 204) return undefined as T;
   return (await respuesta.json()) as T;
 }
 
@@ -62,19 +63,30 @@ export type Salud = { estado: string; version: string; base_datos: string };
 export const api = {
   salud: () => pedir<Salud>('GET', '/salud'),
 
-  registrarApoderado: (email: string, contrasena: string) =>
+  registrarApoderado: (email: string, contrasena: string, pin: string) =>
     pedir<Esquemas['ApoderadoCreado']>('POST', '/auth/apoderado/registro', {
-      cuerpo: { email, contrasena },
+      cuerpo: { email, contrasena, pin },
     }),
   ingresarApoderado: (email: string, contrasena: string) =>
-    pedir<Token>('POST', '/auth/apoderado/login', { cuerpo: { email, contrasena } }),
-  ingresarEstudiante: (estudianteId: string, pin: string) =>
-    pedir<Token>('POST', '/auth/estudiante/login', { cuerpo: { estudianteId, pin } }),
+    pedir<Esquemas['IngresoConDispositivo']>('POST', '/auth/apoderado/login', {
+      cuerpo: { email, contrasena },
+    }),
+  // Con el token del dispositivo vinculado (RF-A3): el niño entra sin PIN y el panel pide
+  // el PIN del apoderado.
+  entrarComoEstudiante: (tokenDispositivo: string) =>
+    pedir<Token>('POST', '/auth/dispositivo/estudiante', { token: tokenDispositivo }),
+  abrirPanel: (tokenDispositivo: string, pin: string) =>
+    pedir<Token>('POST', '/auth/dispositivo/apoderado', {
+      token: tokenDispositivo,
+      cuerpo: { pin },
+    }),
 
   estudianteDelApoderado: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/apoderado/estudiante', { token }),
   crearEstudiante: (token: string, datos: Esquemas['EstudianteNuevo']) =>
     pedir<PerfilEstudiante>('POST', '/apoderado/estudiante', { token, cuerpo: datos }),
+  cambiarPin: (token: string, pin: string) =>
+    pedir<void>('PUT', '/apoderado/pin', { token, cuerpo: { pin } }),
 
   perfilEstudiante: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/estudiante/perfil', { token }),
