@@ -1,0 +1,1281 @@
+# Conjunto de referencia (gold standard) — BORRADOR para revisión del equipo
+#
+# Origen: modelo_dominio.md §7. 60 ejercicios = 2 por OA del Anillo 1 (48) + 1 extra en las 12
+# unidades de fracciones y decimales. Se cargan en la tabla `ejercicio` con fuente = 'gold' y
+# nunca entran en la rotación de los estudiantes.
+#
+#   uso_gold: fewshot     -> 1 por OA (24). Va como ejemplo en el prompt de generación del mismo OA.
+#   uso_gold: validacion  -> 36. Reservados: NUNCA aparecen en un prompt. Contra ellos se mide la
+#                            corrección ≥ 95 % (RNF-P1) en el piloto (tarea 58) y en las tareas 70–72.
+#
+# Estado: borrador. Cada ejercicio debe resolverlo a mano un integrante del equipo, sin mirar la
+# respuesta_final, y luego confirmar enunciado, respuesta, pasos, errores y pistas. Al aprobarlo,
+# completar revisado_por con el nombre. Un ejercicio sin revisado_por no cuenta como gold.
+#
+# Convenciones (modelo_dominio.md §3): respuesta_final sin punto de miles y con coma decimal;
+# fracciones como "a/b" y mixtos como "c a/b"; ordenar = valores separados por "; ";
+# comparar = "<", "=" o ">". regla_validacion.aceptaEquivalentes es true salvo en 5B-OA7
+# (simplificar/amplificar) y 6B-OA5 (impropia <-> mixto), donde la forma es el objetivo.
+
+ejercicios:
+
+  # ── 4° básico ───────────────────────────────────────────────────────────────────────────
+
+  - id: G-4B-OA1-1
+    unidad_id: 4B-OA1
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "En la biblioteca del colegio hay 4 cajas con 1.000 libros cada una, 3 cajas con 100 libros, 7 paquetes de 10 libros y 5 libros sueltos. ¿Cuántos libros hay en total?"
+    formato_respuesta: numerico
+    respuesta_final: "4375"
+    regla_validacion: {}
+    solucion_referencia:
+      - "4 cajas de 1.000 son 4 unidades de mil: 4.000 libros."
+      - "3 cajas de 100 son 3 centenas: 300 libros."
+      - "7 paquetes de 10 son 7 decenas: 70 libros."
+      - "Los 5 libros sueltos son 5 unidades."
+      - "Se juntan: 4.000 + 300 + 70 + 5 = 4.375 libros."
+    errores_comunes:
+      - { respuesta: "19", causa: "sumó la cantidad de cajas y paquetes sin considerar cuántos libros trae cada uno", retroalimentacion: "Cada caja y cada paquete trae muchos libros. Piensa cuántos libros hay en cada grupo antes de juntarlos." }
+      - { respuesta: "4357", causa: "intercambió la posición de las decenas y las unidades", retroalimentacion: "Revisa la tabla posicional: los paquetes de 10 son decenas y los libros sueltos son unidades." }
+    pistas:
+      - "Piensa cada grupo como una posición de la tabla: unidades de mil, centenas, decenas y unidades."
+      - "Las 4 cajas de 1.000 son 4 unidades de mil. ¿Cuántas centenas, decenas y unidades hay?"
+      - "Tienes 4.000, 300 y 70. Solo falta agregar los libros sueltos."
+    revisado_por: null
+
+  - id: G-4B-OA1-2
+    unidad_id: 4B-OA1
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "¿Qué número tiene 2 unidades de mil, 0 centenas, 6 decenas y 8 unidades?"
+    formato_respuesta: numerico
+    respuesta_final: "2068"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se ubica cada dígito en su posición: unidades de mil, centenas, decenas y unidades."
+      - "Unidades de mil: 2. Centenas: 0. Decenas: 6. Unidades: 8."
+      - "El número es 2.068."
+    errores_comunes:
+      - { respuesta: "268", causa: "omitió el 0 de las centenas", retroalimentacion: "Cuando una posición no tiene nada, igual se escribe un 0 para que los demás dígitos queden en su lugar." }
+      - { respuesta: "2680", causa: "corrió los dígitos una posición a la izquierda", retroalimentacion: "Revisa que cada dígito quede en su posición: el último lugar es el de las unidades." }
+    pistas:
+      - "Dibuja una tabla posicional con cuatro columnas: UM, C, D y U."
+      - "Escribe el 2 en las unidades de mil. ¿Qué número va en las centenas si no hay ninguna?"
+      - "Ya tienes 2 y 0 en las dos primeras columnas. Completa las decenas y las unidades."
+    revisado_por: null
+
+  - id: G-4B-OA2-1
+    unidad_id: 4B-OA2
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Una caja de huevos trae 6 filas con 8 huevos en cada fila. ¿Cuántos huevos trae la caja?"
+    formato_respuesta: numerico
+    respuesta_final: "48"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Hay 6 filas iguales de 8 huevos, así que se multiplica: 6 × 8."
+      - "Se puede pensar como el doble de 3 × 8: 3 × 8 = 24 y el doble de 24 es 48."
+      - "La caja trae 48 huevos."
+    errores_comunes:
+      - { respuesta: "14", causa: "sumó 6 + 8 en vez de multiplicar", retroalimentacion: "No es una fila de 6 y otra de 8: son 6 filas y cada una tiene 8 huevos." }
+      - { respuesta: "42", causa: "confundió 6 × 8 con 6 × 7", retroalimentacion: "Revisa la tabla del 6. Puedes calcular 3 × 8 y luego doblarlo." }
+    pistas:
+      - "Cuando hay varios grupos con la misma cantidad, puedes usar la multiplicación."
+      - "Hay 6 grupos de 8. ¿Qué multiplicación representa eso?"
+      - "Calcula 3 × 8 y luego busca el doble de ese resultado."
+    revisado_por: null
+
+  - id: G-4B-OA2-2
+    unidad_id: 4B-OA2
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "La profesora reparte 56 lápices en partes iguales entre 7 grupos. ¿Cuántos lápices recibe cada grupo?"
+    formato_respuesta: numerico
+    respuesta_final: "8"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Repartir en partes iguales es dividir: 56 : 7."
+      - "Se busca qué número multiplicado por 7 da 56: 7 × 8 = 56."
+      - "Cada grupo recibe 8 lápices."
+    errores_comunes:
+      - { respuesta: "49", causa: "restó 56 − 7 en vez de dividir", retroalimentacion: "Repartir entre 7 grupos no es quitar 7 lápices. Piensa cuántos le tocan a cada grupo." }
+      - { respuesta: "63", causa: "sumó 56 + 7", retroalimentacion: "Al repartir, cada grupo recibe menos lápices que el total. Revisa la operación que elegiste." }
+    pistas:
+      - "Repartir en partes iguales se resuelve con una división."
+      - "Piensa en la tabla del 7: ¿7 por cuánto da 56?"
+      - "Recorre la tabla del 7 desde 7 × 5 = 35 hasta llegar a 56."
+    revisado_por: null
+
+  - id: G-4B-OA3-1
+    unidad_id: 4B-OA3
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "En una feria escolar se vendieron 348 empanadas el sábado y 275 el domingo. ¿Cuántas empanadas se vendieron en total?"
+    formato_respuesta: numerico
+    respuesta_final: "623"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Para saber el total se suman las ventas de los dos días: 348 + 275."
+      - "Unidades: 8 + 5 = 13. Se escribe 3 y se reserva 1 decena."
+      - "Decenas: 4 + 7 + 1 = 12. Se escribe 2 y se reserva 1 centena."
+      - "Centenas: 3 + 2 + 1 = 6. El total es 623 empanadas."
+    errores_comunes:
+      - { respuesta: "513", causa: "no agregó las reservas al sumar", retroalimentacion: "Cuando una columna suma 10 o más, la decena que sobra pasa a la columna siguiente." }
+      - { respuesta: "73", causa: "restó en vez de sumar", retroalimentacion: "La pregunta pide el total de los dos días: hay que juntar las cantidades." }
+    pistas:
+      - "Para encontrar un total se juntan las cantidades. ¿Qué operación es esa?"
+      - "Ordena 348 y 275 en columnas y empieza por las unidades: 8 + 5."
+      - "Unidades y decenas ya te dejan reservas. Suma las centenas sin olvidar la que reservaste."
+    revisado_por: null
+
+  - id: G-4B-OA3-2
+    unidad_id: 4B-OA3
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Martina tenía 900 láminas. Regaló 245 a su primo y 128 a su amiga. ¿Cuántas láminas le quedan?"
+    formato_respuesta: numerico
+    respuesta_final: "527"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Primero se calcula cuántas láminas regaló: 245 + 128 = 373."
+      - "Luego se resta lo regalado de lo que tenía: 900 − 373."
+      - "900 − 373 = 527. Le quedan 527 láminas."
+    errores_comunes:
+      - { respuesta: "373", causa: "calculó solo cuántas láminas regaló", retroalimentacion: "Ese número es lo que regaló. La pregunta es cuántas le quedan a Martina." }
+      - { respuesta: "655", causa: "restó solo las láminas que le dio al primo", retroalimentacion: "Martina regaló láminas a dos personas. Revisa si consideraste a ambas." }
+    pistas:
+      - "Este problema tiene dos pasos: saber cuánto regaló y luego cuánto le queda."
+      - "Suma las láminas que regaló al primo y a la amiga."
+      - "Ya sabes cuántas regaló en total. Réstalas de las 900 que tenía."
+    revisado_por: null
+
+  - id: G-4B-OA5-1
+    unidad_id: 4B-OA5
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Un bus escolar recorre 125 km cada día. ¿Cuántos kilómetros recorre en 6 días?"
+    formato_respuesta: numerico
+    respuesta_final: "750"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se repite 6 veces la misma distancia, así que se multiplica: 125 × 6."
+      - "Unidades: 5 × 6 = 30. Se escribe 0 y se reservan 3 decenas."
+      - "Decenas: 2 × 6 = 12, más 3 de reserva = 15. Se escribe 5 y se reserva 1 centena."
+      - "Centenas: 1 × 6 = 6, más 1 de reserva = 7. Recorre 750 km."
+    errores_comunes:
+      - { respuesta: "620", causa: "no sumó las reservas", retroalimentacion: "Después de multiplicar cada posición, agrega lo que reservaste de la posición anterior." }
+      - { respuesta: "131", causa: "sumó 125 + 6 en vez de multiplicar", retroalimentacion: "El bus recorre 125 km cada uno de los 6 días: la distancia se repite 6 veces." }
+    pistas:
+      - "Si la misma distancia se repite varios días, puedes multiplicar."
+      - "Calcula 125 × 6 empezando por las unidades: 5 × 6."
+      - "Ya tienes las unidades y las decenas. Multiplica la centena y suma la reserva."
+    revisado_por: null
+
+  - id: G-4B-OA5-2
+    unidad_id: 4B-OA5
+    nivel: 1
+    uso_gold: validacion
+    enunciado: "Calcula 213 × 3."
+    formato_respuesta: numerico
+    respuesta_final: "639"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se multiplica cada posición por 3, empezando por las unidades."
+      - "Unidades: 3 × 3 = 9. Decenas: 1 × 3 = 3. Centenas: 2 × 3 = 6."
+      - "El resultado es 639."
+    errores_comunes:
+      - { respuesta: "216", causa: "sumó 213 + 3", retroalimentacion: "El signo × indica multiplicar: 213 se repite 3 veces." }
+    pistas:
+      - "Multiplica cada dígito de 213 por 3, de derecha a izquierda."
+      - "Empieza por las unidades: 3 × 3."
+      - "Ya tienes las unidades. Multiplica también las decenas (1) y las centenas (2) por 3."
+    revisado_por: null
+
+  - id: G-4B-OA6-1
+    unidad_id: 4B-OA6
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Hay 84 sillas para ordenar en 4 filas con la misma cantidad. ¿Cuántas sillas van en cada fila?"
+    formato_respuesta: numerico
+    respuesta_final: "21"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Repartir en filas iguales es dividir: 84 : 4."
+      - "Se descompone 84 en 80 + 4."
+      - "80 : 4 = 20 y 4 : 4 = 1. Entonces 20 + 1 = 21 sillas por fila."
+    errores_comunes:
+      - { respuesta: "80", causa: "restó 84 − 4", retroalimentacion: "Ordenar en 4 filas no es quitar 4 sillas. Piensa cuántas quedan en cada fila." }
+      - { respuesta: "12", causa: "escribió los dígitos del cociente en orden inverso", retroalimentacion: "Revisa el orden: primero se dividen las decenas y ese resultado va adelante." }
+    pistas:
+      - "Repartir en grupos iguales se resuelve dividiendo."
+      - "Descompón 84 en 80 + 4 y divide cada parte por 4."
+      - "Ya sabes que 80 : 4 = 20. Divide la parte que falta y súmalas."
+    revisado_por: null
+
+  - id: G-4B-OA6-2
+    unidad_id: 4B-OA6
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Se reparten 96 dulces entre 8 niños en partes iguales. ¿Cuántos dulces recibe cada niño?"
+    formato_respuesta: numerico
+    respuesta_final: "12"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Repartir en partes iguales es dividir: 96 : 8."
+      - "Se descompone 96 en 80 + 16."
+      - "80 : 8 = 10 y 16 : 8 = 2. Entonces 10 + 2 = 12 dulces cada uno."
+    errores_comunes:
+      - { respuesta: "88", causa: "restó 96 − 8", retroalimentacion: "Repartir entre 8 niños no es quitar 8 dulces. Piensa cuántos le tocan a cada uno." }
+      - { respuesta: "104", causa: "sumó 96 + 8", retroalimentacion: "Al repartir, cada niño recibe menos dulces que el total. Revisa la operación que elegiste." }
+    pistas:
+      - "Repartir en partes iguales se resuelve dividiendo."
+      - "Descompón 96 en dos partes que se dividan fácil por 8, por ejemplo 80 y 16."
+      - "Ya sabes que 80 : 8 = 10. Divide 16 por 8 y suma los resultados."
+    revisado_por: null
+
+  - id: G-4B-OA7-1
+    unidad_id: 4B-OA7
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Tomás compró un cuaderno de $1.350 y un lápiz de $480. Pagó con un billete de $2.000. ¿Cuánto vuelto recibió?"
+    formato_respuesta: numerico
+    respuesta_final: "170"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Primero se calcula cuánto gastó: $1.350 + $480 = $1.830."
+      - "El vuelto es lo que pagó menos lo que gastó: $2.000 − $1.830."
+      - "$2.000 − $1.830 = $170. Recibió $170 de vuelto."
+    errores_comunes:
+      - { respuesta: "1830", causa: "calculó solo el total de la compra", retroalimentacion: "Ese es el costo de la compra. El vuelto es lo que sobra del billete." }
+      - { respuesta: "650", causa: "restó solo el precio del cuaderno", retroalimentacion: "Tomás compró dos cosas. Revisa si consideraste las dos en el gasto." }
+    pistas:
+      - "El vuelto es lo que sobra del billete después de pagar todo lo que compraste."
+      - "Primero suma el precio del cuaderno y el del lápiz."
+      - "Ya sabes cuánto gastó. Réstalo de los $2.000."
+    revisado_por: null
+
+  - id: G-4B-OA7-2
+    unidad_id: 4B-OA7
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Sofía ahorra $500 cada semana. Quiere comprar una pelota que cuesta $4.000. ¿Cuántas semanas necesita ahorrar para comprarla?"
+    formato_respuesta: numerico
+    respuesta_final: "8"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se busca cuántas veces cabe $500 en $4.000."
+      - "Eso es una división: 4.000 : 500."
+      - "Como 500 × 8 = 4.000, necesita 8 semanas."
+    errores_comunes:
+      - { respuesta: "3500", causa: "restó 4.000 − 500", retroalimentacion: "La pregunta es por semanas, no por dinero. Piensa cuántas veces debe juntar $500." }
+      - { respuesta: "4500", causa: "sumó 4.000 + 500", retroalimentacion: "La respuesta debe ser una cantidad de semanas. Piensa cuántas veces cabe $500 en el precio." }
+    pistas:
+      - "Piensa cuántas veces tiene que juntar $500 para llegar al precio de la pelota."
+      - "Puedes ir sumando de a $500 o buscar cuántas veces cabe 500 en 4.000."
+      - "Recuerda que 500 × 2 = 1.000. ¿Cuántas veces necesitas 1.000 para llegar a 4.000?"
+    revisado_por: null
+
+  - id: G-4B-OA8-1
+    unidad_id: 4B-OA8
+    nivel: 1
+    uso_gold: fewshot
+    enunciado: "Una pizza se cortó en 8 trozos iguales y Diego se comió 3. ¿Qué fracción de la pizza se comió Diego?"
+    representacion: { tipo: fraccion-circulo, parametros: { denominador: 8, partesDestacadas: [3] } }
+    formato_respuesta: fraccion
+    respuesta_final: "3/8"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "La pizza entera tiene 8 trozos iguales: el denominador es 8."
+      - "Diego se comió 3 trozos: el numerador es 3."
+      - "Diego se comió 3/8 de la pizza."
+    errores_comunes:
+      - { respuesta: "5/8", causa: "contó los trozos que quedaron en vez de los que se comió", retroalimentacion: "Fíjate en lo que pregunta: la parte que se comió Diego, no la que sobró." }
+      - { respuesta: "3/5", causa: "usó como denominador los trozos que quedaron", retroalimentacion: "El denominador indica en cuántas partes iguales se dividió la pizza entera." }
+    pistas:
+      - "El número de abajo dice en cuántas partes iguales está dividido el entero."
+      - "La pizza tiene 8 trozos en total. Ese es el número de abajo."
+      - "El número de abajo es 8. ¿Cuántos trozos se comió Diego? Ese va arriba."
+    revisado_por: null
+
+  - id: G-4B-OA8-2
+    unidad_id: 4B-OA8
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Compara las fracciones 3/4 y 3/8. Elige el signo que corresponde: 3/4 __ 3/8."
+    formato_respuesta: comparar
+    respuesta_final: ">"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Las dos fracciones tienen el mismo numerador: 3 partes."
+      - "Si el entero se divide en 4 partes, cada parte es más grande que si se divide en 8."
+      - "3 partes grandes son más que 3 partes pequeñas: 3/4 > 3/8."
+    errores_comunes:
+      - { respuesta: "<", causa: "pensó que un denominador mayor significa una fracción mayor", retroalimentacion: "Mientras más partes tiene el entero, más pequeña es cada parte. Imagina las dos fracciones en una barra." }
+    pistas:
+      - "Imagina dos barras iguales, una dividida en 4 partes y otra en 8."
+      - "¿Qué parte es más grande: un cuarto o un octavo?"
+      - "En las dos fracciones tomas 3 partes. Compara el tamaño de esas partes."
+    revisado_por: null
+
+  - id: G-4B-OA8-3
+    unidad_id: 4B-OA8
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Ordena de menor a mayor las fracciones 1/2, 1/5 y 1/3."
+    formato_respuesta: ordenar
+    respuesta_final: "1/5; 1/3; 1/2"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Las tres fracciones tienen numerador 1: se compara el tamaño de una sola parte."
+      - "Mientras más partes tiene el entero, más pequeña es cada parte."
+      - "Un quinto es la parte más pequeña y un medio la más grande: 1/5, 1/3, 1/2."
+    errores_comunes:
+      - { respuesta: "1/2; 1/3; 1/5", causa: "ordenó por el denominador como si fueran números naturales", retroalimentacion: "Un denominador más grande indica partes más pequeñas. Imagina las tres fracciones en barras iguales." }
+    pistas:
+      - "Todas tienen numerador 1, así que compara el tamaño de una sola parte."
+      - "Piensa: ¿qué es más pequeño, partir una barra en 2, en 3 o en 5 partes iguales?"
+      - "La fracción con más partes en el entero es la más pequeña. Empieza por ella."
+    revisado_por: null
+
+  - id: G-4B-OA9-1
+    unidad_id: 4B-OA9
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Javiera usó 2/6 de una cinta en la mañana y 3/6 de la misma cinta en la tarde. ¿Qué fracción de la cinta usó en total?"
+    representacion: { tipo: fraccion-circulo, parametros: { denominador: 6, partesDestacadas: [2, 3] } }
+    formato_respuesta: fraccion
+    respuesta_final: "5/6"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Las dos fracciones tienen el mismo denominador (6), así que se mantiene."
+      - "Se suman solo los numeradores: 2 + 3 = 5."
+      - "Javiera usó 5/6 de la cinta."
+    errores_comunes:
+      - { respuesta: "5/12", causa: "sumó también los denominadores", retroalimentacion: "Cuando los denominadores son iguales se mantienen: la cinta sigue dividida en las mismas partes." }
+      - { respuesta: "5", causa: "olvidó escribir el denominador", retroalimentacion: "La respuesta es una parte de la cinta. Indica en cuántas partes está dividida." }
+    pistas:
+      - "Fíjate en los denominadores. ¿Son iguales o distintos?"
+      - "Si los denominadores son iguales, se mantienen. Solo trabajas con los numeradores."
+      - "Suma los numeradores 2 y 3, y deja el mismo denominador."
+    revisado_por: null
+
+  - id: G-4B-OA9-2
+    unidad_id: 4B-OA9
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 7/10 − 3/10."
+    formato_respuesta: fraccion
+    respuesta_final: "4/10"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Los denominadores son iguales (10), así que se mantienen."
+      - "Se restan los numeradores: 7 − 3 = 4."
+      - "El resultado es 4/10 (que también se puede escribir como 2/5)."
+    errores_comunes:
+      - { respuesta: "10/10", causa: "sumó en vez de restar", retroalimentacion: "Revisa el signo de la operación: hay que quitar 3/10." }
+      - { respuesta: "4", causa: "olvidó escribir el denominador", retroalimentacion: "El resultado sigue siendo una fracción con el mismo denominador." }
+    pistas:
+      - "Los denominadores son iguales. ¿Qué pasa con ellos al restar?"
+      - "El denominador se mantiene; solo se restan los numeradores."
+      - "Resta 7 − 3 y escribe ese número sobre el mismo denominador."
+    revisado_por: null
+
+  - id: G-4B-OA9-3
+    unidad_id: 4B-OA9
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "En una botella había 5/8 de litro de jugo. Matías tomó 2/8 de litro y su hermana tomó 1/8 de litro. ¿Qué fracción de litro de jugo queda en la botella?"
+    formato_respuesta: fraccion
+    respuesta_final: "2/8"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Primero se suma lo que tomaron: 2/8 + 1/8 = 3/8 de litro."
+      - "Luego se resta de lo que había: 5/8 − 3/8."
+      - "5/8 − 3/8 = 2/8. Quedan 2/8 de litro (que es lo mismo que 1/4)."
+    errores_comunes:
+      - { respuesta: "3/8", causa: "restó solo lo que tomó Matías", retroalimentacion: "Tomaron jugo dos personas. Revisa si consideraste lo que tomó la hermana." }
+      - { respuesta: "8/8", causa: "sumó todas las cantidades", retroalimentacion: "Se pregunta cuánto queda, así que lo que tomaron se descuenta de lo que había." }
+    pistas:
+      - "Este problema tiene dos pasos: cuánto tomaron entre los dos y cuánto queda."
+      - "Suma lo que tomó Matías y lo que tomó su hermana."
+      - "Entre los dos tomaron 3/8 de litro. Réstalo de lo que había en la botella."
+    revisado_por: null
+
+  # ── 5° básico ───────────────────────────────────────────────────────────────────────────
+
+  - id: G-5B-OA1-1
+    unidad_id: 5B-OA1
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Una ciudad tiene 3.456.209 habitantes. ¿Cuál es el valor posicional del dígito 4 en ese número?"
+    formato_respuesta: numerico
+    respuesta_final: "400000"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se ubican las posiciones de derecha a izquierda: U, D, C, UM, DM, CM, UMi."
+      - "El 4 está en la posición de las centenas de mil."
+      - "Su valor posicional es 4 × 100.000 = 400.000."
+    errores_comunes:
+      - { respuesta: "4", causa: "dio el dígito en vez de su valor posicional", retroalimentacion: "El valor posicional depende del lugar que ocupa el dígito en el número." }
+      - { respuesta: "40000", causa: "ubicó el 4 una posición más a la derecha", retroalimentacion: "Cuenta otra vez las posiciones desde las unidades, de derecha a izquierda." }
+    pistas:
+      - "El valor de un dígito depende de la posición que ocupa."
+      - "Separa el número en grupos de tres: 3 | 456 | 209. ¿En qué grupo está el 4?"
+      - "El 4 es el primer dígito del grupo de los miles. ¿Qué posición es esa?"
+    revisado_por: null
+
+  - id: G-5B-OA1-2
+    unidad_id: 5B-OA1
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Aproxima el número 7.862.540 a la unidad de mil más cercana."
+    formato_respuesta: numerico
+    respuesta_final: "7863000"
+    regla_validacion: {}
+    solucion_referencia:
+      - "La cifra de las unidades de mil es 2 (7.862.540)."
+      - "Se mira la cifra de la derecha, las centenas: es 5. Como es 5 o más, se sube la unidad de mil."
+      - "El 2 pasa a 3 y las cifras siguientes quedan en 0: 7.863.000."
+    errores_comunes:
+      - { respuesta: "7862000", causa: "cortó las cifras sin mirar la de las centenas", retroalimentacion: "Para aproximar hay que mirar la cifra siguiente: si es 5 o más, se sube." }
+      - { respuesta: "7860000", causa: "aproximó a la decena de mil", retroalimentacion: "Revisa a qué posición se pide aproximar: la unidad de mil." }
+    pistas:
+      - "Ubica la cifra de las unidades de mil y mira la cifra que está a su derecha."
+      - "La cifra de las unidades de mil es 2. ¿Cuál es la cifra de las centenas?"
+      - "Si la cifra de las centenas es 5 o más, la unidad de mil sube en 1 y lo demás queda en 0."
+    revisado_por: null
+
+  - id: G-5B-OA3-1
+    unidad_id: 5B-OA3
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Un colegio tiene 24 cursos y en cada curso hay 36 estudiantes. ¿Cuántos estudiantes hay en el colegio?"
+    formato_respuesta: numerico
+    respuesta_final: "864"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Hay 24 grupos de 36, así que se multiplica: 24 × 36."
+      - "24 × 6 = 144."
+      - "24 × 30 = 720."
+      - "Se suman los productos parciales: 144 + 720 = 864 estudiantes."
+    errores_comunes:
+      - { respuesta: "216", causa: "no corrió el segundo producto parcial una posición (usó 24 × 3 en vez de 24 × 30)", retroalimentacion: "El 3 de 36 vale 3 decenas: al multiplicar por él, el resultado se corre una posición." }
+      - { respuesta: "60", causa: "sumó 24 + 36", retroalimentacion: "Cada uno de los 24 cursos tiene 36 estudiantes: la cantidad se repite 24 veces." }
+    pistas:
+      - "Si cada curso tiene la misma cantidad de estudiantes, puedes multiplicar."
+      - "Separa 36 en 30 + 6 y multiplica 24 por cada parte."
+      - "Ya tienes 24 × 6 = 144. Calcula 24 × 30 y suma los dos resultados."
+    revisado_por: null
+
+  - id: G-5B-OA3-2
+    unidad_id: 5B-OA3
+    nivel: 1
+    uso_gold: validacion
+    enunciado: "Calcula 45 × 12."
+    formato_respuesta: numerico
+    respuesta_final: "540"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se separa 12 en 10 + 2."
+      - "45 × 2 = 90 y 45 × 10 = 450."
+      - "Se suman: 90 + 450 = 540."
+    errores_comunes:
+      - { respuesta: "135", causa: "multiplicó por 1 en vez de por 10 en el segundo producto parcial", retroalimentacion: "El 1 de 12 vale una decena: al multiplicar por él, el resultado se corre una posición." }
+      - { respuesta: "57", causa: "sumó 45 + 12", retroalimentacion: "El signo × indica multiplicar, no sumar." }
+    pistas:
+      - "Puedes separar 12 en 10 + 2 y multiplicar por partes."
+      - "Calcula 45 × 2 y 45 × 10."
+      - "Ya tienes 90 y 450. Solo falta juntarlos."
+    revisado_por: null
+
+  - id: G-5B-OA4-1
+    unidad_id: 5B-OA4
+    nivel: 3
+    uso_gold: fewshot
+    enunciado: "Van 150 personas a un paseo y en cada furgón caben 8 personas. ¿Cuántos furgones se necesitan como mínimo para que viajen todos?"
+    formato_respuesta: numerico
+    respuesta_final: "19"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se divide 150 : 8 para saber cuántos furgones se llenan."
+      - "150 : 8 = 18 y sobran 6 (18 × 8 = 144; 150 − 144 = 6)."
+      - "18 furgones van llenos, pero 6 personas aún no tienen lugar."
+      - "Se necesita un furgón más para ellas: 18 + 1 = 19 furgones."
+    errores_comunes:
+      - { respuesta: "18", causa: "no consideró el resto", retroalimentacion: "Revisa si todas las personas alcanzan a viajar. ¿Qué pasa con las que sobran?" }
+      - { respuesta: "6", causa: "respondió con el resto de la división", retroalimentacion: "Ese número son las personas que sobran. La pregunta es cuántos furgones se necesitan." }
+    pistas:
+      - "Divide el total de personas por la cantidad que cabe en cada furgón."
+      - "Calcula 150 : 8. Fíjate si sobra alguna persona."
+      - "Con 18 furgones llenos sobran 6 personas. ¿Pueden quedarse sin viajar?"
+    revisado_por: null
+
+  - id: G-5B-OA4-2
+    unidad_id: 5B-OA4
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 437 : 6. ¿Cuál es el resto?"
+    formato_respuesta: numerico
+    respuesta_final: "5"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se divide 43 decenas por 6: 6 × 7 = 42, sobra 1 decena."
+      - "Se baja el 7: quedan 17 unidades. 6 × 2 = 12, sobran 5."
+      - "El cociente es 72 y el resto es 5 (6 × 72 + 5 = 437)."
+    errores_comunes:
+      - { respuesta: "72", causa: "respondió con el cociente en vez del resto", retroalimentacion: "Ese es el cociente. La pregunta pide lo que sobra al final de la división." }
+    pistas:
+      - "El resto es lo que sobra al final de la división."
+      - "Empieza dividiendo 43 por 6 y anota cuánto sobra."
+      - "Al bajar el 7 tienes 17. ¿Cuánto sobra al dividir 17 por 6?"
+    revisado_por: null
+
+  - id: G-5B-OA5-1
+    unidad_id: 5B-OA5
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Calcula 8 + 4 × 5."
+    formato_respuesta: numerico
+    respuesta_final: "28"
+    regla_validacion: {}
+    solucion_referencia:
+      - "La multiplicación se resuelve antes que la adición."
+      - "4 × 5 = 20."
+      - "8 + 20 = 28."
+    errores_comunes:
+      - { respuesta: "60", causa: "resolvió de izquierda a derecha sin respetar la prioridad", retroalimentacion: "Recuerda el orden: primero las multiplicaciones y divisiones, después las sumas y restas." }
+    pistas:
+      - "Recuerda qué operación se resuelve primero cuando no hay paréntesis."
+      - "Primero resuelve la multiplicación 4 × 5."
+      - "Ya tienes 4 × 5 = 20. Solo falta sumarle 8."
+    revisado_por: null
+
+  - id: G-5B-OA5-2
+    unidad_id: 5B-OA5
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Calcula (36 − 12) : 4 + 3 × 2."
+    formato_respuesta: numerico
+    respuesta_final: "12"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Primero el paréntesis: 36 − 12 = 24."
+      - "Luego la división y la multiplicación: 24 : 4 = 6 y 3 × 2 = 6."
+      - "Por último la adición: 6 + 6 = 12."
+    errores_comunes:
+      - { respuesta: "18", causa: "sumó antes de multiplicar: (6 + 3) × 2", retroalimentacion: "Después del paréntesis van las multiplicaciones y divisiones, y al final las sumas." }
+      - { respuesta: "39", causa: "ignoró el paréntesis: 36 − 12 : 4 + 3 × 2", retroalimentacion: "Lo que está dentro del paréntesis se resuelve primero." }
+    pistas:
+      - "Lo primero que se resuelve es lo que está dentro del paréntesis."
+      - "Después del paréntesis resuelve la división y la multiplicación."
+      - "Ya tienes 24 : 4 y 3 × 2. Calcula cada una y súmalas."
+    revisado_por: null
+
+  - id: G-5B-OA6-1
+    unidad_id: 5B-OA6
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Un curso de 32 estudiantes va al museo. La entrada cuesta $2.500 por estudiante y el bus cuesta $40.000 en total. ¿Cuánto cuesta el paseo completo?"
+    formato_respuesta: numerico
+    respuesta_final: "120000"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Costo de las entradas: 32 × $2.500 = $80.000."
+      - "Se suma el bus: $80.000 + $40.000."
+      - "El paseo cuesta $120.000."
+    errores_comunes:
+      - { respuesta: "80000", causa: "olvidó sumar el costo del bus", retroalimentacion: "El paseo tiene dos gastos. Revisa si sumaste los dos." }
+      - { respuesta: "42500", causa: "sumó una sola entrada al bus", retroalimentacion: "Cada uno de los 32 estudiantes paga su entrada." }
+    pistas:
+      - "El paseo tiene dos gastos: las entradas de todos y el bus."
+      - "Calcula cuánto cuestan las 32 entradas."
+      - "Las entradas cuestan $80.000. Súmale lo que cuesta el bus."
+    revisado_por: null
+
+  - id: G-5B-OA6-2
+    unidad_id: 5B-OA6
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Tres amigos compran 4 pizzas de $7.500 cada una y pagan el total en partes iguales. ¿Cuánto paga cada uno?"
+    formato_respuesta: numerico
+    respuesta_final: "10000"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Total de las pizzas: 4 × $7.500 = $30.000."
+      - "Se reparte en partes iguales entre 3: $30.000 : 3."
+      - "Cada uno paga $10.000."
+    errores_comunes:
+      - { respuesta: "2500", causa: "repartió el precio de una sola pizza", retroalimentacion: "Compraron 4 pizzas. Primero calcula cuánto cuestan todas." }
+      - { respuesta: "30000", causa: "calculó el total pero no lo repartió", retroalimentacion: "Ese es el total. La pregunta es cuánto paga cada amigo." }
+    pistas:
+      - "Primero calcula cuánto cuestan todas las pizzas; después repártelo."
+      - "Multiplica el precio de una pizza por 4."
+      - "El total es $30.000. Divídelo entre los 3 amigos."
+    revisado_por: null
+
+  - id: G-5B-OA7-1
+    unidad_id: 5B-OA7
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Simplifica la fracción 12/18 hasta que ya no se pueda simplificar más."
+    formato_respuesta: fraccion
+    respuesta_final: "2/3"
+    regla_validacion: { aceptaEquivalentes: false }
+    solucion_referencia:
+      - "Se busca un número que divida al numerador y al denominador. Ambos son pares: 12/18 = 6/9."
+      - "6 y 9 se pueden dividir por 3: 6/9 = 2/3."
+      - "2 y 3 no tienen divisores comunes aparte del 1: la fracción irreducible es 2/3."
+    errores_comunes:
+      - { respuesta: "6/9", causa: "simplificó una sola vez", retroalimentacion: "Revisa si el numerador y el denominador todavía se pueden dividir por un mismo número." }
+      - { respuesta: "4/6", causa: "simplificó una sola vez (por 3)", retroalimentacion: "Revisa si el numerador y el denominador todavía se pueden dividir por un mismo número." }
+    pistas:
+      - "Simplificar es dividir el numerador y el denominador por el mismo número."
+      - "12 y 18 son pares. Empieza dividiendo los dos por 2."
+      - "Ya dividiste los dos por 2. ¿Hay otro número que divida al nuevo numerador y al nuevo denominador?"
+    revisado_por: null
+
+  - id: G-5B-OA7-2
+    unidad_id: 5B-OA7
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Amplifica la fracción 3/5 por 4."
+    formato_respuesta: fraccion
+    respuesta_final: "12/20"
+    regla_validacion: { aceptaEquivalentes: false }
+    solucion_referencia:
+      - "Amplificar es multiplicar el numerador y el denominador por el mismo número."
+      - "3 × 4 = 12 y 5 × 4 = 20."
+      - "La fracción amplificada es 12/20."
+    errores_comunes:
+      - { respuesta: "12/5", causa: "multiplicó solo el numerador", retroalimentacion: "Para que la fracción sea equivalente, el denominador también se multiplica." }
+      - { respuesta: "7/9", causa: "sumó 4 en vez de multiplicar", retroalimentacion: "Amplificar es multiplicar, no sumar, el numerador y el denominador." }
+    pistas:
+      - "Amplificar es multiplicar arriba y abajo por el mismo número."
+      - "Multiplica el numerador 3 por 4."
+      - "El nuevo numerador es 12. Haz lo mismo con el denominador."
+    revisado_por: null
+
+  - id: G-5B-OA7-3
+    unidad_id: 5B-OA7
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Compara las fracciones 2/3 y 3/4. Elige el signo que corresponde: 2/3 __ 3/4."
+    formato_respuesta: comparar
+    respuesta_final: "<"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se amplifican las dos fracciones a un denominador común, 12."
+      - "2/3 = 8/12 y 3/4 = 9/12."
+      - "8/12 es menor que 9/12, así que 2/3 < 3/4."
+    errores_comunes:
+      - { respuesta: ">", causa: "comparó solo los denominadores o los numeradores", retroalimentacion: "Con denominadores distintos conviene llevar las dos fracciones al mismo denominador antes de comparar." }
+      - { respuesta: "=", causa: "pensó que son iguales porque a las dos les falta una parte para el entero", retroalimentacion: "A las dos les falta una parte, pero las partes no son del mismo tamaño." }
+    pistas:
+      - "Con denominadores distintos, conviene buscar un denominador común."
+      - "Un denominador común para 3 y 4 es 12. Amplifica las dos fracciones."
+      - "Escribe 2/3 y 3/4 con denominador 12 y compara los numeradores."
+    revisado_por: null
+
+  - id: G-5B-OA9-1
+    unidad_id: 5B-OA9
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Pedro pintó 1/3 de una pared en la mañana y 1/4 de la pared en la tarde. ¿Qué fracción de la pared pintó en total?"
+    formato_respuesta: fraccion
+    respuesta_final: "7/12"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Los denominadores son distintos: se busca uno común, 12."
+      - "1/3 = 4/12 y 1/4 = 3/12."
+      - "4/12 + 3/12 = 7/12. Pedro pintó 7/12 de la pared."
+    errores_comunes:
+      - { respuesta: "2/7", causa: "sumó los numeradores y los denominadores", retroalimentacion: "Para sumar fracciones, primero tienen que tener el mismo denominador." }
+      - { respuesta: "2/12", causa: "igualó los denominadores pero no amplificó los numeradores", retroalimentacion: "Al cambiar el denominador, el numerador también se multiplica por el mismo número." }
+    pistas:
+      - "Para sumar fracciones, primero necesitan el mismo denominador."
+      - "Busca un número que sea múltiplo de 3 y de 4."
+      - "Con denominador 12, 1/3 es 4/12. Escribe 1/4 con denominador 12 y suma."
+    revisado_por: null
+
+  - id: G-5B-OA9-2
+    unidad_id: 5B-OA9
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 5/6 − 1/2."
+    formato_respuesta: fraccion
+    respuesta_final: "1/3"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se busca un denominador común: 6."
+      - "1/2 = 3/6."
+      - "5/6 − 3/6 = 2/6, que simplificado es 1/3."
+    errores_comunes:
+      - { respuesta: "4/4", causa: "restó los numeradores y los denominadores", retroalimentacion: "Para restar fracciones, primero tienen que tener el mismo denominador; el denominador no se resta." }
+      - { respuesta: "4/6", causa: "restó 1 al numerador sin amplificar 1/2", retroalimentacion: "Antes de restar, escribe 1/2 con denominador 6." }
+    pistas:
+      - "Primero las dos fracciones deben tener el mismo denominador."
+      - "6 es múltiplo de 2. Escribe 1/2 con denominador 6."
+      - "1/2 es 3/6. Ahora resta los numeradores y simplifica si se puede."
+    revisado_por: null
+
+  - id: G-5B-OA9-3
+    unidad_id: 5B-OA9
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Calcula 3/4 + 1/6."
+    formato_respuesta: fraccion
+    respuesta_final: "11/12"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se busca el menor múltiplo común de 4 y 6: 12."
+      - "3/4 = 9/12 y 1/6 = 2/12."
+      - "9/12 + 2/12 = 11/12."
+    errores_comunes:
+      - { respuesta: "4/10", causa: "sumó los numeradores y los denominadores", retroalimentacion: "Para sumar fracciones, primero tienen que tener el mismo denominador." }
+      - { respuesta: "4/12", causa: "igualó los denominadores pero no amplificó los numeradores", retroalimentacion: "Al cambiar el denominador, el numerador también se multiplica por el mismo número." }
+    pistas:
+      - "Para sumar fracciones con distinto denominador, busca un denominador común."
+      - "Busca el menor número que sea múltiplo de 4 y de 6."
+      - "Con denominador 12, 3/4 es 9/12. Escribe 1/6 con denominador 12 y suma."
+    revisado_por: null
+
+  - id: G-5B-OA10-1
+    unidad_id: 5B-OA10
+    nivel: 1
+    uso_gold: fewshot
+    enunciado: "Escribe la fracción 3/4 como número decimal."
+    formato_respuesta: numerico
+    respuesta_final: "0,75"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se amplifica la fracción para que el denominador sea 100: 3/4 = 75/100."
+      - "75/100 son 75 centésimos."
+      - "75 centésimos se escriben 0,75."
+    errores_comunes:
+      - { respuesta: "3,4", causa: "escribió el numerador y el denominador separados por una coma", retroalimentacion: "La fracción no se escribe poniendo una coma entre sus números. Piensa cuántos centésimos son." }
+      - { respuesta: "0,34", causa: "puso el numerador y el denominador después de la coma", retroalimentacion: "Convierte primero la fracción a décimos o centésimos." }
+    pistas:
+      - "Busca una fracción equivalente con denominador 10 o 100."
+      - "¿Por qué número multiplicas 4 para llegar a 100?"
+      - "Multiplica arriba y abajo por 25. ¿Cuántos centésimos obtienes?"
+    revisado_por: null
+
+  - id: G-5B-OA10-2
+    unidad_id: 5B-OA10
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Escribe la fracción 2/5 como número decimal."
+    formato_respuesta: numerico
+    respuesta_final: "0,4"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se amplifica la fracción para que el denominador sea 10: 2/5 = 4/10."
+      - "4/10 son 4 décimos."
+      - "4 décimos se escriben 0,4."
+    errores_comunes:
+      - { respuesta: "2,5", causa: "escribió el numerador y el denominador separados por una coma", retroalimentacion: "La fracción no se escribe poniendo una coma entre sus números. Piensa cuántos décimos son." }
+      - { respuesta: "0,25", causa: "puso el numerador y el denominador después de la coma", retroalimentacion: "Convierte primero la fracción a décimos." }
+    pistas:
+      - "Busca una fracción equivalente con denominador 10."
+      - "¿Por qué número multiplicas 5 para llegar a 10?"
+      - "Multiplica arriba y abajo por 2. ¿Cuántos décimos obtienes?"
+    revisado_por: null
+
+  - id: G-5B-OA10-3
+    unidad_id: 5B-OA10
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Escribe el número decimal 0,5 como fracción."
+    formato_respuesta: fraccion
+    respuesta_final: "1/2"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "0,5 son 5 décimos: 5/10."
+      - "5/10 se simplifica dividiendo por 5."
+      - "5/10 = 1/2."
+    errores_comunes:
+      - { respuesta: "1/5", causa: "usó el dígito decimal como denominador", retroalimentacion: "El 5 está en la posición de los décimos. Piensa cuántos décimos hay." }
+      - { respuesta: "5/1", causa: "escribió el 5 como un entero", retroalimentacion: "El número del enunciado es menor que un entero. Léelo en décimos." }
+    pistas:
+      - "Lee el número en voz alta: ¿cuántos décimos son?"
+      - "Los décimos se escriben como fracción con denominador 10."
+      - "Ya tienes la fracción en décimos. Simplifícala dividiendo arriba y abajo por el mismo número."
+    revisado_por: null
+
+  - id: G-5B-OA11-1
+    unidad_id: 5B-OA11
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Compara los números 0,7 y 0,65. Elige el signo que corresponde: 0,7 __ 0,65."
+    formato_respuesta: comparar
+    respuesta_final: ">"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se completa con ceros para que tengan la misma cantidad de decimales: 0,70 y 0,65."
+      - "70 centésimos es más que 65 centésimos."
+      - "Entonces 0,7 > 0,65."
+    errores_comunes:
+      - { respuesta: "<", causa: "pensó que el número con más cifras decimales es mayor", retroalimentacion: "Compara posición por posición, empezando por los décimos." }
+    pistas:
+      - "Compara los números posición por posición, empezando por los décimos."
+      - "Puedes agregar un 0 a 0,7 para que los dos tengan centésimos."
+      - "Compara 0,70 con 0,65: ¿cuál tiene más décimos?"
+    revisado_por: null
+
+  - id: G-5B-OA11-2
+    unidad_id: 5B-OA11
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Ordena de menor a mayor los números 0,305; 0,35 y 0,3."
+    formato_respuesta: ordenar
+    respuesta_final: "0,3; 0,305; 0,35"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se completan con ceros hasta las milésimas: 0,305; 0,350; 0,300."
+      - "Se comparan como milésimos: 300 < 305 < 350."
+      - "El orden es 0,3; 0,305; 0,35."
+    errores_comunes:
+      - { respuesta: "0,3; 0,35; 0,305", causa: "ordenó por la cantidad de cifras decimales", retroalimentacion: "Más cifras decimales no significa un número mayor. Completa con ceros y compara." }
+    pistas:
+      - "Para comparar decimales, conviene que todos tengan la misma cantidad de cifras decimales."
+      - "Completa con ceros hasta las milésimas: 0,305; 0,350 y 0,300."
+      - "Ahora compara 305, 350 y 300 milésimos y ordénalos."
+    revisado_por: null
+
+  - id: G-5B-OA11-3
+    unidad_id: 5B-OA11
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Compara los números 2,450 y 2,45. Elige el signo que corresponde: 2,450 __ 2,45."
+    formato_respuesta: comparar
+    respuesta_final: "="
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se completa 2,45 con un cero: 2,450."
+      - "Los dos números tienen las mismas cifras en cada posición."
+      - "Un cero al final de la parte decimal no cambia el valor: 2,450 = 2,45."
+    errores_comunes:
+      - { respuesta: ">", causa: "pensó que el número con más cifras decimales es mayor", retroalimentacion: "Un cero al final de la parte decimal no agrega valor. Compara posición por posición." }
+    pistas:
+      - "Compara los números posición por posición."
+      - "Agrega un 0 al final de 2,45 para que los dos tengan milésimas."
+      - "Con los dos números escritos hasta las milésimas, compara cada posición de izquierda a derecha."
+    revisado_por: null
+
+  - id: G-5B-OA12-1
+    unidad_id: 5B-OA12
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Ana corrió 2,5 km el lunes y 1,75 km el martes. ¿Cuántos kilómetros corrió en total?"
+    formato_respuesta: numerico
+    respuesta_final: "4,25"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se suman las dos distancias alineando la coma: 2,50 + 1,75."
+      - "Centésimos: 0 + 5 = 5. Décimos: 5 + 7 = 12, se escribe 2 y se reserva 1."
+      - "Unidades: 2 + 1 + 1 = 4. Ana corrió 4,25 km."
+    errores_comunes:
+      - { respuesta: "3,80", causa: "sumó las partes decimales como si fueran números enteros (5 + 75 = 80)", retroalimentacion: "Alinea los números por la coma: los décimos con los décimos y los centésimos con los centésimos." }
+    pistas:
+      - "Para sumar decimales, alinea los números por la coma."
+      - "Escribe 2,5 como 2,50 para que los dos tengan centésimos."
+      - "Suma 2,50 + 1,75 columna por columna, desde los centésimos."
+    revisado_por: null
+
+  - id: G-5B-OA12-2
+    unidad_id: 5B-OA12
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 5,3 − 2,15."
+    formato_respuesta: numerico
+    respuesta_final: "3,15"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se completa 5,3 con un cero para alinear: 5,30 − 2,15."
+      - "Centésimos: a 0 no se le puede restar 5, se canjea 1 décimo: 10 − 5 = 5."
+      - "Décimos: 2 − 1 = 1. Unidades: 5 − 2 = 3. El resultado es 3,15."
+    errores_comunes:
+      - { respuesta: "3,25", causa: "en los centésimos restó al revés (5 − 0) en vez de canjear", retroalimentacion: "Completa con un cero y, si arriba hay menos, canjea una unidad de la posición siguiente." }
+    pistas:
+      - "Alinea los números por la coma y completa con ceros si falta alguna posición."
+      - "Escribe 5,3 como 5,30 y empieza restando los centésimos."
+      - "Para restar 5 centésimos a 0, canjea 1 décimo. Luego sigue con los décimos y las unidades."
+    revisado_por: null
+
+  - id: G-5B-OA12-3
+    unidad_id: 5B-OA12
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Una botella tiene 1,5 litros de agua. Se sirven dos vasos de 0,25 litros cada uno. ¿Cuántos litros de agua quedan en la botella?"
+    formato_respuesta: numerico
+    respuesta_final: "1"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se calcula lo que se sirvió: 0,25 + 0,25 = 0,5 litros."
+      - "Se resta de lo que había: 1,5 − 0,5."
+      - "1,5 − 0,5 = 1. Queda 1 litro."
+    errores_comunes:
+      - { respuesta: "1,25", causa: "restó solo un vaso", retroalimentacion: "Se sirvieron dos vasos. Revisa si descontaste los dos." }
+      - { respuesta: "2", causa: "sumó en vez de restar", retroalimentacion: "Al servir vasos el agua de la botella disminuye." }
+    pistas:
+      - "Primero calcula cuánta agua se sirvió en total."
+      - "Suma lo de los dos vasos: 0,25 + 0,25."
+      - "Se sirvió 0,5 litros. Réstalo de lo que había en la botella."
+    revisado_por: null
+
+  - id: G-5B-OA13-1
+    unidad_id: 5B-OA13
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Para hacer un queque se usa 1/2 taza de leche y 1/4 de taza de aceite. ¿Cuántas tazas de líquido se usan en total?"
+    formato_respuesta: fraccion
+    respuesta_final: "3/4"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se suman las dos cantidades: 1/2 + 1/4."
+      - "Se busca un denominador común: 1/2 = 2/4."
+      - "2/4 + 1/4 = 3/4 de taza."
+    errores_comunes:
+      - { respuesta: "2/6", causa: "sumó los numeradores y los denominadores", retroalimentacion: "Para sumar fracciones, primero tienen que tener el mismo denominador." }
+    pistas:
+      - "Hay que juntar las dos cantidades, pero tienen distinto denominador."
+      - "Escribe 1/2 como una fracción con denominador 4."
+      - "1/2 es 2/4. Súmale el 1/4 de aceite."
+    revisado_por: null
+
+  - id: G-5B-OA13-2
+    unidad_id: 5B-OA13
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Una ruta en bicicleta mide 25 km. Un ciclista recorrió 12,5 km antes del almuerzo y 8,75 km después. ¿Cuántos kilómetros le faltan para terminar la ruta?"
+    formato_respuesta: numerico
+    respuesta_final: "3,75"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se calcula lo recorrido: 12,5 + 8,75 = 21,25 km."
+      - "Se resta del largo de la ruta: 25 − 21,25."
+      - "25 − 21,25 = 3,75. Le faltan 3,75 km."
+    errores_comunes:
+      - { respuesta: "21,25", causa: "calculó solo lo recorrido", retroalimentacion: "Ese número es lo que ya recorrió. La pregunta es cuánto le falta." }
+      - { respuesta: "12,5", causa: "restó solo lo recorrido antes del almuerzo", retroalimentacion: "El ciclista recorrió dos tramos. Revisa si consideraste los dos." }
+    pistas:
+      - "Este problema tiene dos pasos: cuánto recorrió y cuánto le falta."
+      - "Suma los dos tramos alineando la coma: 12,50 + 8,75."
+      - "Recorrió 21,25 km. Réstalo de los 25 km de la ruta."
+    revisado_por: null
+
+  - id: G-5B-OA13-3
+    unidad_id: 5B-OA13
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Un estanque estaba lleno hasta 5/6 de su capacidad. Se usó 1/3 del estanque para regar. ¿Qué fracción del estanque queda con agua?"
+    formato_respuesta: fraccion
+    respuesta_final: "1/2"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se resta lo que se usó: 5/6 − 1/3."
+      - "Se busca un denominador común: 1/3 = 2/6."
+      - "5/6 − 2/6 = 3/6, que simplificado es 1/2."
+    errores_comunes:
+      - { respuesta: "4/3", causa: "restó los numeradores y los denominadores", retroalimentacion: "Para restar fracciones, primero tienen que tener el mismo denominador; el denominador no se resta." }
+      - { respuesta: "4/6", causa: "restó 1 al numerador sin amplificar 1/3", retroalimentacion: "Antes de restar, escribe 1/3 con denominador 6." }
+    pistas:
+      - "Para saber cuánto queda, resta lo que se usó de lo que había."
+      - "Escribe 1/3 con denominador 6 para poder restar."
+      - "1/3 es 2/6. Resta 5/6 − 2/6 y simplifica si se puede."
+    revisado_por: null
+
+  # ── 6° básico ───────────────────────────────────────────────────────────────────────────
+
+  - id: G-6B-OA2-1
+    unidad_id: 6B-OA2
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Un supermercado recibe 15 cajas con 24 botellas de jugo cada una. Durante el día vende 198 botellas. ¿Cuántas botellas le quedan?"
+    formato_respuesta: numerico
+    respuesta_final: "162"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se calcula el total de botellas: 15 × 24 = 360."
+      - "Se restan las vendidas: 360 − 198."
+      - "360 − 198 = 162. Le quedan 162 botellas."
+    errores_comunes:
+      - { respuesta: "360", causa: "calculó el total y olvidó restar lo vendido", retroalimentacion: "Ese es el total que recibió. Falta descontar lo que vendió." }
+      - { respuesta: "558", causa: "sumó las botellas vendidas en vez de restarlas", retroalimentacion: "Las botellas que se venden ya no están en el supermercado: hay que descontarlas." }
+    pistas:
+      - "Primero calcula cuántas botellas recibió en total; después descuenta las vendidas."
+      - "Multiplica la cantidad de cajas por las botellas de cada caja."
+      - "Recibió 360 botellas. Resta las 198 que vendió."
+    revisado_por: null
+
+  - id: G-6B-OA2-2
+    unidad_id: 6B-OA2
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Una familia compra un televisor de $186.000 y lo paga en 6 cuotas iguales. Ya pagó 4 cuotas. ¿Cuánto dinero le falta pagar?"
+    formato_respuesta: numerico
+    respuesta_final: "62000"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Valor de cada cuota: $186.000 : 6 = $31.000."
+      - "Faltan 6 − 4 = 2 cuotas."
+      - "2 × $31.000 = $62.000. Le falta pagar $62.000."
+    errores_comunes:
+      - { respuesta: "124000", causa: "calculó lo que ya pagó", retroalimentacion: "Ese es el dinero de las cuotas pagadas. La pregunta es cuánto falta." }
+      - { respuesta: "31000", causa: "calculó el valor de una sola cuota", retroalimentacion: "Revisa cuántas cuotas le faltan, no solo cuánto vale una." }
+    pistas:
+      - "Primero averigua cuánto vale cada cuota."
+      - "Divide el precio del televisor por la cantidad de cuotas."
+      - "Cada cuota vale $31.000. ¿Cuántas cuotas le faltan?"
+    revisado_por: null
+
+  - id: G-6B-OA5-1
+    unidad_id: 6B-OA5
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Escribe la fracción impropia 17/5 como número mixto."
+    formato_respuesta: fraccion
+    respuesta_final: "3 2/5"
+    regla_validacion: { aceptaEquivalentes: false }
+    solucion_referencia:
+      - "Se divide el numerador por el denominador: 17 : 5 = 3 y sobran 2."
+      - "El cociente, 3, son los enteros."
+      - "El resto, 2, es el numerador de la parte fraccionaria y el denominador sigue siendo 5: 3 2/5."
+    errores_comunes:
+      - { respuesta: "2 7/5", causa: "no sacó todos los enteros posibles", retroalimentacion: "En un número mixto, la parte fraccionaria debe ser menor que un entero." }
+      - { respuesta: "3 2/17", causa: "usó el numerador original como denominador", retroalimentacion: "El denominador no cambia: las partes siguen siendo quintos." }
+    pistas:
+      - "Piensa cuántos enteros caben en la fracción: ¿cuántas veces cabe 5 en 17?"
+      - "Divide 17 por 5. El cociente son los enteros."
+      - "Caben 3 enteros. ¿Cuántos quintos sobran?"
+    revisado_por: null
+
+  - id: G-6B-OA5-2
+    unidad_id: 6B-OA5
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Escribe el número mixto 4 3/8 como fracción impropia."
+    formato_respuesta: fraccion
+    respuesta_final: "35/8"
+    regla_validacion: { aceptaEquivalentes: false }
+    solucion_referencia:
+      - "Cada entero son 8 octavos: 4 enteros son 4 × 8 = 32 octavos."
+      - "Se suman los 3 octavos: 32 + 3 = 35."
+      - "El número mixto es 35/8."
+    errores_comunes:
+      - { respuesta: "7/8", causa: "sumó el entero al numerador", retroalimentacion: "Cada entero equivale a 8 octavos, no a 1 octavo." }
+      - { respuesta: "20/8", causa: "multiplicó el entero por el numerador y sumó el denominador", retroalimentacion: "El entero se multiplica por el denominador, y al resultado se le suma el numerador." }
+    pistas:
+      - "Piensa cuántos octavos hay en un entero."
+      - "Calcula cuántos octavos son 4 enteros."
+      - "4 enteros son 32 octavos. Súmale los 3 octavos que ya tenías."
+    revisado_por: null
+
+  - id: G-6B-OA5-3
+    unidad_id: 6B-OA5
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "En la recta numérica, ¿qué número está justo en la mitad entre 2 y 3? Escríbelo como número mixto."
+    formato_respuesta: fraccion
+    respuesta_final: "2 1/2"
+    regla_validacion: { aceptaEquivalentes: false }
+    solucion_referencia:
+      - "Entre 2 y 3 hay un entero. La mitad de un entero es 1/2."
+      - "El punto está 1/2 después del 2."
+      - "Como número mixto: 2 1/2."
+    errores_comunes:
+      - { respuesta: "5/2", causa: "lo escribió como fracción impropia", retroalimentacion: "El valor es correcto, pero se pide como número mixto: un entero y una fracción." }
+      - { respuesta: "1/2", causa: "olvidó el entero 2", retroalimentacion: "El punto está entre 2 y 3, así que el número es mayor que 2." }
+    pistas:
+      - "El número está entre 2 y 3, así que tiene 2 enteros."
+      - "Divide el tramo entre 2 y 3 en dos partes iguales."
+      - "Tienes 2 enteros. ¿Qué fracción del tramo falta agregar para llegar a la mitad?"
+    revisado_por: null
+
+  - id: G-6B-OA6-1
+    unidad_id: 6B-OA6
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Valentina caminó 1 1/2 km hasta la escuela y 2 3/4 km después de clases. ¿Cuántos kilómetros caminó en total?"
+    formato_respuesta: fraccion
+    respuesta_final: "4 1/4"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se suman los enteros: 1 + 2 = 3."
+      - "Se suman las fracciones con denominador común 4: 1/2 + 3/4 = 2/4 + 3/4 = 5/4."
+      - "5/4 es 1 entero y 1/4: 3 + 1 1/4 = 4 1/4 km."
+    errores_comunes:
+      - { respuesta: "3 4/6", causa: "sumó los numeradores y los denominadores de las fracciones", retroalimentacion: "Para sumar las fracciones, primero tienen que tener el mismo denominador." }
+    pistas:
+      - "Puedes sumar los enteros por un lado y las fracciones por otro."
+      - "Escribe 1/2 con denominador 4 para sumarlo con 3/4."
+      - "Los enteros suman 3 y las fracciones 5/4. ¿Cuántos enteros hay en 5/4?"
+    revisado_por: null
+
+  - id: G-6B-OA6-2
+    unidad_id: 6B-OA6
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 7/4 − 5/6."
+    formato_respuesta: fraccion
+    respuesta_final: "11/12"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se busca el menor múltiplo común de 4 y 6: 12."
+      - "7/4 = 21/12 y 5/6 = 10/12."
+      - "21/12 − 10/12 = 11/12."
+    errores_comunes:
+      - { respuesta: "2/12", causa: "restó los numeradores sin amplificar", retroalimentacion: "Al cambiar el denominador a 12, cada numerador se multiplica por el mismo número que su denominador." }
+    pistas:
+      - "Para restar fracciones con distinto denominador, busca un denominador común."
+      - "Busca el menor número que sea múltiplo de 4 y de 6."
+      - "Con denominador 12, 7/4 es 21/12. Escribe 5/6 con denominador 12 y resta."
+    revisado_por: null
+
+  - id: G-6B-OA6-3
+    unidad_id: 6B-OA6
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Calcula 3 1/3 − 1 5/6."
+    formato_respuesta: fraccion
+    respuesta_final: "1 1/2"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se escriben como fracciones impropias: 3 1/3 = 10/3 = 20/6 y 1 5/6 = 11/6."
+      - "20/6 − 11/6 = 9/6."
+      - "9/6 = 3/2 = 1 1/2."
+    errores_comunes:
+      - { respuesta: "2 3/6", causa: "restó la fracción menor de la mayor (5/6 − 2/6) en vez de canjear un entero", retroalimentacion: "Si la fracción de arriba es menor, canjea un entero por sextos antes de restar." }
+      - { respuesta: "2 4/3", causa: "restó por separado los enteros, los numeradores y los denominadores", retroalimentacion: "Las fracciones deben tener el mismo denominador antes de restar." }
+    pistas:
+      - "Como 1/3 es menor que 5/6, conviene escribir los dos números como fracciones impropias."
+      - "Usa sextos: 3 1/3 son 20/6. ¿Cuántos sextos son 1 5/6?"
+      - "Resta 20/6 − 11/6 y escribe el resultado como número mixto simplificado."
+    revisado_por: null
+
+  - id: G-6B-OA7-1
+    unidad_id: 6B-OA7
+    nivel: 2
+    uso_gold: fewshot
+    enunciado: "Una botella contiene 1,25 litros de bebida. ¿Cuántos litros hay en 4 botellas iguales?"
+    formato_respuesta: numerico
+    respuesta_final: "5"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se multiplica la cantidad de una botella por 4: 1,25 × 4."
+      - "Se multiplica sin la coma: 125 × 4 = 500."
+      - "1,25 tiene 2 cifras decimales: 5,00, es decir, 5 litros."
+    errores_comunes:
+      - { respuesta: "4,100", causa: "multiplicó por separado la parte entera y la decimal (1 × 4 y 25 × 4)", retroalimentacion: "Multiplica el número completo y al final ubica la coma según las cifras decimales." }
+      - { respuesta: "500", causa: "olvidó poner la coma", retroalimentacion: "Revisa cuántas cifras decimales tenía 1,25 y ubica la coma en el resultado." }
+    pistas:
+      - "Multiplica como si no hubiera coma y al final ubícala."
+      - "Calcula 125 × 4."
+      - "125 × 4 = 500. ¿Cuántas cifras decimales tenía 1,25?"
+    revisado_por: null
+
+  - id: G-6B-OA7-2
+    unidad_id: 6B-OA7
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "Calcula 3,6 : 4."
+    formato_respuesta: numerico
+    respuesta_final: "0,9"
+    regla_validacion: {}
+    solucion_referencia:
+      - "3,6 son 36 décimos."
+      - "36 décimos : 4 = 9 décimos."
+      - "9 décimos se escriben 0,9."
+    errores_comunes:
+      - { respuesta: "9", causa: "olvidó la coma", retroalimentacion: "3,6 es menor que 4, así que el resultado debe ser menor que 1." }
+      - { respuesta: "0,09", causa: "corrió la coma una posición de más", retroalimentacion: "Piensa 3,6 como décimos: el resultado también son décimos." }
+    pistas:
+      - "Piensa 3,6 como una cantidad de décimos."
+      - "3,6 son 36 décimos. Divide 36 por 4."
+      - "Obtienes una cantidad de décimos. Escríbela como número decimal."
+    revisado_por: null
+
+  - id: G-6B-OA7-3
+    unidad_id: 6B-OA7
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Calcula 0,047 × 100."
+    formato_respuesta: numerico
+    respuesta_final: "4,7"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Multiplicar por 100 corre la coma dos posiciones a la derecha."
+      - "0,047 → 0,47 → 4,7."
+      - "El resultado es 4,7."
+    errores_comunes:
+      - { respuesta: "0,04700", causa: "agregó dos ceros al final en vez de correr la coma", retroalimentacion: "Con decimales, multiplicar por 100 no agrega ceros al final: corre la coma." }
+      - { respuesta: "0,47", causa: "corrió la coma una sola posición", retroalimentacion: "100 tiene dos ceros: la coma se corre dos posiciones." }
+    pistas:
+      - "Multiplicar por 10, 100 o 1.000 corre la coma hacia la derecha."
+      - "100 tiene dos ceros. ¿Cuántas posiciones se corre la coma?"
+      - "Corre la coma de 0,047 dos posiciones a la derecha, una por una."
+    revisado_por: null
+
+  - id: G-6B-OA8-1
+    unidad_id: 6B-OA8
+    nivel: 3
+    uso_gold: fewshot
+    enunciado: "Joaquín tiene una tabla de 2 1/4 metros. Corta un trozo de 3/4 de metro y otro de 1/2 metro. ¿Cuántos metros de tabla le quedan?"
+    formato_respuesta: fraccion
+    respuesta_final: "1"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Se calcula lo que cortó: 3/4 + 1/2 = 3/4 + 2/4 = 5/4 de metro."
+      - "Se escribe el largo de la tabla en cuartos: 2 1/4 = 9/4."
+      - "9/4 − 5/4 = 4/4 = 1. Le queda 1 metro."
+    errores_comunes:
+      - { respuesta: "1 1/2", causa: "restó solo el trozo de 3/4", retroalimentacion: "Joaquín cortó dos trozos. Revisa si descontaste los dos." }
+      - { respuesta: "1 3/4", causa: "restó solo el trozo de 1/2", retroalimentacion: "Joaquín cortó dos trozos. Revisa si descontaste los dos." }
+    pistas:
+      - "Primero calcula cuánto cortó en total; después cuánto le queda."
+      - "Suma 3/4 + 1/2 usando cuartos."
+      - "Cortó 5/4 de metro. Escribe 2 1/4 en cuartos y resta."
+    revisado_por: null
+
+  - id: G-6B-OA8-2
+    unidad_id: 6B-OA8
+    nivel: 2
+    uso_gold: validacion
+    enunciado: "En una carrera de relevos, Isidora corrió 0,8 km y Tomás corrió 1,25 km. ¿Cuántos kilómetros corrieron entre los dos?"
+    formato_respuesta: numerico
+    respuesta_final: "2,05"
+    regla_validacion: {}
+    solucion_referencia:
+      - "Se suman las distancias alineando la coma: 0,80 + 1,25."
+      - "Centésimos: 0 + 5 = 5. Décimos: 8 + 2 = 10, se escribe 0 y se reserva 1."
+      - "Unidades: 0 + 1 + 1 = 2. Corrieron 2,05 km."
+    errores_comunes:
+      - { respuesta: "1,33", causa: "sumó las partes decimales como si fueran números enteros (8 + 25 = 33)", retroalimentacion: "Alinea los números por la coma: el 8 de 0,8 son décimos. Completa 0,8 como 0,80 y suma columna por columna." }
+    pistas:
+      - "Para sumar decimales, alinea los números por la coma."
+      - "Escribe 0,8 como 0,80 para que los dos tengan centésimos."
+      - "Suma 0,80 + 1,25 columna por columna, desde los centésimos."
+    revisado_por: null
+
+  - id: G-6B-OA8-3
+    unidad_id: 6B-OA8
+    nivel: 3
+    uso_gold: validacion
+    enunciado: "Una jarra tiene 2 litros de jugo. Se sirven 3 vasos de 1/4 de litro y un vaso de 1/3 de litro. ¿Cuánto jugo queda en la jarra?"
+    formato_respuesta: fraccion
+    respuesta_final: "11/12"
+    regla_validacion: { aceptaEquivalentes: true }
+    solucion_referencia:
+      - "Los 3 vasos de 1/4 son 3/4 de litro."
+      - "Se suma el vaso de 1/3 con denominador común 12: 3/4 + 1/3 = 9/12 + 4/12 = 13/12 de litro servidos."
+      - "Se resta de los 2 litros (24/12): 24/12 − 13/12 = 11/12 de litro."
+    errores_comunes:
+      - { respuesta: "13/12", causa: "calculó lo servido en vez de lo que queda", retroalimentacion: "Ese número es lo que se sirvió. La pregunta es cuánto queda en la jarra." }
+      - { respuesta: "5/3", causa: "restó solo el vaso de 1/3", retroalimentacion: "También se sirvieron 3 vasos de 1/4. Revisa si los consideraste." }
+      - { respuesta: "5/4", causa: "restó solo los vasos de 1/4", retroalimentacion: "También se sirvió un vaso de 1/3. Revisa si lo consideraste." }
+    pistas:
+      - "Primero calcula cuánto jugo se sirvió en total."
+      - "Los 3 vasos de 1/4 son 3/4. Súmale el vaso de 1/3 usando doceavos."
+      - "Se sirvieron 13/12 de litro. Escribe los 2 litros en doceavos y resta."
+    revisado_por: null
