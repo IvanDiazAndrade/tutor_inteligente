@@ -62,7 +62,7 @@ El objetivo específico 3 del anteproyecto pide definir los módulos principales
 
 | Módulo ITS | Componente(s) | Requisitos que lo definen | Diseño detallado |
 |---|---|---|---|
-| **Modelo del dominio** | Catálogo curricular + Generador y banco de ejercicios | RF-D1–D8 | tarea 23 |
+| **Modelo del dominio** | Catálogo curricular (con las lecciones por unidad) + Generador y banco de ejercicios | RF-D1–D9 | tarea 23 |
 | **Modelo del estudiante** | Motor adaptativo (índice de dominio por OA + historial de intentos) | RF-E1–E5 | tarea 22 |
 | **Modelo pedagógico** | Orquestador pedagógico (plantillas, guardas, política de intentos) | RF-P1–P7 | tarea 24 |
 | **Interfaz** | App Android con vista estudiante y vista apoderado (OLM con skill meters) | RF-A2, RF-E5, RF-G, RF-DA, RNF-U | tarea 25 |
@@ -76,7 +76,7 @@ El LLM **no es un módulo del ITS**: es un recurso de generación de lenguaje al
 | Componente | Responsabilidad | Requisitos |
 |---|---|---|
 | **Auth y roles** | Registro del apoderado (titular de la cuenta), login por rol con JWT y expiración, teléfono vinculado a la cuenta: el estudiante entra tocando su perfil y el panel del apoderado se abre con PIN (RF-A3, actualizado 2-nov-2026). | RF-A1–A5, RNF-S1 |
-| **Catálogo curricular** | Unidades↔OA como datos (texto oficial del OA, curso, basal/complementario, anillo). Sin lógica: agregar Anillo 2 u otro curso es agregar filas. | RF-D1, RF-D8, RNF-M2 |
+| **Catálogo curricular** | Unidades↔OA como datos (texto oficial del OA, curso, basal/complementario, anillo). Sin lógica: agregar Anillo 2 u otro curso es agregar filas. Incluye las **lecciones breves** de cada unidad (RF-D9), que son contenido estático en un archivo de datos (`lecciones_anillo1.yaml`): se leen al pedirlas y no se guardan en la base de datos, porque son iguales para todos los estudiantes. | RF-D1, RF-D8, RF-D9, RNF-M2 |
 | **Generador y banco de ejercicios** | Dos fuentes de ejercicios hacia un banco común: **(a) generador paramétrico** (código propio): ejercicios de cálculo directo, comparación, ordenamiento y representaciones pictóricas (SVG) sorteando operandos dentro del rango numérico del OA — correctos por construcción, costo de API cero, errores comunes predefinidos por plantilla; **(b) generador LLM**: problemas verbales y de contexto, pre-generados de forma asíncrona (prompt con texto oficial del OA, RF-D2) y sometidos al pipeline de verificación de 4 capas (aritmética exacta → chequeos curriculares/forma → LLM de triaje → revisión humana). Todo ejercicio persiste enunciado + solución de referencia paso a paso + errores comunes (RF-D3) y sigue el ciclo de vida `borrador → verificado → activo / descartado` (RF-D5). | RF-D2–D7, RNF-P1, RNF-R2 |
 | **Motor adaptativo** (modelo del estudiante) | Registra cada intento (RF-E1); actualiza el índice de dominio por OA (RF-E2); decide el nivel del siguiente ejercicio dentro de 3 niveles por unidad (RF-E3); diagnóstico inicial en frío (RF-E4). | RF-E1–E5 |
 | **Orquestador pedagógico** (tutor) | Corrige **programáticamente** las respuestas (los formatos de RF-D7 lo permiten); arma los prompts de retroalimentación y pistas inyectando solución de referencia y errores comunes con guardas de no revelación y tono alentador (RF-P2–P6, RNF-P4); aplica la política de N intentos fallidos (RF-P7). Único componente que decide *qué* se le pide al LLM. | RF-P1–P7, RNF-P2 |

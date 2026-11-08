@@ -160,6 +160,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/estudiante/lecciones': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Listar Lecciones
+     * @description Lecciones de las unidades de su curso y de los anteriores, en el orden del catálogo
+     *     (RF-D9). Las unidades que todavía no tienen lección no aparecen.
+     */
+    get: operations['listar_lecciones_estudiante_lecciones_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/estudiante/sesiones': {
     parameters: {
       query?: never;
@@ -394,10 +415,37 @@ export interface components {
       /** Tokendispositivo */
       tokenDispositivo: string;
     };
+    /**
+     * LeccionEstudiante
+     * @description Lección breve de una unidad (RF-D9). numero = orden de la unidad dentro de su curso.
+     */
+    LeccionEstudiante: {
+      /** Unidadid */
+      unidadId: string;
+      /** Curso */
+      curso: number;
+      /** Numero */
+      numero: number;
+      /** Titulo */
+      titulo: string;
+      /** Resumen */
+      resumen: string;
+      /** Partes */
+      partes: components['schemas']['ParteLeccion'][];
+    };
     /** Mensaje */
     Mensaje: {
       /** Mensaje */
       mensaje: string;
+    };
+    /** ParteLeccion */
+    ParteLeccion: {
+      /** Titulo */
+      titulo: string;
+      /** Explicacion */
+      explicacion: string;
+      /** Practica */
+      practica: string;
     };
     /**
      * PerfilEstudiante
@@ -505,6 +553,8 @@ export interface components {
       etiqueta: ('dominada' | 'repasar' | 'nueva') | null;
       /** Sugerida */
       sugerida: boolean;
+      /** Conejercicios */
+      conEjercicios: boolean;
     };
     /** ValidationError */
     ValidationError: {
@@ -800,6 +850,26 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['UnidadEstudiante'][];
+        };
+      };
+    };
+  };
+  listar_lecciones_estudiante_lecciones_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LeccionEstudiante'][];
         };
       };
     };

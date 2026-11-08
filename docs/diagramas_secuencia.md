@@ -18,14 +18,16 @@ Todas las rutas van sobre HTTPS con el JWT en la cabecera `Authorization` (salvo
 | `POST /apoderado/estudiante` · `PATCH /apoderado/estudiante` | apoderado | CU-9 | perfil (alias, curso) |
 | `PUT /apoderado/pin` | apoderado | CU-9 | cambia el PIN del panel |
 | `GET /apoderado/dashboard` | apoderado | F4 | resumen semanal, medidores, unidades difíciles, sugerencias |
-| `GET /estudiante/unidades` | estudiante | CU-2 | unidades visibles con estrellas + unidad sugerida |
+| `GET /estudiante/perfil` | estudiante | CU-6 | alias, curso y puntos |
+| `GET /estudiante/unidades` | estudiante | CU-2 | unidades visibles con estrellas + unidad sugerida + `conEjercicios` (si ya hay ejercicios activos para practicarla) |
+| `GET /estudiante/lecciones` | estudiante | CU-15 | lecciones de las unidades visibles, con sus partes (RF-D9; agregado 2-nov-2026) |
 | `POST /estudiante/sesiones` · `POST /estudiante/sesiones/{id}/cierre` | estudiante | — | abre y cierra la sesión |
 | `POST /estudiante/unidades/{unidad}/ejercicio` | estudiante | F1 | `EjercicioParaEstudiante` + id del ejercicio servido |
 | `POST /estudiante/servidos/{id}/respuestas` | estudiante | F2 | `RespuestaTutor` |
 | `POST /estudiante/servidos/{id}/pistas` | estudiante | F3 | `RespuestaTutor` |
 | `POST /estudiante/servidos/{id}/no-entiendo` | estudiante | F2 | `RespuestaTutor` |
 | `POST /estudiante/servidos/{id}/resolver-juntos` | estudiante | RF-P7 | pasos narrados + id del ejercicio análogo |
-| `GET /estudiante/progreso` | estudiante | CU-6 | puntos, estrellas e insignias |
+| `GET /estudiante/progreso` | estudiante | CU-6 | puntos, estrellas e insignias *(prevista; por ahora la pestaña Perfil usa `/estudiante/perfil` y `/estudiante/unidades`)* |
 
 `RespuestaTutor` = `{ resultado: correcta | incorrecta | formato_invalido, mensaje, puntos, pistasRestantes, ofreceResolverJuntos, cambioNivel, degradado }`. Nunca contiene la respuesta final ni la solución de referencia.
 
@@ -47,6 +49,7 @@ sequenceDiagram
     API->>DB: SELECT apoderado (bcrypt)
     API-->>App: JWT {rol: apoderado} + JWT {rol: dispositivo, 30 días}
     App->>App: guarda el JWT de dispositivo en expo-secure-store
+    App->>A: pantalla de acceso: perfil del estudiante o panel<br/>(si la cuenta es nueva, antes crea el perfil)
 
     E->>App: toca su perfil
     App->>API: POST /auth/dispositivo/estudiante (JWT de dispositivo)

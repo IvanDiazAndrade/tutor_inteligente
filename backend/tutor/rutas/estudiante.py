@@ -1,4 +1,4 @@
-"""Rutas del estudiante: unidades con su progreso y sesiones de práctica (CU-2)."""
+"""Rutas del estudiante: unidades con su progreso, lecciones y sesiones de práctica (CU-2)."""
 
 import uuid
 from datetime import UTC, datetime
@@ -7,8 +7,14 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from tutor.esquemas import PerfilEstudiante, SesionPractica, UnidadEstudiante
-from tutor.modelos import DominioOA, Estudiante, Sesion, Unidad
+from tutor import lecciones
+from tutor.esquemas import (
+    LeccionEstudiante,
+    PerfilEstudiante,
+    SesionPractica,
+    UnidadEstudiante,
+)
+from tutor.modelos import DominioOA, Ejercicio, Estudiante, Sesion, Unidad
 from tutor.progreso import EstadoDominio, estrellas, para_repasar, unidad_sugerida
 from tutor.seguridad import EstudianteActual, SesionBD
 
@@ -36,6 +42,13 @@ def listar_unidades(estudiante: EstudianteActual, sesion: SesionBD) -> list[Unid
         for d in sesion.scalars(select(DominioOA).where(DominioOA.estudiante_id == estudiante.id))
     }
     sugerida = unidad_sugerida(unidades, dominios, ahora, estudiante.curso)
+    con_ejercicios = set(
+        sesion.scalars(
+            select(Ejercicio.unidad_id)
+            .where(Ejercicio.estado == "activo", Ejercicio.fuente != "gold")
+            .distinct()
+        )
+    )
     primera_nueva = next(
         (u for u in unidades if u.curso == estudiante.curso and u.id not in dominios), None
     )
@@ -58,8 +71,33 @@ def listar_unidades(estudiante: EstudianteActual, sesion: SesionBD) -> list[Unid
             estrellas=estrellas(dominios.get(u.id)),
             etiqueta=etiqueta(u),
             sugerida=sugerida is not None and u.id == sugerida.id,
+            con_ejercicios=u.id in con_ejercicios,
         )
         for u in unidades
+    ]
+
+
+@router.get("/lecciones", response_model=list[LeccionEstudiante])
+def listar_lecciones(estudiante: EstudianteActual, sesion: SesionBD) -> list[LeccionEstudiante]:
+    """Lecciones de las unidades de su curso y de los anteriores, en el orden del catálogo
+    (RF-D9). Las unidades que todavía no tienen lección no aparecen."""
+    unidades = sesion.scalars(
+        select(Unidad)
+        .where(Unidad.activa, Unidad.curso <= estudiante.curso)
+        .order_by(Unidad.curso, Unidad.orden)
+    ).all()
+    por_unidad = lecciones.lecciones()
+    return [
+        LeccionEstudiante(
+            unidad_id=u.id,
+            curso=u.curso,
+            numero=u.orden,
+            titulo=x.titulo,
+            resumen=x.resumen,
+            partes=[p.model_dump() for p in x.partes],
+        )
+        for u in unidades
+        if (x := por_unidad.get(u.id)) is not None
     ]
 
 

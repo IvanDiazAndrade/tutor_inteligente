@@ -54,6 +54,7 @@
 | RF-D6 | Para los OA de fracciones (tópico con mayor tasa de error documentada en generación por LLM — EDUMATH), el sistema aplicará verificación adicional de la solución de referencia antes de servir el ejercicio (p. ej., re-verificación aritmética programática o doble pasada del modelo). | S | CU-7 |
 | RF-D7 | El sistema soportará tres formatos de respuesta, todos validables programáticamente: numérica (entero/decimal), fracción (incluye números mixtos) y ordenar/comparar. Selección múltiple y respuesta abierta en lenguaje natural quedan fuera del prototipo (decisión tarea 23: los errores comunes se usan para diagnóstico, no como distractores). | M | CU-3 |
 | RF-D8 | (Anillo 2) El sistema podrá extenderse con unidades de razón y porcentaje (6° OA3–4) y decimales tempranos (4° OA10–12) sin cambios de arquitectura, solo agregando unidades al catálogo. | C | CU-2 |
+| RF-D9 | Cada unidad tendrá una **lección breve** dividida en partes (una por subtema del OA), con una explicación simple y un ejemplo, que el estudiante puede leer antes de practicar. Las lecciones son contenido estático en un archivo de datos, revisado por el equipo antes de usarse con niños (igual que el conjunto de referencia). *(Agregado 2-nov-2026, a partir de la revisión de uso del prototipo.)* | S | CU-2 |
 
 ### 3.3 Módulo pedagógico: tutoría y retroalimentación (RF-P)
 
@@ -106,7 +107,7 @@
 
 | ID | Requerimiento | Métrica de verificación |
 |---|---|---|
-| RNF-U1 | La interfaz del estudiante será adecuada al rango 9–12 años: navegación de máx. 2 niveles de profundidad, botones grandes, iconografía + texto, lectura a nivel de 4° básico. | Evaluación heurística (heurísticas de Nielsen + heurísticas para niños) sin problemas de severidad ≥3 en el flujo principal. |
+| RNF-U1 | La interfaz del estudiante será adecuada al rango 9–12 años: navegación de máx. 2 niveles de profundidad, botones grandes, iconografía + texto, lectura a nivel de 4° básico. *(Actualización 2-nov-2026: la interfaz del estudiante se organiza en tres pestañas fijas abajo —Lecciones, Ejercicios y Perfil—; en Lecciones y Ejercicios el primer nivel es la lista de unidades y el segundo su detalle. El ejercicio se abre desde el detalle a pantalla completa, como actividad, y al terminar se vuelve al detalle.)* | Evaluación heurística (heurísticas de Nielsen + heurísticas para niños) sin problemas de severidad ≥3 en el flujo principal. |
 | RNF-U2 | La interfaz del apoderado será operable por un adulto de competencia digital básica sin capacitación. | SUS ≥ 70 con evaluadores adultos actuando como apoderados. |
 | RNF-U3 | El flujo principal del estudiante (entrar → elegir unidad → resolver un ejercicio → ver retroalimentación) será completable sin ayuda de un adulto tras el primer uso. | Recorrido cognitivo (cognitive walkthrough) en evaluación heurística. |
 | RNF-U4 | La aplicación será nativa para Android 8 o superior, usable en teléfono y tablet, en orientación vertical y horizontal. Las vistas de estudiante y apoderado se adaptarán al tamaño y orientación de la pantalla. *(Actualización 24-sep-2026: reemplaza la versión anterior, "web responsiva, usable en computador y tablet"; el equipo decidió una app nativa Android para teléfono y tablet.)* | Prueba manual en teléfono y tablet, en ambas orientaciones, incluyendo un dispositivo o emulador con Android 8. |

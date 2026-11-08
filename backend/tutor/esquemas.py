@@ -101,6 +101,24 @@ class UnidadEstudiante(Esquema):
     estrellas: int = Field(ge=0, le=3)
     etiqueta: Literal["dominada", "repasar", "nueva"] | None
     sugerida: bool
+    con_ejercicios: bool  # False si todavía no hay ejercicios activos para practicarla
+
+
+class ParteLeccion(Esquema):
+    titulo: str
+    explicacion: str
+    practica: str
+
+
+class LeccionEstudiante(Esquema):
+    """Lección breve de una unidad (RF-D9). numero = orden de la unidad dentro de su curso."""
+
+    unidad_id: str
+    curso: int
+    numero: int
+    titulo: str
+    resumen: str
+    partes: list[ParteLeccion]
 
 
 class SesionPractica(Esquema):

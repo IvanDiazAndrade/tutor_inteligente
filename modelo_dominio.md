@@ -22,6 +22,24 @@ La unidad mínima del dominio es el **OA completo** (RF-D1): 24 unidades para el
 
 Agregar el Anillo 2 (RF-D8) es insertar filas: razón y porcentaje (6B-OA3/OA4) entran con plantillas nuevas pero sin cambio de esquema.
 
+### 1.1 Lecciones por unidad (RF-D9, agregado 2-nov-2026)
+
+Cada unidad tiene una **lección breve** que el estudiante puede leer antes de practicar (pestaña Lecciones). Se agregó a partir de la revisión de uso del prototipo: el estudiante llegaba a los ejercicios sin una explicación previa del tema.
+
+| Campo | Contenido |
+|---|---|
+| `unidad_id` | la unidad del catálogo (una lección por unidad) |
+| `titulo` | nombre corto para el niño (ej. "Sumar y restar fracciones") |
+| `resumen` | 1–2 líneas sobre de qué trata la lección |
+| `partes` | 2 a 4 subtemas. Cada parte tiene `titulo`, `explicacion` (lo básico con un ejemplo, a nivel de lectura de 4° básico) y `practica` (qué se ejercita en esa parte; se muestra como "Ejercicio N" en la pestaña Ejercicios) |
+| `revisado_por` | nombre de quien la revisó; `null` mientras sea borrador |
+
+- **Origen:** las partes salen de los subtemas del resumen de cada OA en el catálogo (por ejemplo, 4B-OA1: leer y escribir, valor posicional, componer y descomponer, comparar y ordenar).
+- **Almacenamiento:** son datos estáticos en `backend/datos/lecciones_anillo1.yaml`, igual para todos los estudiantes, así que no van a la base de datos. Cambiar un texto es editar el archivo (RNF-M2).
+- **Sin LLM:** las lecciones no se generan en línea; se escriben y revisan una vez.
+- **Revisión:** igual que el gold standard (§7), el equipo revisa cada lección (exactitud de los ejemplos, vocabulario de los textos escolares, nivel de lectura) y anota su nombre en `revisado_por`. El borrador inicial (24 lecciones) está pendiente de esa revisión.
+- **Pendiente:** hoy cada "Ejercicio N" abre la práctica adaptativa de la unidad completa; el servidor todavía no elige el ejercicio según la parte. Para eso cada plantilla tendría que declarar a qué parte corresponde.
+
 ---
 
 ## 2. Esquema del ejercicio
@@ -223,6 +241,7 @@ Los ejercicios **paramétricos omiten las capas 1–4 por ejercicio**: la revisi
 | RF-D6 (verificación reforzada en fracciones) | §8 capa 1 (doble pasada) |
 | RF-D7 (formatos de respuesta) | §3 |
 | RF-D8 (extensión Anillo 2) | §1 |
+| RF-D9 (lecciones breves por unidad) | §1.1 |
 | RNF-P1, P3 (corrección ≥95%, contenido curricular) | §7 y §8 |
 | RNF-C1 (costo) | §5 (71% del banco sin costo de API) |
 

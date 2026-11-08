@@ -16,7 +16,7 @@ const CURSOS = [4, 5, 6] as const;
 // completo, RUT, colegio ni fecha de nacimiento (RNF-S2). El estudiante no tiene PIN: entra
 // tocando su perfil en el dispositivo vinculado (RF-A3).
 function CrearPerfil() {
-  const { sesion, recordarPerfil } = useSesion();
+  const { sesion, recordarPerfil, cerrar } = useSesion();
   const [alias, setAlias] = useState('');
   const [curso, setCurso] = useState<number | null>(null);
   const [aviso, setAviso] = useState('');
@@ -30,7 +30,9 @@ function CrearPerfil() {
     try {
       const perfil = await api.crearEstudiante(sesion!.token, { alias: alias.trim(), curso });
       await recordarPerfil({ id: perfil.id, alias: perfil.alias, curso: perfil.curso });
-      router.replace('/apoderado');
+      // Con el perfil creado se vuelve a la pantalla de acceso para elegir a qué entrar.
+      await cerrar();
+      router.replace('/');
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {

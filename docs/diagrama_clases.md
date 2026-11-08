@@ -151,6 +151,20 @@ classDiagram
     class CatalogoCurricular {
         +unidadesVisibles(estudiante) list~Unidad~
         +unidadSugerida(estudiante) Unidad
+        +lecciones(estudiante) list~Leccion~
+    }
+    class Leccion {
+        <<dato estático>>
+        +unidadId
+        +titulo
+        +resumen
+        +revisadoPor
+    }
+    class ParteLeccion {
+        <<dato estático>>
+        +titulo
+        +explicacion
+        +practica
     }
     class BancoEjercicios {
         +servir(estudiante, unidad, nivel) Ejercicio
@@ -246,6 +260,8 @@ classDiagram
     OrquestadorPedagogico ..> FiltroNoRevelacion
     OrquestadorPedagogico ..> PlantillasLocales
     CatalogoCurricular ..> MotorAdaptativo
+    CatalogoCurricular ..> Leccion
+    Leccion *-- "2..4" ParteLeccion
     ServicioDashboard ..> MotorAdaptativo
     ReposicionBanco ..> BancoEjercicios
     ReposicionBanco ..> GeneradorParametrico

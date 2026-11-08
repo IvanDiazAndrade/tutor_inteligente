@@ -1,0 +1,403 @@
+# Lecciones breves del Anillo 1: una por unidad, dividida en partes (RF-D9).
+#
+# BORRADOR (2-nov-2026): las partes salen de los subtemas del resumen de cada OA en
+# catalogo_anillo1.yaml. Los textos están escritos para un niño que ve el tema por primera vez
+# (lectura de 4° básico, RNF-U1) y cada ejemplo se revisó a mano. Antes de usarlas con niños,
+# el equipo debe revisarlas y anotar su nombre en `revisado_por` (igual que en el conjunto de
+# referencia). Mientras `revisado_por` sea null, la lección se considera borrador.
+#
+# Campos:
+#   titulo      nombre corto para el niño
+#   resumen     1–2 líneas: de qué trata la lección (tarjeta de la lista)
+#   partes      2–4 subtemas. explicacion = lo básico con un ejemplo; practica = qué se
+#               ejercita en esa parte (tarjeta "Ejercicio N" de la pestaña Ejercicios)
+#
+# Convenciones: punto para los miles (10.000), coma decimal (0,5), ":" para dividir.
+
+lecciones:
+  # 4° básico ----------------------------------------------------------------------------
+  - unidad_id: 4B-OA1
+    titulo: Números hasta 10.000
+    resumen: Aprende a leer, escribir y ordenar números hasta el 10.000, y a saber cuánto vale cada dígito.
+    revisado_por: null
+    partes:
+      - titulo: Leer y escribir números
+        explicacion: "Un número como 4.205 se lee «cuatro mil doscientos cinco». El punto separa los miles: primero lees lo que está antes del punto y después el resto."
+        practica: Escribe con cifras números que se dicen con palabras.
+      - titulo: Cuánto vale cada dígito
+        explicacion: "Cada dígito vale según el lugar donde está. En 3.582, el 3 vale 3.000, el 5 vale 500, el 8 vale 80 y el 2 vale 2."
+        practica: Descubre cuánto vale un dígito según su lugar.
+      - titulo: Armar y desarmar números
+        explicacion: "Desarmar un número es separarlo según sus lugares: 3.582 = 3.000 + 500 + 80 + 2. Armarlo es lo contrario: juntar las partes para formar el número."
+        practica: Arma un número a partir de sus partes y desármalo.
+      - titulo: Comparar y ordenar
+        explicacion: "Para saber cuál es mayor, compara los dígitos de izquierda a derecha. En 4.371 y 4.317 los miles y las centenas son iguales; en las decenas, 7 es mayor que 1, así que 4.371 es mayor."
+        practica: Decide cuál número es mayor y ordénalos.
+
+  - unidad_id: 4B-OA2
+    titulo: Cálculo mental
+    resumen: Trucos para multiplicar y dividir de memoria con las tablas hasta el 10.
+    revisado_por: null
+    partes:
+      - titulo: Multiplicar es sumar varias veces
+        explicacion: "4 × 3 significa sumar el 3 cuatro veces: 3 + 3 + 3 + 3 = 12. Por eso 4 × 3 = 12."
+        practica: Calcula multiplicaciones sumando grupos iguales.
+      - titulo: El doble y el doble del doble
+        explicacion: "Multiplicar por 2 es calcular el doble. Para multiplicar por 4, calcula el doble del doble: para 4 × 7, el doble de 7 es 14 y el doble de 14 es 28."
+        practica: Multiplica por 2, 4 y 8 usando dobles.
+      - titulo: Separar para multiplicar
+        explicacion: "Si no recuerdas 7 × 8, sepáralo en partes que sí sabes: 7 × 5 = 35 y 7 × 3 = 21. Como 5 + 3 = 8, sumas 35 + 21 = 56."
+        practica: Resuelve multiplicaciones separando un número en partes.
+      - titulo: Dividir con las tablas
+        explicacion: "Dividir 24 : 6 es preguntarse «¿6 por cuánto da 24?». Como 6 × 4 = 24, entonces 24 : 6 = 4."
+        practica: Divide buscando la multiplicación que corresponde.
+
+  - unidad_id: 4B-OA3
+    titulo: Sumar y restar hasta 1.000
+    resumen: Suma y resta números de hasta tres cifras, por partes o con el método de columnas.
+    revisado_por: null
+    partes:
+      - titulo: Sumar por partes
+        explicacion: "Para 345 + 230, suma las centenas (300 + 200 = 500), las decenas (40 + 30 = 70) y las unidades (5 + 0 = 5). Al juntarlas: 575."
+        practica: Suma separando centenas, decenas y unidades.
+      - titulo: Sumar en columnas
+        explicacion: "Escribe un número bajo el otro, unidades bajo unidades. Si una columna suma 10 o más, escribe las unidades y lleva 1 a la columna de la izquierda."
+        practica: Suma en columnas llevando cuando hace falta.
+      - titulo: Restar con canje
+        explicacion: "En 52 − 17, arriba hay 2 unidades y abajo 7. Cambia 1 decena por 10 unidades: quedan 4 decenas y 12 unidades. 12 − 7 = 5 y 4 − 1 = 3, así que el resultado es 35."
+        practica: Resta cambiando una decena o una centena cuando hace falta.
+      - titulo: Estimar antes de calcular
+        explicacion: "Redondea para saber más o menos cuánto dará: 398 + 205 se parece a 400 + 200 = 600. Si tu resultado queda muy lejos de 600, revisa."
+        practica: Estima el resultado redondeando.
+
+  - unidad_id: 4B-OA5
+    titulo: Multiplicación
+    resumen: Multiplica un número de tres cifras por uno de una cifra, separando o en columnas.
+    revisado_por: null
+    partes:
+      - titulo: Multiplicar por partes
+        explicacion: "Separa el número grande según sus lugares y multiplica cada parte: 213 × 3 = 200 × 3 + 10 × 3 + 3 × 3 = 600 + 30 + 9 = 639."
+        practica: Multiplica separando centenas, decenas y unidades.
+      - titulo: Multiplicar en columnas
+        explicacion: "Empieza por las unidades. En 146 × 4: 6 × 4 = 24, escribes 4 y llevas 2. 4 × 4 = 16, más 2 son 18: escribes 8 y llevas 1. 1 × 4 = 4, más 1 son 5. Resultado: 584."
+        practica: Multiplica en columnas llevando cuando hace falta.
+      - titulo: Estimar el resultado
+        explicacion: "Redondea el número grande: 296 × 3 se parece a 300 × 3 = 900. Así sabes que el resultado debe estar cerca de 900."
+        practica: Estima productos redondeando.
+      - titulo: Problemas de multiplicar
+        explicacion: "Cuando hay varios grupos iguales, multiplicas. Si una caja trae 125 lápices y compras 4 cajas, tienes 125 × 4 = 500 lápices."
+        practica: Resuelve problemas con grupos iguales.
+
+  - unidad_id: 4B-OA6
+    titulo: División
+    resumen: Reparte en partes iguales y divide números de dos cifras por uno de una cifra.
+    revisado_por: null
+    partes:
+      - titulo: Repartir en partes iguales
+        explicacion: "Dividir 36 : 4 es repartir 36 cosas en 4 grupos iguales. Cada grupo recibe 9."
+        practica: Reparte en grupos iguales.
+      - titulo: Dividir con la multiplicación
+        explicacion: "Multiplicar y dividir son operaciones inversas. Para 36 : 4, busca qué número por 4 da 36: 9 × 4 = 36, así que 36 : 4 = 9."
+        practica: Divide usando la multiplicación al revés.
+      - titulo: Estimar el resultado
+        explicacion: "Busca un número cercano que sea fácil de dividir. Para 78 : 4, piensa en 80 : 4 = 20: el resultado es un poco menos que 20."
+        practica: Estima divisiones con números cercanos.
+      - titulo: Separar para dividir
+        explicacion: "Separa el número en partes fáciles de dividir: 84 : 4 → 80 : 4 = 20 y 4 : 4 = 1. Juntando, 84 : 4 = 21."
+        practica: Divide separando el número en partes.
+
+  - unidad_id: 4B-OA7
+    titulo: Problemas con dinero
+    resumen: Resuelve problemas de compras y vueltos eligiendo la operación correcta.
+    revisado_por: null
+    partes:
+      - titulo: Entender el problema
+        explicacion: "Lee con calma y busca dos cosas: qué te preguntan y qué datos tienes. Puedes subrayar los precios y las cantidades."
+        practica: Identifica la pregunta y los datos del problema.
+      - titulo: Elegir la operación
+        explicacion: "Si juntas dinero, sumas. Si gastas o quieres saber cuánto falta, restas. Si compras varias cosas del mismo precio, multiplicas. Si repartes por igual, divides."
+        practica: Elige la operación según lo que pasa en el problema.
+      - titulo: Calcular el vuelto
+        explicacion: "El vuelto es lo que te devuelven al pagar. Si algo cuesta $750 y pagas con $1.000, el vuelto es 1.000 − 750 = $250."
+        practica: Calcula vueltos y cuánto falta para comprar algo.
+
+  - unidad_id: 4B-OA8
+    titulo: ¿Qué es una fracción?
+    resumen: Descubre qué significan los números de una fracción y cómo compararlas.
+    revisado_por: null
+    partes:
+      - titulo: Partes de un entero
+        explicacion: "Una fracción habla de partes iguales de un entero. En 3/4, el 4 (denominador) dice en cuántas partes iguales se dividió y el 3 (numerador) cuántas de esas partes tomas."
+        practica: Escribe la fracción que muestra un dibujo.
+      - titulo: Fracciones en la recta numérica
+        explicacion: "Divide el espacio entre 0 y 1 en tantas partes iguales como dice el denominador. Para ubicar 2/5, divide en 5 partes y cuenta 2 desde el 0."
+        practica: Ubica fracciones entre 0 y 1.
+      - titulo: Comparar fracciones
+        explicacion: "Con el mismo denominador, es mayor la que tiene más partes: 5/8 es mayor que 3/8. Con el mismo numerador, es mayor la de denominador más chico, porque sus partes son más grandes: 1/3 es mayor que 1/5."
+        practica: Decide cuál fracción es mayor.
+
+  - unidad_id: 4B-OA9
+    titulo: Sumar y restar fracciones
+    resumen: Suma y resta fracciones que tienen el mismo denominador.
+    revisado_por: null
+    partes:
+      - titulo: Sumar fracciones
+        explicacion: "Si las partes son del mismo tamaño (mismo denominador), sumas los numeradores y el denominador se queda igual: 2/7 + 3/7 = 5/7."
+        practica: Suma fracciones con el mismo denominador.
+      - titulo: Restar fracciones
+        explicacion: "Igual que en la suma: restas los numeradores y mantienes el denominador. 5/8 − 2/8 = 3/8."
+        practica: Resta fracciones con el mismo denominador.
+      - titulo: Cuando se completa un entero
+        explicacion: "Si el numerador queda igual al denominador, tienes un entero completo: 3/5 + 2/5 = 5/5, que es lo mismo que 1."
+        practica: Suma fracciones que forman un entero.
+
+  # 5° básico ----------------------------------------------------------------------------
+  - unidad_id: 5B-OA1
+    titulo: Números grandes
+    resumen: Lee, escribe, compara y redondea números de millones.
+    revisado_por: null
+    partes:
+      - titulo: Leer números grandes
+        explicacion: "Separa las cifras en grupos de tres desde la derecha. 12.405.300 se lee «doce millones cuatrocientos cinco mil trescientos»."
+        practica: Escribe con cifras números de millones.
+      - titulo: Cuánto vale cada dígito
+        explicacion: "Cada dígito vale según su lugar. En 5.730.000, el 5 está en las unidades de millón y vale 5.000.000; el 7 vale 700.000."
+        practica: Descubre cuánto vale un dígito en un número grande.
+      - titulo: Forma expandida
+        explicacion: "Escribir en forma expandida es separar el número según sus lugares: 45.208 = 40.000 + 5.000 + 200 + 8."
+        practica: Escribe números en forma expandida y al revés.
+      - titulo: Comparar y redondear
+        explicacion: "Para comparar, el número con más cifras es mayor; si tienen las mismas, compara de izquierda a derecha. Para redondear 3.482.000 al millón, mira la cifra siguiente: 4 es menor que 5, entonces queda 3.000.000."
+        practica: Compara, ordena y redondea números grandes.
+
+  - unidad_id: 5B-OA3
+    titulo: Multiplicación
+    resumen: Multiplica números de dos cifras por otros de dos cifras.
+    revisado_por: null
+    partes:
+      - titulo: Estimar el resultado
+        explicacion: "Redondea los dos números a la decena: 23 × 48 se parece a 20 × 50 = 1.000."
+        practica: Estima productos redondeando.
+      - titulo: Multiplicar por partes
+        explicacion: "Separa uno de los números en decenas y unidades: 23 × 14 = 23 × 10 + 23 × 4 = 230 + 92 = 322."
+        practica: Multiplica separando un número en partes.
+      - titulo: Multiplicar en columnas
+        explicacion: "En 34 × 12, multiplica primero por las unidades: 34 × 2 = 68. Luego por la decena: 34 × 10 = 340. Al final suma: 68 + 340 = 408."
+        practica: Multiplica en columnas y suma los resultados.
+
+  - unidad_id: 5B-OA4
+    titulo: División con resto
+    resumen: Divide números de tres cifras y aprende qué hacer con lo que sobra.
+    revisado_por: null
+    partes:
+      - titulo: Dividir paso a paso
+        explicacion: "En 745 : 3 vas de izquierda a derecha. 7 : 3 = 2 y sobra 1. Bajas el 4: 14 : 3 = 4 y sobran 2. Bajas el 5: 25 : 3 = 8 y sobra 1. El resultado es 248 y sobra 1."
+        practica: Divide números de tres cifras paso a paso.
+      - titulo: El resto
+        explicacion: "Lo que sobra se llama resto y siempre es menor que el divisor. Puedes comprobar: 248 × 3 + 1 = 745."
+        practica: Encuentra el cociente y el resto de una división.
+      - titulo: Qué hacer con el resto
+        explicacion: "Depende del problema. Si 50 niños van en autos de 4 asientos, 50 : 4 = 12 y sobran 2: se necesitan 13 autos para que nadie se quede. Si repartes 50 dulces entre 4, cada uno recibe 12 y sobran 2."
+        practica: Resuelve problemas decidiendo qué hacer con el resto.
+
+  - unidad_id: 5B-OA5
+    titulo: Operaciones combinadas
+    resumen: Aprende en qué orden se resuelven los cálculos con varias operaciones y paréntesis.
+    revisado_por: null
+    partes:
+      - titulo: Primero los paréntesis
+        explicacion: "Lo que está entre paréntesis se calcula antes que todo: (4 + 6) × 3 = 10 × 3 = 30."
+        practica: Resuelve cálculos con paréntesis.
+      - titulo: Luego multiplicar y dividir
+        explicacion: "Sin paréntesis, las multiplicaciones y divisiones van antes que las sumas y restas: 4 + 6 × 3 = 4 + 18 = 22."
+        practica: Resuelve cálculos donde la multiplicación va primero.
+      - titulo: Al final sumar y restar
+        explicacion: "Las sumas y restas que quedan se hacen de izquierda a derecha: 20 − 5 + 3 = 15 + 3 = 18."
+        practica: Resuelve cálculos con sumas y restas en orden.
+
+  - unidad_id: 5B-OA6
+    titulo: Problemas con las 4 operaciones
+    resumen: Resuelve problemas que necesitan más de una operación, paso a paso.
+    revisado_por: null
+    partes:
+      - titulo: Entender el problema
+        explicacion: "Lee el problema completo y busca qué te preguntan. Anota los datos que necesitas y fíjate si hay más de una pregunta escondida."
+        practica: Identifica la pregunta y los datos.
+      - titulo: Resolver por pasos
+        explicacion: "Muchos problemas se resuelven en dos pasos. Si compras 3 cuadernos de $1.200 y pagas con $5.000: primero 3 × 1.200 = 3.600; después 5.000 − 3.600 = $1.400 de vuelto."
+        practica: Resuelve problemas de dos o más pasos.
+      - titulo: Revisar si tiene sentido
+        explicacion: "Al terminar, piensa si el resultado es razonable. Un vuelto no puede ser mayor que lo que pagaste, y repartir no puede darte más de lo que había."
+        practica: Revisa si la respuesta de un problema tiene sentido.
+
+  - unidad_id: 5B-OA7
+    titulo: Fracciones equivalentes
+    resumen: Descubre fracciones que valen lo mismo y úsalas para comparar.
+    revisado_por: null
+    partes:
+      - titulo: Fracciones que valen lo mismo
+        explicacion: "Dos fracciones son equivalentes si representan la misma cantidad aunque se escriban distinto. La mitad de una pizza es 1/2, y también 2/4."
+        practica: Reconoce fracciones equivalentes en dibujos.
+      - titulo: Amplificar
+        explicacion: "Para amplificar, multiplicas el numerador y el denominador por el mismo número. 2/3 amplificado por 2 es 4/6."
+        practica: Amplifica fracciones.
+      - titulo: Simplificar
+        explicacion: "Para simplificar, divides el numerador y el denominador por el mismo número. 6/8 simplificado por 2 es 3/4."
+        practica: Simplifica fracciones.
+      - titulo: Comparar con distinto denominador
+        explicacion: "Busca fracciones equivalentes con el mismo denominador. Para 2/3 y 3/4, usa doceavos: 8/12 y 9/12. Como 9 es mayor que 8, 3/4 es mayor."
+        practica: Compara fracciones con distinto denominador.
+
+  - unidad_id: 5B-OA9
+    titulo: Sumar y restar fracciones
+    resumen: Suma y resta fracciones con distinto denominador igualándolos primero.
+    revisado_por: null
+    partes:
+      - titulo: Con el mismo denominador
+        explicacion: "Si el denominador es igual, sumas o restas los numeradores y lo mantienes: 3/8 + 2/8 = 5/8."
+        practica: Suma y resta fracciones con el mismo denominador.
+      - titulo: Igualar los denominadores
+        explicacion: "Si son distintos, amplifica para que queden iguales. En 1/2 + 1/3, las dos pueden tener denominador 6: 3/6 + 2/6 = 5/6."
+        practica: Suma y resta fracciones con distinto denominador.
+      - titulo: Simplificar el resultado
+        explicacion: "Si puedes, simplifica al final. 1/6 + 1/3 = 1/6 + 2/6 = 3/6, y 3/6 simplificado es 1/2."
+        practica: Simplifica el resultado de una suma o resta.
+
+  - unidad_id: 5B-OA10
+    titulo: De fracción a decimal
+    resumen: Escribe fracciones como números decimales.
+    revisado_por: null
+    partes:
+      - titulo: Décimos y centésimos
+        explicacion: "3/10 se escribe 0,3 y se lee «tres décimos». 25/100 se escribe 0,25 y se lee «veinticinco centésimos»."
+        practica: Escribe décimos y centésimos como decimales.
+      - titulo: Llevar a 10 o a 100
+        explicacion: "Amplifica la fracción para que el denominador sea 10 o 100: 1/2 = 5/10 = 0,5; 2/5 = 4/10 = 0,4; 3/4 = 75/100 = 0,75."
+        practica: Pasa fracciones con denominador 2, 4 o 5 a decimal.
+
+  - unidad_id: 5B-OA11
+    titulo: Comparar decimales
+    resumen: Aprende cuánto vale cada cifra de un decimal y cómo ordenar decimales.
+    revisado_por: null
+    partes:
+      - titulo: El valor de cada cifra
+        explicacion: "Después de la coma vienen los décimos, los centésimos y los milésimos. En 2,375 hay 2 unidades, 3 décimos, 7 centésimos y 5 milésimos."
+        practica: Descubre cuánto vale cada cifra de un decimal.
+      - titulo: Comparar decimales
+        explicacion: "Compara primero la parte entera. Si es igual, compara los décimos, luego los centésimos. Entre 0,48 y 0,5, gana 0,5 porque 5 décimos es más que 4 décimos. ¡Tener más cifras no lo hace mayor!"
+        practica: Decide cuál decimal es mayor.
+      - titulo: Ordenar decimales
+        explicacion: "Agregar ceros al final no cambia el número: 0,5 = 0,50 = 0,500. Así todos quedan con las mismas cifras y es más fácil ordenarlos."
+        practica: Ordena decimales de menor a mayor.
+
+  - unidad_id: 5B-OA12
+    titulo: Sumar y restar decimales
+    resumen: Suma y resta números decimales poniendo la coma bajo la coma.
+    revisado_por: null
+    partes:
+      - titulo: Coma bajo la coma
+        explicacion: "Escribe los números uno bajo el otro con la coma alineada, así quedan décimos bajo décimos y centésimos bajo centésimos. La coma del resultado va en el mismo lugar."
+        practica: Suma decimales alineando la coma.
+      - titulo: Completar con ceros
+        explicacion: "Si un número tiene menos cifras después de la coma, agrega ceros: 4,5 − 1,25 se calcula como 4,50 − 1,25 = 3,25."
+        practica: Resta decimales completando con ceros.
+      - titulo: Llevar y canjear
+        explicacion: "Funciona igual que con números enteros: 2,7 + 1,6 → 7 + 6 = 13 décimos, escribes 3 y llevas 1. El resultado es 4,3."
+        practica: Suma y resta decimales llevando o canjeando.
+
+  - unidad_id: 5B-OA13
+    titulo: Problemas con fracciones y decimales
+    resumen: Resuelve problemas de la vida diaria con fracciones o con decimales.
+    revisado_por: null
+    partes:
+      - titulo: Problemas con fracciones
+        explicacion: "Si comes 1/4 de una torta y tu hermano come 2/4, entre los dos comieron 1/4 + 2/4 = 3/4 de la torta."
+        practica: Resuelve problemas sumando o restando fracciones.
+      - titulo: Problemas con decimales
+        explicacion: "Si una cinta mide 2,5 m y cortas 0,8 m, quedan 2,5 − 0,8 = 1,7 m."
+        practica: Resuelve problemas sumando o restando decimales.
+      - titulo: Revisar la respuesta
+        explicacion: "Piensa si tiene sentido: si cortas un trozo de una cinta, lo que queda debe ser más corto que la cinta completa."
+        practica: Revisa si la respuesta de un problema tiene sentido.
+
+  # 6° básico ----------------------------------------------------------------------------
+  - unidad_id: 6B-OA2
+    titulo: Problemas con las 4 operaciones
+    resumen: Resuelve problemas con números grandes que necesitan varias operaciones.
+    revisado_por: null
+    partes:
+      - titulo: Hacer un plan
+        explicacion: "Antes de calcular, decide qué operaciones necesitas y en qué orden. Escribir el plan en palabras ayuda: «primero calculo cuánto gasté y después cuánto me queda»."
+        practica: Arma el plan para resolver un problema.
+      - titulo: Escribir un solo cálculo
+        explicacion: "Puedes juntar los pasos en un cálculo con paréntesis. 3 entradas de $2.500 pagando con $10.000: 10.000 − 3 × 2.500 = 10.000 − 7.500 = $2.500 de vuelto."
+        practica: Resuelve problemas con un cálculo combinado.
+      - titulo: Estimar para revisar
+        explicacion: "Redondea los números para saber más o menos cuánto debería dar. Si el resultado exacto queda muy lejos de tu estimación, revisa los cálculos."
+        practica: Estima el resultado de un problema.
+
+  - unidad_id: 6B-OA5
+    titulo: Fracciones impropias y números mixtos
+    resumen: Descubre fracciones mayores que un entero y escríbelas como números mixtos.
+    revisado_por: null
+    partes:
+      - titulo: Fracciones impropias
+        explicacion: "Una fracción es impropia cuando el numerador es mayor que el denominador, como 7/4. Vale más que un entero, porque 4/4 ya es un entero completo."
+        practica: Reconoce fracciones mayores que un entero.
+      - titulo: De impropia a número mixto
+        explicacion: "Divide el numerador por el denominador: 7 : 4 = 1 y sobran 3. Entonces 7/4 = 1 3/4: un entero y tres cuartos."
+        practica: Escribe fracciones impropias como números mixtos.
+      - titulo: De número mixto a impropia
+        explicacion: "Multiplica el entero por el denominador y suma el numerador: en 2 1/3, 2 × 3 + 1 = 7. Entonces 2 1/3 = 7/3."
+        practica: Escribe números mixtos como fracciones impropias.
+      - titulo: En la recta numérica
+        explicacion: "1 3/4 está entre 1 y 2. Para ubicarlo, divide el espacio entre 1 y 2 en 4 partes iguales y avanza 3 desde el 1."
+        practica: Ubica números mixtos en la recta numérica.
+
+  - unidad_id: 6B-OA6
+    titulo: Sumar y restar fracciones y mixtos
+    resumen: Suma y resta fracciones impropias y números mixtos.
+    revisado_por: null
+    partes:
+      - titulo: Fracciones impropias
+        explicacion: "Se suman igual que las otras fracciones: 5/4 + 3/4 = 8/4. Y 8/4 son 2 enteros."
+        practica: Suma y resta fracciones impropias.
+      - titulo: Sumar números mixtos
+        explicacion: "Suma los enteros por un lado y las fracciones por otro: 1 1/4 + 2 2/4 = 3 3/4."
+        practica: Suma números mixtos.
+      - titulo: Con distinto denominador
+        explicacion: "Iguala los denominadores antes de sumar: 1 1/2 + 1/3 = 1 3/6 + 2/6 = 1 5/6."
+        practica: Suma y resta mixtos con distinto denominador.
+      - titulo: Restar cuando no alcanza
+        explicacion: "En 2 1/4 − 3/4, la fracción de arriba es más chica. Pasa todo a fracción impropia: 9/4 − 3/4 = 6/4, que es 1 2/4, o sea 1 1/2."
+        practica: Resta números mixtos convirtiendo a fracción impropia.
+
+  - unidad_id: 6B-OA7
+    titulo: Multiplicar y dividir decimales
+    resumen: Multiplica y divide números decimales por números naturales y por 10, 100 y 1.000.
+    revisado_por: null
+    partes:
+      - titulo: Multiplicar un decimal
+        explicacion: "Multiplica como si no hubiera coma y después ponla con la misma cantidad de cifras decimales. 1,25 × 3: 125 × 3 = 375, así que el resultado es 3,75."
+        practica: Multiplica decimales por números naturales.
+      - titulo: Por 10, 100 y 1.000
+        explicacion: "Al multiplicar por 10, 100 o 1.000, la coma se corre a la derecha tantos lugares como ceros: 2,35 × 10 = 23,5. Al dividir se corre a la izquierda: 4,8 : 10 = 0,48."
+        practica: Multiplica y divide decimales por 10, 100 y 1.000.
+      - titulo: Dividir un decimal
+        explicacion: "Divide como siempre y pon la coma en el resultado cuando llegues a la coma del número que divides: 7,5 : 3 = 2,5."
+        practica: Divide decimales por números naturales.
+
+  - unidad_id: 6B-OA8
+    titulo: Problemas con fracciones y decimales
+    resumen: Resuelve problemas que mezclan fracciones, números mixtos y decimales.
+    revisado_por: null
+    partes:
+      - titulo: Usar el mismo tipo de número
+        explicacion: "Si el problema mezcla fracciones y decimales, conviene pasar todo a un mismo tipo. Por ejemplo, 1/2 + 0,3 se calcula como 0,5 + 0,3 = 0,8."
+        practica: Convierte para resolver problemas que mezclan números.
+      - titulo: Problemas con números mixtos
+        explicacion: "Si una receta usa 1 1/2 tazas de harina y otra usa 3/4 de taza, en total son 1 2/4 + 3/4 = 1 5/4, que es 2 1/4 tazas."
+        practica: Resuelve problemas con fracciones y números mixtos.
+      - titulo: Problemas con decimales
+        explicacion: "Si caminas 1,25 km y después 0,8 km, en total recorres 1,25 + 0,80 = 2,05 km."
+        practica: Resuelve problemas con decimales.

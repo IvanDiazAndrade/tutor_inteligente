@@ -30,6 +30,7 @@ flowchart LR
     subgraph SIS["Tutor inteligente"]
         direction TB
         CU1(["CU-1 Iniciar sesión"])
+        CU15(["CU-15 Leer lección"])
         CU2(["CU-2 Seleccionar unidad"])
         CU3(["CU-3 Resolver ejercicio"])
         CU8(["CU-8 Corregir respuesta"])
@@ -46,6 +47,7 @@ flowchart LR
     end
 
     EST --- CU1
+    EST --- CU15
     EST --- CU2
     EST --- CU3
     EST --- CU11
@@ -73,12 +75,12 @@ flowchart LR
 
 | CU | Nombre | Actor | Resumen del flujo principal | Requisitos |
 |---|---|---|---|---|
-| CU-1 | Iniciar sesión | Estudiante, Apoderado | Sin teléfono vinculado, la app abre el inicio de sesión: el apoderado entra con correo + contraseña y el teléfono queda vinculado a su cuenta (token de dispositivo). Con el teléfono vinculado, la pantalla de acceso separa las dos entradas: el estudiante toca su perfil y entra sin PIN; el apoderado entra al panel con su PIN de 4 números. El servidor emite un JWT con el rol. *(Actualizado 2-nov-2026, RF-A3.)* | RF-A2, RF-A3, RNF-S1 |
-| CU-2 | Seleccionar unidad | Estudiante | Ve las unidades de su curso y de los anteriores con su nivel en estrellas y la **unidad sugerida** destacada; elige libremente. | RF-D1, RF-E5; `modelo_estudiante.md` §5 |
+| CU-1 | Iniciar sesión | Estudiante, Apoderado | Sin teléfono vinculado, la app abre el inicio de sesión: el apoderado entra con correo + contraseña y el teléfono queda vinculado a su cuenta (token de dispositivo); luego la app vuelve a la pantalla de acceso (si la cuenta es nueva, primero pide crear el perfil del estudiante). Con el teléfono vinculado, la pantalla de acceso separa las dos entradas: el estudiante toca su perfil y entra sin PIN; el apoderado entra al panel con su PIN de 4 números. El servidor emite un JWT con el rol. *(Actualizado 2-nov-2026, RF-A3.)* | RF-A2, RF-A3, RNF-S1 |
+| CU-2 | Seleccionar unidad | Estudiante | En la pestaña Ejercicios ve una tarjeta por unidad de su curso (las de cursos anteriores, aparte) con su nivel en estrellas y la **unidad sugerida** destacada arriba; elige libremente. Al elegir una ve sus ejercicios, uno por parte de la lección, y desde cualquiera abre la práctica (CU-3). Las unidades sin ejercicios activos aparecen como "Pronto". *(Actualizado 2-nov-2026: antes se elegía desde el mapa de unidades de la home.)* | RF-D1, RF-E5, RNF-U1; `modelo_estudiante.md` §5 |
 | CU-3 | Resolver ejercicio | Estudiante | El sistema sirve un ejercicio `activo` no visto de la celda unidad×nivel actual (sin LLM). El estudiante responde; se incluyen la corrección (CU-8) y la adaptación (CU-12). Puede pasar a "otro ejercicio" sin penalización. | RF-D7, RF-E1, RNF-R2 |
 | CU-4 | Recibir retroalimentación | Estudiante (vía CU-8) | Correcta: refuerzo desde plantillas locales + puntos, sin LLM. Incorrecta: el LLM explica la causa probable sin revelar la respuesta; la salida pasa el filtro de no revelación. Incluye la acción "no entiendo" (re-explicación). Sin LLM disponible: plantilla local (F6). | RF-P1, RF-P2, RF-P4–P6, RNF-P2, RNF-R3 |
 | CU-5 | Subir de nivel en la unidad | Estudiante (vía CU-12) | Cuando el índice llega a ≥ 0,8 con racha de 3, sube la dificultad y la unidad gana una estrella; en el nivel 3 queda **Dominada** con insignia. *Redefine el CU-5 "Desbloquear nivel" del anteproyecto.* | RF-G1, RF-G2, RF-E3 |
-| CU-6 | Ver puntaje y progreso | Estudiante | Muestra puntos, estrellas e insignias por unidad. Solo progreso personal, sin comparación. | RF-E5, RF-G3, RF-G4 |
+| CU-6 | Ver puntaje y progreso | Estudiante | En la pestaña Perfil: alias, curso, puntos, unidades empezadas y dominadas, y estrellas por unidad de su curso. Las unidades dominadas llevan la etiqueta "¡Dominada!" en la pestaña Ejercicios. Solo progreso personal, sin comparación. *(Actualizado 2-nov-2026.)* | RF-E5, RF-G3, RF-G4 |
 | CU-7 | Reponer banco de ejercicios | Planificador | Detecta celdas con stock `activo` < 5. Paramétricas: instancia la plantilla aprobada y el ejercicio queda `activo`. Verbales: genera con el LLM (doble pasada en fracciones) y aplica las capas 1–3 del pipeline; el resultado queda `verificado` esperando al revisor. *Redefine el CU-7 "Generar contenido (GPT)".* | RF-D2–D6, AD-3, AD-9 |
 | CU-8 | Corregir respuesta | Sistema (incluido en CU-3) | Normaliza la entrada y compara con `respuestaFinal` con aritmética exacta; detecta el patrón de error común si lo hay. Las respuestas no parseables se rechazan sin contar como intento. *Redefine el CU-8 "Evaluar respuesta (GPT)": ya no participa el LLM (AD-2).* | RF-D7, AD-2 |
 | CU-9 | Gestionar cuenta del estudiante | Apoderado | Registrarse (correo, contraseña y PIN del panel), crear el perfil (alias + curso), cambiar el PIN del panel y editar el curso sin perder historial. | RF-A1, RF-A3, RF-A4, RF-A5, RNF-S2 |
@@ -87,6 +89,7 @@ flowchart LR
 | CU-12 | Adaptar dificultad | Sistema (incluido en CU-3) | Tras cada intento actualiza `DominioOA` (promedio móvil exponencial) y sube o baja el nivel según los umbrales 0,8 / 0,4. | RF-E2–E4 |
 | CU-13 | Resolver juntos | Estudiante | Tras 3 fallos se ofrece la explicación guiada: el LLM narra la solución de referencia paso a paso y luego se sirve un ejercicio análogo que cuenta como intento normal. **Nuevo respecto del anteproyecto.** | RF-P7 |
 | CU-14 | Revisar ejercicios y plantillas | Revisor de contenido | Revisa los ejercicios verbales `verificado` (los marcados `dudoso` primero) y los pasa a `activo` o `descartado`. Aprueba una vez cada plantilla paramétrica con sus rangos por nivel. **Nuevo respecto del anteproyecto.** | RNF-P1, RNF-P3; `modelo_dominio.md` §8 |
+| CU-15 | Leer lección | Estudiante | En la pestaña Lecciones elige una lección (una por unidad de su curso; las de cursos anteriores, aparte) y lee sus partes: lo básico de cada subtema con un ejemplo. Desde la lección puede ir a practicarla (CU-2). Contenido estático, sin LLM. **Nuevo (2-nov-2026).** | RF-D9, RNF-U1 |
 
 ## 4. Decisiones de este diagrama
 

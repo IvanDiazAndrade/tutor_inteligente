@@ -6,6 +6,7 @@ import type { components } from '@/api/esquema';
 export type Esquemas = components['schemas'];
 export type PerfilEstudiante = Esquemas['PerfilEstudiante'];
 export type UnidadEstudiante = Esquemas['UnidadEstudiante'];
+export type LeccionEstudiante = Esquemas['LeccionEstudiante'];
 export type Token = Esquemas['Token'];
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000';
@@ -91,6 +92,8 @@ export const api = {
   perfilEstudiante: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/estudiante/perfil', { token }),
   unidades: (token: string) => pedir<UnidadEstudiante[]>('GET', '/estudiante/unidades', { token }),
+  lecciones: (token: string) =>
+    pedir<LeccionEstudiante[]>('GET', '/estudiante/lecciones', { token }),
 
   // Ejercicio (F1, F2, F3 y RF-P7). La app nunca recibe la respuesta ni la solución.
   servirEjercicio: (token: string, unidadId: string) =>

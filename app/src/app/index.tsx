@@ -27,7 +27,7 @@ export default function Acceso() {
   useEffect(() => () => clearTimeout(temporizador.current), []);
 
   if (cargando) return null;
-  if (sesion?.rol === 'estudiante') return <Redirect href="/estudiante" />;
+  if (sesion?.rol === 'estudiante') return <Redirect href="/estudiante/lecciones" />;
   if (sesion?.rol === 'apoderado') return <Redirect href="/apoderado" />;
   if (!dispositivo) return <Redirect href="/apoderado/ingreso" />;
 
@@ -44,7 +44,7 @@ export default function Acceso() {
     try {
       const { token } = await api.entrarComoEstudiante(dispositivo);
       await iniciar(token, 'estudiante');
-      router.replace('/estudiante');
+      router.replace('/estudiante/lecciones');
     } catch (e) {
       manejarError(e, setError);
     } finally {
