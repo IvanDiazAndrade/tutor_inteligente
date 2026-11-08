@@ -10,9 +10,9 @@ import { BotonAccion } from '@/components/BotonAccion';
 import { BotonPrimario } from '@/components/BotonPrimario';
 import { CampoRespuesta } from '@/components/CampoRespuesta';
 import { EnunciadoResaltado } from '@/components/EnunciadoResaltado';
+import { FiguraEjercicio, type Representacion } from '@/components/FiguraEjercicio';
 import { GloboOctavio } from '@/components/GloboOctavio';
 import { Octavio } from '@/components/Octavio';
-import { RepresentacionFraccion } from '@/components/RepresentacionFraccion';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { Protegida } from '@/sesion/Protegida';
 import { useSesion } from '@/sesion/SesionContext';
@@ -23,11 +23,6 @@ const MENSAJE_INICIAL = 'Lee con calma y escribe tu respuesta. ¡Tú puedes!';
 const conPuntoDeMiles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 type Estado = 'cargando' | 'respondiendo' | 'correcta' | 'guiada' | 'sin-ejercicios';
-
-type Representacion = {
-  tipo: string;
-  parametros: { denominador: number; partesDestacadas: number[] };
-};
 
 // Ejercicio con Octavio (CU-3, CU-4, CU-11, CU-13; mockup "Ejercicio Estudiante").
 // El servidor sirve el ejercicio (F1), corrige (F2), entrega las pistas (F3) y actualiza el
@@ -42,8 +37,7 @@ function PantallaEjercicio() {
 
   const [ejercicio, setEjercicio] = useState<EjercicioServido | null>(null);
   const [estado, setEstado] = useState<Estado>('cargando');
-  const [numerador, setNumerador] = useState('');
-  const [denominador, setDenominador] = useState('');
+  const [respuesta, setRespuesta] = useState('');
   const [mensaje, setMensaje] = useState(MENSAJE_INICIAL);
   const [pistasRestantes, setPistasRestantes] = useState(0);
   const [ofreceJuntos, setOfreceJuntos] = useState(false);
@@ -77,8 +71,7 @@ function PantallaEjercicio() {
   const mostrar = useCallback((nuevo: EjercicioServido, mensajeInicial = MENSAJE_INICIAL) => {
     setEjercicio(nuevo);
     setEstado('respondiendo');
-    setNumerador('');
-    setDenominador('');
+    setRespuesta('');
     setMensaje(mensajeInicial);
     setPistasRestantes(nuevo.pistasRestantes);
     setOfreceJuntos(false);
@@ -137,8 +130,16 @@ function PantallaEjercicio() {
       return;
     }
     Keyboard.dismiss();
-    const respuesta =
-      ejercicio.formatoRespuesta === 'fraccion' ? `${numerador}/${denominador}` : numerador;
+    if (!respuesta) {
+      setMensaje(
+        ejercicio.formatoRespuesta === 'ordenar'
+          ? 'Toca todos los valores, de menor a mayor.'
+          : ejercicio.formatoRespuesta === 'comparar'
+            ? 'Elige un signo.'
+            : 'Primero escribe tu respuesta.',
+      );
+      return;
+    }
     const segundos = Math.round((Date.now() - inicio.current) / 1000);
     conManejo(async () => {
       const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);
@@ -273,22 +274,19 @@ function PantallaEjercicio() {
   const tarjeta = (
     <View className={`rounded-[20px] bg-white ${g ? 'gap-6 p-7' : 'gap-3.5 p-[18px]'}`}>
       <EnunciadoResaltado texto={ejercicio.enunciado} grande={g} />
-      <View className={`flex-row items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}>
-        {representacion?.tipo === 'fraccion-circulo' && (
-          <RepresentacionFraccion
-            denominador={representacion.parametros.denominador}
-            partesDestacadas={representacion.parametros.partesDestacadas}
-            tamano={g ? 200 : 128}
-          />
-        )}
+      <View
+        className={`flex-row flex-wrap items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}
+      >
+        <FiguraEjercicio representacion={representacion} grande={g} />
         <CampoRespuesta
-          formato={ejercicio.formatoRespuesta === 'fraccion' ? 'fraccion' : 'numerico'}
-          numerador={numerador}
-          denominador={denominador}
-          onCambio={(n, d) => {
-            setNumerador(n);
-            setDenominador(d);
-          }}
+          // Un ejercicio nuevo parte con el campo vacío; tras un error, lo escrito se conserva.
+          key={ejercicio.servidoId}
+          formato={ejercicio.formatoRespuesta}
+          entradaMixta={ejercicio.entradaMixta}
+          valores={
+            representacion?.tipo === 'valores-ordenar' ? representacion.parametros.valores : []
+          }
+          onCambio={setRespuesta}
           onEnviar={responder}
           deshabilitado={estado !== 'respondiendo' || ocupado}
           grande={g}

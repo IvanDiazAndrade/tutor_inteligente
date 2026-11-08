@@ -140,6 +140,7 @@ class EjercicioParaEstudiante(Esquema):
     enunciado: str
     representacion: dict | None
     formato_respuesta: Literal["numerico", "fraccion", "ordenar", "comparar"]
+    entrada_mixta: bool  # la app muestra una casilla para el entero del número mixto
     pistas_restantes: int
 
 

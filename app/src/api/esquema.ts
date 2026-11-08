@@ -361,6 +361,8 @@ export interface components {
        * @enum {string}
        */
       formatoRespuesta: 'numerico' | 'fraccion' | 'ordenar' | 'comparar';
+      /** Entradamixta */
+      entradaMixta: boolean;
       /** Pistasrestantes */
       pistasRestantes: number;
     };

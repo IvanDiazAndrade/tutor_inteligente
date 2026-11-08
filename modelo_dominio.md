@@ -113,6 +113,8 @@ Tres formatos, todos validables por código (RF-D7, AD-2). El corrector es una f
 | `fraccion` | entrada `a/b` o número mixto `c a/b` | equivalencia por producto cruzado con enteros (a·d = b·c); mixtos se convierten a impropia antes de comparar | `aceptaEquivalentes: true` **por defecto**: 6/8 cuenta como 3/4, y la retroalimentación agrega "¡Bien! También puedes escribirla como 3/4". `false` solo donde la forma ES el objetivo: 5B-OA7 (simplificar/amplificar) y 6B-OA5 (convertir impropia ↔ mixto) |
 | `ordenar` / `comparar` | ordenar 3–5 valores presentados (arrastrar o numerar); o elegir `<`, `=`, `>` | igualdad exacta con la secuencia/símbolo canónico | el generador garantiza valores distintos (sin empates) salvo que el ejercicio evalúe justamente la igualdad (ej. 6/8 vs 3/4 → `=`) |
 
+`reglaValidacion.entradaMixta: true` hace que la app muestre una casilla para el entero del número mixto. Lo fija la plantilla y no se deduce de la respuesta, para no delatar cuándo un resultado da justo un entero.
+
 Casos rechazados con mensaje de formato (no cuentan como intento fallido): denominador 0, texto no parseable, fracción donde se espera decimal si el ejercicio lo exige.
 
 ---
@@ -149,6 +151,8 @@ Cobertura de las 24 unidades del Anillo 1. **Fuente** P = paramétrica (correcta
 | 6B-OA8 | problemas con fracciones y decimales | — | LLM | numérico, fracción | — |
 
 Resumen: **9 unidades solo paramétricas, 10 mixtas, 5 solo LLM.** Los niveles de dificultad no cambian la plantilla sino sus **parámetros**: nivel 1 = rango reducido y un paso; nivel 2 = rango completo del OA; nivel 3 = rango completo + paso adicional o contexto (la definición exacta por plantilla queda en cada ficha de plantilla, Fase IV, tarea 57).
+
+**Estado de la implementación (8-nov-2026, tarea 60):** las 19 unidades paramétricas y mixtas tienen una plantilla en `backend/tutor/dominio/` (`plantillas.py` y `plantillas_cuarto`, `_quinto` y `_sexto`), que reúne sus variantes por nivel. Producen 284 ejercicios para el banco; la celda N1 de 4B-OA9 queda en 4 porque no existen más ejercicios distintos. Cada plantilla debe aprobarla un revisor del equipo una vez (§8); antes de eso no genera ejercicios. Faltan: los problemas verbales de las unidades mixtas, las 5 unidades solo LLM (necesitan el pipeline de §8), los paramétricos sin implementar de esta tabla (por ejemplo, ubicar números en la recta en 4B-OA1 y 5B-OA11, y la figura de 5B-OA9) y elegir el ejercicio según la parte de la lección (§1.1).
 
 ### 4.1 Ejemplar A — plantilla paramétrica numérica: `5B-OA4-div-resto`
 
@@ -198,6 +202,8 @@ Tres tipos de figura, **generadas por código como SVG desde parámetros** (RF-D
 | `fraccion-circulo` / `fraccion-barra` | denominador, partes destacadas (1 o 2 colores) | 4B-OA8, 4B-OA9, 5B-OA7, 5B-OA9 |
 | `recta-numerica` | rango [min, max], marcas, punto(s) a ubicar o ubicados | 4B-OA1, 4B-OA8, 5B-OA11, 6B-OA5 |
 | `cuadricula-decimal` | cuadrícula 10×10, celdas pintadas (décimos/centésimos) | 5B-OA10 |
+
+Implementados en la app: `fraccion-circulo`, `recta-numerica` (parámetros `minimo`, `maximo`, `divisiones` y `punto`) y `cuadricula-decimal` (parámetro `pintadas`); `fraccion-barra` todavía no. `representacion` también transporta los valores desordenados del formato `ordenar` (`{tipo: "valores-ordenar", parametros: {valores}}`), que no son una figura: la app los muestra para tocarlos en orden.
 
 El LLM nunca produce SVG: si un ejercicio verbal quiere apoyo pictórico, emite `representacion` con tipo y parámetros, y la capa 2 valida que los parámetros sean coherentes con el enunciado (mismo denominador, mismo rango).
 

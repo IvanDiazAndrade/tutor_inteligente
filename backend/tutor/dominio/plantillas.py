@@ -6,62 +6,46 @@ fórmulas de los parámetros), tres pistas y representación pictórica opcional
 correcto por construcción: la respuesta sale de los parámetros, nunca al revés. Los niveles
 cambian los parámetros, no la plantilla.
 
-Por ahora están las dos plantillas que el diseño especifica en detalle (§4.1 y §4.2); las
-fichas del resto de las unidades se agregan aquí siguiendo el mismo patrón.
+Aquí están los dos ejemplares que el diseño especifica en detalle (§4.1 y §4.2) y el registro
+de todas las plantillas; las demás fichas están en plantillas_cuarto, _quinto y _sexto. Las
+unidades solo LLM de §4 no tienen plantilla: se llenan con el pipeline de F5.
 """
 
 import random
-import re
-from dataclasses import dataclass, field
-from typing import Any, Protocol
 
-from tutor.dominio.corrector import fraccion
+from tutor.dominio.plantillas_base import (
+    EjercicioGenerado,
+    Plantilla,
+    _errores,
+    _sin_revelar,
+    menciona,
+    revela,
+)
+from tutor.dominio.plantillas_cuarto import (
+    ConceptoFraccion,
+    Division,
+    Multiplicacion,
+    SumaResta,
+    TablasMentales,
+    ValorPosicional,
+)
+from tutor.dominio.plantillas_quinto import (
+    CompararDecimales,
+    Equivalencia,
+    FraccionDecimal,
+    Multiplicacion2x2,
+    NumerosGrandes,
+    OperatoriaCombinada,
+    SumaDistintoDenominador,
+    SumaRestaDecimales,
+)
+from tutor.dominio.plantillas_sexto import (
+    ImpropiasMixtos,
+    MultiplicarDividirDecimales,
+    OperatoriaMixtos,
+)
 
-
-@dataclass(frozen=True)
-class EjercicioGenerado:
-    unidad_id: str
-    plantilla_id: str
-    nivel: int
-    enunciado: str
-    formato_respuesta: str
-    respuesta_final: str
-    solucion_referencia: list[str]
-    errores_comunes: list[dict[str, str]]
-    pistas: list[str]
-    regla_validacion: dict[str, Any] = field(default_factory=lambda: {"aceptaEquivalentes": True})
-    representacion: dict[str, Any] | None = None
-
-
-class Plantilla(Protocol):
-    id: str
-    unidad_id: str
-    version: int
-
-    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado: ...
-
-
-def _errores(respuesta: str, candidatos: list[tuple[str, str, str]]) -> list[dict[str, str]]:
-    """Descarta errores que valen lo mismo que la respuesta o que otro error (p. ej. 2/4 y 1/2):
-    un patrón ambiguo no sirve para diagnosticar la causa."""
-    vistos = {fraccion(respuesta)}
-    errores = []
-    for valor, causa, retro in candidatos:
-        if fraccion(valor) not in vistos:
-            vistos.add(fraccion(valor))
-            errores.append({"respuesta": valor, "causa": causa, "retroalimentacion": retro})
-    return errores
-
-
-def menciona(texto: str, respuesta: str) -> bool:
-    """¿El texto contiene la respuesta como número o fracción suelto (no dentro de otro)?"""
-    return re.search(rf"(?<![\d/]){re.escape(respuesta)}(?![\d/])", texto) is not None
-
-
-def _sin_revelar(pista: str, respuesta: str, alternativa: str) -> str:
-    """Si por casualidad la pista nombra la respuesta (p. ej. 99 : 9 -> "divide 11 : 9"),
-    se usa una versión sin números. El filtro del tutor lo revisa de nuevo al servirla."""
-    return alternativa if menciona(pista, respuesta) else pista
+__all__ = ["PLANTILLAS", "EjercicioGenerado", "Plantilla", "menciona", "revela"]
 
 
 # 5B-OA4: división de 3 dígitos por 1 dígito, con resto (§4.1) ---------------------------
@@ -273,4 +257,27 @@ class SumaIgualDenominador:
         )
 
 
-PLANTILLAS: dict[str, Plantilla] = {p.id: p for p in (DivisionConResto(), SumaIgualDenominador())}
+PLANTILLAS: dict[str, Plantilla] = {
+    p.id: p
+    for p in (
+        ValorPosicional(),
+        TablasMentales(),
+        SumaResta(),
+        Multiplicacion(),
+        Division(),
+        ConceptoFraccion(),
+        SumaIgualDenominador(),
+        NumerosGrandes(),
+        Multiplicacion2x2(),
+        DivisionConResto(),
+        OperatoriaCombinada(),
+        Equivalencia(),
+        SumaDistintoDenominador(),
+        FraccionDecimal(),
+        CompararDecimales(),
+        SumaRestaDecimales(),
+        ImpropiasMixtos(),
+        OperatoriaMixtos(),
+        MultiplicarDividirDecimales(),
+    )
+}

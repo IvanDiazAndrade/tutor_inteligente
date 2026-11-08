@@ -7,11 +7,11 @@ Todo texto dirigido al estudiante pasa por el filtro de no revelación antes de 
 """
 
 import random
-import re
 from typing import Any
 
 from tutor.dominio.corrector import FormatoInvalido, fraccion, numero
-from tutor.dominio.plantillas import menciona
+from tutor.dominio.plantillas_base import CANTIDADES as _CANTIDADES
+from tutor.dominio.plantillas_base import revela
 
 REFUERZOS = [
     "¡Muy bien! Lo lograste.",
@@ -52,36 +52,6 @@ def reexplicacion_local(pistas: list[str], respuesta: str) -> str:
 
 
 RESPALDO = "Revisa tu procedimiento paso a paso. ¡Tú puedes!"
-
-# Números, fracciones y números mixtos que aparecen en un texto ("1 1/2", "6/8", "0,75", "12.500").
-_CANTIDADES = re.compile(r"\d+\s+\d+\s*/\s*\d+|\d+\s*/\s*\d+|\d+(?:[.,]\d+)*")
-
-
-def revela(texto: str, respuesta: str) -> bool:
-    """¿El texto contiene la respuesta final, literal o en una forma equivalente aceptada?
-
-    Si la respuesta es una fracción se comparan las fracciones y los decimales del texto (6/8 y
-    0,75 revelan 3/4), pero no los enteros sueltos, que suelen ser operandos ("Suma 1 + 3").
-    Si es un número, cualquier número de igual valor.
-    Las respuestas en palabras ("tres cuartos") se agregan con el filtro completo (tarea 66).
-    """
-    if menciona(texto, respuesta):
-        return True
-    es_fraccion = "/" in respuesta
-    try:
-        esperado = fraccion(respuesta) if es_fraccion else numero(respuesta)
-    except FormatoInvalido:
-        return False
-    for cantidad in _CANTIDADES.findall(texto):
-        if es_fraccion and re.fullmatch(r"\d+", cantidad):
-            continue  # en respuestas fraccionarias, un entero suelto suele ser un operando
-        try:
-            valor = fraccion(cantidad) if "/" in cantidad else numero(cantidad, respuesta)
-        except FormatoInvalido:
-            continue
-        if valor == esperado:
-            return True
-    return False
 
 
 def _valores(texto: str) -> set:
