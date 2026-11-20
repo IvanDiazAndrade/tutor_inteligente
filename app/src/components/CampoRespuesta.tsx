@@ -38,6 +38,8 @@ function Casilla({
       value={valor}
       onChangeText={(v) => onCambio(v.replace(/\D/g, '').slice(0, 4))}
       keyboardType="number-pad"
+      // En horizontal Android abre el teclado a pantalla completa y tapa el ejercicio.
+      disableFullscreenUI
       placeholder="?"
       placeholderTextColor="#A78BFA"
       editable={!deshabilitado}
@@ -46,7 +48,7 @@ function Casilla({
       // Android agrega relleno vertical propio: sin esto el "?" queda descentrado.
       style={{ paddingVertical: 0, textAlignVertical: 'center' }}
       className={`rounded-2xl border-[2.5px] border-lila-suave bg-fondo text-center font-nunito-black text-tinta focus:border-primario ${ancho} ${
-        grande ? 'h-20 text-4xl' : 'h-14 text-[26px]'
+        grande ? 'h-20 text-4xl' : 'h-16 text-[32px]'
       }`}
     />
   );
@@ -73,7 +75,7 @@ export function CampoRespuesta({
         etiqueta="Tu respuesta"
         deshabilitado={deshabilitado}
         grande={grande}
-        ancho={grande ? 'w-44' : 'w-32'}
+        ancho={grande ? 'w-44' : 'w-40'}
         onEnviar={onEnviar}
       />
     );
@@ -87,10 +89,10 @@ export function CampoRespuesta({
         etiqueta="Numerador, el número de arriba"
         deshabilitado={deshabilitado}
         grande={grande}
-        ancho={grande ? 'w-28' : 'w-[74px]'}
+        ancho={grande ? 'w-28' : 'w-[88px]'}
         onEnviar={() => abajo.current?.focus()}
       />
-      <View className={`h-[5px] rounded-full bg-primario ${grande ? 'w-32' : 'w-[78px]'}`} />
+      <View className={`h-[5px] rounded-full bg-primario ${grande ? 'w-32' : 'w-[92px]'}`} />
       <Casilla
         ref={abajo}
         valor={denominador}
@@ -98,7 +100,7 @@ export function CampoRespuesta({
         etiqueta="Denominador, el número de abajo"
         deshabilitado={deshabilitado}
         grande={grande}
-        ancho={grande ? 'w-28' : 'w-[74px]'}
+        ancho={grande ? 'w-28' : 'w-[88px]'}
         onEnviar={onEnviar}
       />
     </View>

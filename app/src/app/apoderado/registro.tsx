@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { api, ErrorApi } from '@/api/cliente';
@@ -50,7 +51,7 @@ export default function RegistroApoderado() {
 
   return (
     <SafeAreaView className="flex-1 bg-fondo">
-      <KeyboardAvoidingView behavior="height" className="flex-1">
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <ScrollView
           contentContainerClassName="grow justify-center p-4"
           keyboardShouldPersistTaps="handled"

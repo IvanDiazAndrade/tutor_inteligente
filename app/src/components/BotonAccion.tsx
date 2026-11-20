@@ -23,14 +23,14 @@ export function BotonAccion({
       accessibilityState={{ disabled: deshabilitado }}
       disabled={deshabilitado}
       onPress={onPress}
-      className={`rounded-full border-[1.5px] disabled:opacity-40 ${grande ? 'px-5 py-4' : 'px-3.5 py-3'} ${
+      className={`rounded-full border-[1.5px] disabled:opacity-40 ${grande ? 'px-5 py-4' : 'px-4 py-3'} ${
         destacado
           ? 'border-primario bg-primario active:bg-primario-oscuro'
           : 'border-globo bg-white active:bg-fondo'
       }`}
     >
       <Text
-        className={`font-nunito-extrabold ${grande ? 'text-lg' : 'text-[13px]'} ${
+        className={`font-nunito-extrabold ${grande ? 'text-lg' : 'text-[15px]'} ${
           destacado ? 'text-white' : 'text-primario'
         }`}
       >

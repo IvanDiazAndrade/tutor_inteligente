@@ -8,7 +8,7 @@ export function EnunciadoResaltado({ texto, grande = false }: { texto: string; g
   let fraccion = 0;
   return (
     <Text
-      className={`font-nunito-bold text-tinta-media ${grande ? 'text-2xl leading-9' : 'text-base leading-6'}`}
+      className={`font-nunito-bold text-tinta-media ${grande ? 'text-2xl leading-9' : 'text-[22px] leading-8'}`}
     >
       {partes.map((parte, i) => {
         if (!/^\d+\/\d+$/.test(parte)) return parte;

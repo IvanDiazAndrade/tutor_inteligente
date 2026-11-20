@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { ProveedorSesion } from '@/sesion/SesionContext';
 
@@ -37,12 +38,16 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProveedorSesion>
-        <Stack
-          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F5F1FF' } }}
-        />
-      </ProveedorSesion>
-    </QueryClientProvider>
+    // KeyboardProvider: mide el teclado también con el modo edge-to-edge de Android, donde el
+    // KeyboardAvoidingView de react-native no achica la pantalla.
+    <KeyboardProvider>
+      <QueryClientProvider client={queryClient}>
+        <ProveedorSesion>
+          <Stack
+            screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F5F1FF' } }}
+          />
+        </ProveedorSesion>
+      </QueryClientProvider>
+    </KeyboardProvider>
   );
 }

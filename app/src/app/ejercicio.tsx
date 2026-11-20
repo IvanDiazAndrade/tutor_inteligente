@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -54,6 +55,23 @@ function PantallaEjercicio() {
   const [seguidas, setSeguidas] = useState(0);
   const [ocupado, setOcupado] = useState(false);
   const inicio = useRef(0); // se fija al mostrar cada ejercicio
+  const desplazable = useRef<ScrollView>(null);
+  const yTarjeta = useRef(0);
+  const [tecladoVisible, setTecladoVisible] = useState(false);
+
+  // Con el teclado abierto se lleva la tarjeta a la vista (casilla y Responder) y las acciones
+  // pasan a una sola fila, para que todo quepa sobre el teclado.
+  useEffect(() => {
+    const abre = Keyboard.addListener('keyboardDidShow', () => {
+      setTecladoVisible(true);
+      desplazable.current?.scrollTo({ y: yTarjeta.current, animated: true });
+    });
+    const cierra = Keyboard.addListener('keyboardDidHide', () => setTecladoVisible(false));
+    return () => {
+      abre.remove();
+      cierra.remove();
+    };
+  }, []);
 
   // Errores de red o de sesión: se muestran en el globo de Octavio; con 401 vuelve al acceso.
   const conManejo = useCallback(
@@ -213,6 +231,8 @@ function PantallaEjercicio() {
   }
 
   const representacion = ejercicio.representacion as Representacion | null;
+  // Teléfono vertical: la tarjeta toma el espacio que sobra en vez de dejar un hueco.
+  const llenaPantalla = !dosColumnas && !g;
   const ultimoPaso = pasoGuiado === pasos.length - 1;
 
   const encabezado = (
@@ -223,10 +243,10 @@ function PantallaEjercicio() {
           accessibilityLabel="Volver"
           onPress={() => router.back()}
           className={`items-center justify-center rounded-[14px] bg-white active:bg-fondo ${
-            g ? 'h-14 w-14' : 'h-10 w-10'
+            g ? 'h-14 w-14' : 'h-11 w-11'
           }`}
         >
-          <Svg width={g ? 24 : 18} height={g ? 24 : 18} viewBox="0 0 18 18">
+          <Svg width={g ? 24 : 20} height={g ? 24 : 20} viewBox="0 0 18 18">
             <Path
               d="M11.5 3.5 L6 9 L11.5 14.5"
               fill="none"
@@ -238,16 +258,18 @@ function PantallaEjercicio() {
           </Svg>
         </Pressable>
         <View className="flex-1">
-          <Text className={`font-nunito-extrabold text-tinta ${g ? 'text-xl' : 'text-sm'}`}>
+          <Text
+            className={`font-nunito-extrabold text-tinta ${g ? 'text-xl' : 'text-base leading-5'}`}
+          >
             {ejercicio.unidadDescripcion}
           </Text>
-          <Text className={`font-nunito-bold text-lila ${g ? 'text-sm' : 'text-[11px]'}`}>
+          <Text className={`font-nunito-bold text-lila ${g ? 'text-sm' : 'text-xs'}`}>
             Unidad {ejercicio.unidadId}
           </Text>
         </View>
         {perfil.data && (
           <View className="rounded-full bg-white px-3 py-1.5">
-            <Text className={`font-nunito-black text-ambar ${g ? 'text-lg' : 'text-[13px]'}`}>
+            <Text className={`font-nunito-black text-ambar ${g ? 'text-lg' : 'text-base'}`}>
               ⭐ {conPuntoDeMiles(perfil.data.puntajeTotal)}
             </Text>
           </View>
@@ -255,13 +277,13 @@ function PantallaEjercicio() {
       </View>
       <View className="flex-row gap-2">
         <View className="rounded-full border-[1.5px] border-nueva-borde bg-fondo px-3 py-1">
-          <Text className={`font-nunito-extrabold text-primario ${g ? 'text-base' : 'text-xs'}`}>
+          <Text className={`font-nunito-extrabold text-primario ${g ? 'text-base' : 'text-sm'}`}>
             Nivel {ejercicio.nivel}
           </Text>
         </View>
         {seguidas > 0 && (
           <View className="rounded-full border-[1.5px] border-ambar-borde bg-ambar-fondo px-3 py-1">
-            <Text className={`font-nunito-extrabold text-ambar ${g ? 'text-base' : 'text-xs'}`}>
+            <Text className={`font-nunito-extrabold text-ambar ${g ? 'text-base' : 'text-sm'}`}>
               🔥 {seguidas} {seguidas === 1 ? 'seguida' : 'seguidas'}
             </Text>
           </View>
@@ -271,14 +293,21 @@ function PantallaEjercicio() {
   );
 
   const tarjeta = (
-    <View className={`rounded-[20px] bg-white ${g ? 'gap-6 p-7' : 'gap-3.5 p-[18px]'}`}>
+    <View
+      onLayout={(e) => {
+        yTarjeta.current = e.nativeEvent.layout.y;
+      }}
+      className={`rounded-[20px] bg-white ${g ? 'gap-6 p-7' : 'gap-5 p-5'} ${
+        llenaPantalla ? 'grow justify-center' : ''
+      }`}
+    >
       <EnunciadoResaltado texto={ejercicio.enunciado} grande={g} />
       <View className={`flex-row items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}>
         {representacion?.tipo === 'fraccion-circulo' && (
           <RepresentacionFraccion
             denominador={representacion.parametros.denominador}
             partesDestacadas={representacion.parametros.partesDestacadas}
-            tamano={g ? 200 : 128}
+            tamano={g ? 200 : 140}
           />
         )}
         <CampoRespuesta
@@ -320,8 +349,8 @@ function PantallaEjercicio() {
     </GloboOctavio>
   );
 
-  const acciones = estado === 'respondiendo' && (
-    <View className="flex-row flex-wrap justify-center gap-2">
+  const botonesAccion = (
+    <>
       {ofreceJuntos && (
         <BotonAccion
           texto="🤝 ¿Lo resolvemos juntos?"
@@ -344,45 +373,69 @@ function PantallaEjercicio() {
         grande={g}
       />
       <BotonAccion texto="↻ Otro ejercicio" onPress={servir} deshabilitado={ocupado} grande={g} />
-    </View>
+    </>
   );
+
+  // Fuera de la zona que se desplaza: siempre quedan a la vista, también sobre el teclado.
+  const acciones =
+    estado === 'respondiendo' &&
+    (tecladoVisible ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerClassName="gap-2 py-2"
+        className="grow-0"
+      >
+        {botonesAccion}
+      </ScrollView>
+    ) : (
+      <View className="flex-row flex-wrap justify-center gap-2 py-2">{botonesAccion}</View>
+    ));
 
   return (
     <SafeAreaView className="flex-1 bg-panel">
-      {dosColumnas ? (
-        <View className={`flex-1 flex-row ${g ? 'gap-8 px-8 pt-4' : 'gap-4 px-4 pt-2'}`}>
-          <View className="flex-1">
-            <ScrollView contentContainerClassName="gap-3 pb-4" keyboardShouldPersistTaps="handled">
-              {encabezado}
-              {tarjeta}
-            </ScrollView>
+      {/* Sin esto el teclado tapa la casilla, Responder y las acciones. */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        {dosColumnas ? (
+          <View className={`flex-1 flex-row ${g ? 'gap-8 px-8 pt-4' : 'gap-4 px-4 pt-2'}`}>
+            <View className="flex-1">
+              <ScrollView
+                contentContainerClassName="gap-3 pb-4"
+                keyboardShouldPersistTaps="handled"
+              >
+                {encabezado}
+                {tarjeta}
+              </ScrollView>
+            </View>
+            <View className="flex-1">
+              <ScrollView
+                contentContainerClassName={`grow gap-3 pb-4 ${g ? 'justify-center' : 'justify-end'}`}
+                keyboardShouldPersistTaps="handled"
+              >
+                {tutor}
+              </ScrollView>
+              {acciones}
+            </View>
           </View>
-          <View className="flex-1">
+        ) : (
+          <>
             <ScrollView
-              contentContainerClassName={`grow gap-3 pb-4 ${g ? 'justify-center' : 'justify-end'}`}
+              ref={desplazable}
+              contentContainerClassName={`grow gap-3 px-4 pb-4 pt-2 ${
+                g ? 'w-full max-w-[760px] self-center gap-6' : ''
+              }`}
               keyboardShouldPersistTaps="handled"
             >
+              {encabezado}
+              {tarjeta}
+              {/* En el teléfono Octavio queda abajo, como en el mockup; en tablet, junto al ejercicio. */}
               {tutor}
-              {acciones}
             </ScrollView>
-          </View>
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerClassName={`grow gap-3 px-4 pb-4 pt-2 ${
-            g ? 'w-full max-w-[760px] self-center gap-6' : ''
-          }`}
-          keyboardShouldPersistTaps="handled"
-        >
-          {encabezado}
-          {tarjeta}
-          {/* En el teléfono Octavio queda abajo, como en el mockup; en tablet, junto al ejercicio. */}
-          <View className={g ? 'gap-4' : 'flex-1 justify-end gap-3'}>
-            {tutor}
-            {acciones}
-          </View>
-        </ScrollView>
-      )}
+            <View className={g ? 'w-full max-w-[760px] self-center px-4' : 'px-4'}>{acciones}</View>
+          </>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

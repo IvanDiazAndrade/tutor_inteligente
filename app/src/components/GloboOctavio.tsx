@@ -18,7 +18,7 @@ export function GloboOctavio({ mensaje, grande = false, children }: Props) {
       >
         <Text
           accessibilityLiveRegion="polite"
-          className={`font-nunito-bold text-tinta-tecla ${grande ? 'text-xl leading-7' : 'text-sm leading-5'}`}
+          className={`font-nunito-bold text-tinta-tecla ${grande ? 'text-xl leading-7' : 'text-base leading-6'}`}
         >
           {mensaje}
         </Text>

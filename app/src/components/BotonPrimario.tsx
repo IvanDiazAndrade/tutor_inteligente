@@ -20,7 +20,7 @@ export function BotonPrimario({ titulo, onPress, deshabilitado = false, grande =
       {({ pressed }) => (
         <Text
           className={`rounded-2xl bg-primario text-center font-nunito-black text-white ${
-            grande ? 'h-16 text-2xl leading-[64px]' : 'h-12 text-base leading-[48px]'
+            grande ? 'h-16 text-2xl leading-[64px]' : 'h-14 text-lg leading-[56px]'
           } ${pressed ? 'translate-y-0' : '-translate-y-1'}`}
         >
           {titulo}
