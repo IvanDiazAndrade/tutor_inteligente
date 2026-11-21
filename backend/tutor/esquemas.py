@@ -117,6 +117,9 @@ class EjercicioParaEstudiante(Esquema):
     enunciado: str
     representacion: dict | None
     formato_respuesta: Literal["numerico", "fraccion", "ordenar", "comparar"]
+    # Ordenar: los valores en el orden en que se muestran (desordenados). Comparar: los dos
+    # valores, izquierdo y derecho. Nunca traen la respuesta.
+    valores: list[str] | None = None
     pistas_restantes: int
 
 

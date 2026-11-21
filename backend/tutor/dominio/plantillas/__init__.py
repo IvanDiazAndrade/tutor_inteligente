@@ -7,15 +7,21 @@ se agrega a PLANTILLAS y la prueba común (tests/test_plantillas.py) la verifica
 from tutor.dominio.plantillas.base import EjercicioGenerado, Plantilla, menciona
 from tutor.dominio.plantillas.cuarto import (
     CalculoMentalTablas,
+    ConceptoFraccion,
     Division2x1,
     Multiplicacion3x1,
+    NumerosHasta10000,
     SumaIgualDenominador,
     SumaRestaHasta1000,
 )
 from tutor.dominio.plantillas.quinto import (
+    CompararDecimales,
     DivisionConResto,
+    FraccionDecimal,
     FraccionesDistintoDenominador,
+    FraccionesEquivalentes,
     Multiplicacion2x2,
+    NumerosGrandes,
     OperatoriaCombinada,
     SumaRestaDecimales,
 )
@@ -35,6 +41,12 @@ PLANTILLAS: dict[str, Plantilla] = {
         FraccionesDistintoDenominador(),
         SumaRestaDecimales(),
         DecimalesPorNatural(),
+        NumerosHasta10000(),
+        ConceptoFraccion(),
+        NumerosGrandes(),
+        FraccionesEquivalentes(),
+        FraccionDecimal(),
+        CompararDecimales(),
     )
 }
 

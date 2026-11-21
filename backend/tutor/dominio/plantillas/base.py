@@ -7,6 +7,7 @@ correcto por construcción: la respuesta sale de los parámetros, nunca al revé
 cambian los parámetros, no la plantilla.
 """
 
+import json
 import random
 import re
 from dataclasses import dataclass, field
@@ -105,3 +106,65 @@ def fijo(v: Fraction, k: int) -> str:
 def decimal_cl(v: Fraction) -> str:
     """Decimal con coma y sin ceros sobrantes, como se escribe en Chile (9,4; 0,125; 7)."""
     return fijo(v, decimales(v))
+
+
+# Ordenar y comparar (modelo_dominio.md §3.2) ------------------------------------------------
+
+SIMBOLO_EN_PALABRAS = {"<": "es menor que", "=": "es igual a", ">": "es mayor que"}
+
+
+def simbolo(a: Fraction, b: Fraction) -> str:
+    return "<" if a < b else ">" if a > b else "="
+
+
+def _errores_texto(
+    respuesta: str, candidatos: list[tuple[str | None, str, str]]
+) -> list[dict[str, str]]:
+    """Como _errores, pero comparando la escritura y no el valor: para respuestas que no son un
+    número (un símbolo o una secuencia) y para cuando la forma es el objetivo (6/8 no es 3/4 si
+    se pidió simplificar). Descarta los vacíos y los repetidos."""
+    vistos = {respuesta}
+    errores = []
+    for texto, causa, retro in candidatos:
+        if texto and texto not in vistos:
+            vistos.add(texto)
+            errores.append({"respuesta": texto, "causa": causa, "retroalimentacion": retro})
+    return errores
+
+
+def errores_comparar(correcto: str, causa_contraria: str, retro: str) -> list[dict[str, str]]:
+    """El símbolo contrario delata el error típico de cada unidad; '=' cuando no son iguales."""
+    contrario = {"<": ">", ">": "<", "=": None}[correcto]
+    return _errores_texto(
+        correcto,
+        [
+            (contrario, causa_contraria, retro),
+            (
+                "=" if correcto != "=" else None,
+                "pensó que valían lo mismo",
+                "Revisa con cuidado: los dos números no valen lo mismo.",
+            ),
+        ],
+    )
+
+
+def mezclados(valores: list[str], azar: random.Random) -> list[str]:
+    """Los valores en un orden al azar que no es ni el pedido ni el inverso."""
+    while True:
+        mostrados = valores[:]
+        azar.shuffle(mostrados)
+        if mostrados not in (valores, valores[::-1]):
+            return mostrados
+
+
+def secuencia(valores: list[str]) -> str:
+    """Como la app envía una respuesta de ordenar y como la lee el corrector."""
+    return "; ".join(valores)
+
+
+def huella(enunciado: str, representacion: dict | None, regla_validacion: dict | None) -> str:
+    """Lo que distingue a un ejercicio de otro para no repetirlo en el banco: el enunciado, la
+    figura y los valores que se muestran. "¿Qué fracción del círculo está pintada?" es el mismo
+    enunciado con figuras distintas; "Ordena de menor a mayor", con valores distintos."""
+    valores = sorted((regla_validacion or {}).get("valores") or [])
+    return json.dumps([enunciado, representacion, valores], sort_keys=True, ensure_ascii=False)

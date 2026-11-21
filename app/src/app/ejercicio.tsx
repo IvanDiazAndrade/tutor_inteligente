@@ -14,6 +14,8 @@ import { EnunciadoResaltado } from '@/components/EnunciadoResaltado';
 import { GloboOctavio } from '@/components/GloboOctavio';
 import { Octavio } from '@/components/Octavio';
 import { RepresentacionFraccion } from '@/components/RepresentacionFraccion';
+import { RespuestaComparar } from '@/components/RespuestaComparar';
+import { RespuestaOrdenar } from '@/components/RespuestaOrdenar';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { Protegida } from '@/sesion/Protegida';
 import { useSesion } from '@/sesion/SesionContext';
@@ -45,6 +47,8 @@ function PantallaEjercicio() {
   const [estado, setEstado] = useState<Estado>('cargando');
   const [numerador, setNumerador] = useState('');
   const [denominador, setDenominador] = useState('');
+  const [seleccion, setSeleccion] = useState<string[]>([]); // formato "ordenar"
+  const [simbolo, setSimbolo] = useState(''); // formato "comparar"
   const [mensaje, setMensaje] = useState(MENSAJE_INICIAL);
   const [pistasRestantes, setPistasRestantes] = useState(0);
   const [ofreceJuntos, setOfreceJuntos] = useState(false);
@@ -97,6 +101,8 @@ function PantallaEjercicio() {
     setEstado('respondiendo');
     setNumerador('');
     setDenominador('');
+    setSeleccion([]);
+    setSimbolo('');
     setMensaje(mensajeInicial);
     setPistasRestantes(nuevo.pistasRestantes);
     setOfreceJuntos(false);
@@ -155,8 +161,16 @@ function PantallaEjercicio() {
       return;
     }
     Keyboard.dismiss();
-    const respuesta =
-      ejercicio.formatoRespuesta === 'fraccion' ? `${numerador}/${denominador}` : numerador;
+    const respuesta = {
+      fraccion: `${numerador}/${denominador}`,
+      numerico: numerador,
+      ordenar: seleccion.join('; '), // como lo lee el corrector: "1/4; 0,5; 1 1/2"
+      comparar: simbolo,
+    }[ejercicio.formatoRespuesta];
+    if (!respuesta.replace(/[/; ]/g, '')) {
+      setMensaje('Primero escribe o elige tu respuesta.');
+      return;
+    }
     const segundos = Math.round((Date.now() - inicio.current) / 1000);
     conManejo(async () => {
       const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);
@@ -310,18 +324,40 @@ function PantallaEjercicio() {
             tamano={g ? 200 : 140}
           />
         )}
-        <CampoRespuesta
-          formato={ejercicio.formatoRespuesta === 'fraccion' ? 'fraccion' : 'numerico'}
-          numerador={numerador}
-          denominador={denominador}
-          onCambio={(n, d) => {
-            setNumerador(n);
-            setDenominador(d);
-          }}
-          onEnviar={responder}
-          deshabilitado={estado !== 'respondiendo' || ocupado}
-          grande={g}
-        />
+        {ejercicio.formatoRespuesta === 'ordenar' && (
+          <RespuestaOrdenar
+            valores={ejercicio.valores ?? []}
+            seleccion={seleccion}
+            onCambio={setSeleccion}
+            deshabilitado={estado !== 'respondiendo' || ocupado}
+            grande={g}
+          />
+        )}
+        {ejercicio.formatoRespuesta === 'comparar' && (
+          <RespuestaComparar
+            izquierda={ejercicio.valores?.[0] ?? ''}
+            derecha={ejercicio.valores?.[1] ?? ''}
+            simbolo={simbolo}
+            onCambio={setSimbolo}
+            deshabilitado={estado !== 'respondiendo' || ocupado}
+            grande={g}
+          />
+        )}
+        {(ejercicio.formatoRespuesta === 'numerico' ||
+          ejercicio.formatoRespuesta === 'fraccion') && (
+          <CampoRespuesta
+            formato={ejercicio.formatoRespuesta === 'fraccion' ? 'fraccion' : 'numerico'}
+            numerador={numerador}
+            denominador={denominador}
+            onCambio={(n, d) => {
+              setNumerador(n);
+              setDenominador(d);
+            }}
+            onEnviar={responder}
+            deshabilitado={estado !== 'respondiendo' || ocupado}
+            grande={g}
+          />
+        )}
       </View>
       {estado !== 'guiada' && (
         <BotonPrimario

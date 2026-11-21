@@ -319,6 +319,8 @@ export interface components {
        * @enum {string}
        */
       formatoRespuesta: 'numerico' | 'fraccion' | 'ordenar' | 'comparar';
+      /** Valores */
+      valores?: string[] | null;
       /** Pistasrestantes */
       pistasRestantes: number;
     };

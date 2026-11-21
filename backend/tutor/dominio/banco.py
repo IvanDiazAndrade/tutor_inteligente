@@ -21,11 +21,12 @@ from sqlalchemy.orm import Session
 
 from tutor.db import SessionLocal
 from tutor.dominio.plantillas import PLANTILLAS, EjercicioGenerado
+from tutor.dominio.plantillas.base import huella
 from tutor.modelos import Ejercicio, Plantilla
 
 STOCK_OBJETIVO = 5  # ejercicios activos por celda unidad × nivel (modelo_dominio.md §5)
 NIVELES = (1, 2, 3)
-INTENTOS_POR_EJERCICIO = 20  # para evitar enunciados repetidos dentro de una celda
+INTENTOS_POR_EJERCICIO = 20  # para evitar ejercicios repetidos dentro de una celda
 
 
 def registrar_plantillas(sesion: Session) -> int:
@@ -91,24 +92,27 @@ def reponer_parametricos(
         if plantilla is None:
             continue  # registrada en la base pero ya no existe en el código
         for nivel in NIVELES:
-            activos = sesion.scalars(
-                select(Ejercicio.enunciado).where(
+            activos = sesion.execute(
+                select(
+                    Ejercicio.enunciado, Ejercicio.representacion, Ejercicio.regla_validacion
+                ).where(
                     Ejercicio.unidad_id == fila.unidad_id,
                     Ejercicio.nivel == nivel,
                     Ejercicio.estado == "activo",
                     Ejercicio.fuente != "gold",
                 )
             ).all()
-            enunciados = set(activos)
+            vistos = {huella(*fila_activa) for fila_activa in activos}
             faltan = objetivo - len(activos)
             nuevos = 0
             for _ in range(max(faltan, 0) * INTENTOS_POR_EJERCICIO):
                 if nuevos == faltan:
                     break
                 e = plantilla.instanciar(nivel, azar)
-                if e.enunciado in enunciados:
+                clave = huella(e.enunciado, e.representacion, e.regla_validacion)
+                if clave in vistos:
                     continue
-                enunciados.add(e.enunciado)
+                vistos.add(clave)
                 sesion.add(_a_fila(e, lote))
                 nuevos += 1
             if nuevos:

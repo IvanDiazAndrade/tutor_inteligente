@@ -6,12 +6,26 @@ from math import gcd, lcm
 
 from tutor.dominio.plantillas.base import (
     PALABRAS_DECIMALES,
+    SIMBOLO_EN_PALABRAS,
     EjercicioGenerado,
     _errores,
+    _errores_texto,
     _sin_revelar,
     decimal_cl,
+    decimales,
     fijo,
+    mezclados,
     miles,
+    secuencia,
+    simbolo,
+)
+from tutor.dominio.plantillas.cuarto import (
+    AL_REVES,
+    POSICIONES,
+    _ejercicio,
+    comparar_naturales,
+    ordenar_naturales,
+    valor_posicional,
 )
 
 # 5B-OA4: división de 3 dígitos por 1 dígito, con resto (§4.1) ---------------------------
@@ -620,4 +634,581 @@ class SumaRestaDecimales:
                     f"Calcula como si no hubiera coma y deja {palabras}.",
                 ),
             ],
+        )
+
+
+# 5B-OA1: números naturales hasta 1.000 millones ------------------------------------------
+
+
+class NumerosGrandes:
+    id = "5B-OA1-numeros-grandes"
+    unidad_id = "5B-OA1"
+    version = 1
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: valor posicional de una cifra en números de 7 a 9 cifras · N2: redondear a la
+        # unidad, decena o centena de mil · N3: comparar dos números u ordenar cuatro.
+        if nivel == 1:
+            return valor_posicional(self, 1, azar, 1_000_000, 999_999_999, (3, 8))
+        if nivel == 2:
+            return self._redondear(azar)
+        if azar.random() < 0.5:
+            return comparar_naturales(self, 3, azar, 100_000, 999_999_999)
+        return ordenar_naturales(self, 3, azar, 100_000, 999_999_999)
+
+    def _redondear(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            n = azar.randint(100_000, 999_999_999)
+            p = azar.randint(3, 5)
+            potencia = 10**p
+            if n % potencia:  # que haya algo que redondear
+                break
+        singular, plural = POSICIONES[p]
+        x, y = n // potencia % 10, n // (potencia // 10) % 10
+        sube = y >= 5
+        r = (n // potencia + (1 if sube else 0)) * potencia
+        respuesta = str(r)
+        truncado = n // potencia * potencia
+        criterio = "5 o más" if sube else "menor que 5"
+        efecto = "sube en 1" if sube else "se mantiene"
+        candidatos = [
+            (
+                str(truncado) if sube else str(truncado + potencia),
+                "redondeó hacia el lado equivocado",
+                "Mira la cifra de la derecha: si es 5 o más, se sube; si es menor que 5, se "
+                "mantiene.",
+            ),
+            (
+                str(round(n / (potencia * 10)) * potencia * 10),
+                "redondeó a otra posición",
+                f"Fíjate en la posición pedida: las {plural}.",
+            ),
+            (
+                str(round(n / (potencia // 10)) * (potencia // 10)),
+                "redondeó a otra posición",
+                f"Fíjate en la posición pedida: las {plural}.",
+            ),
+        ]
+        return _ejercicio(
+            self,
+            2,
+            f"Redondea {miles(n)} a la {singular} más cercana.",
+            "numerico",
+            respuesta,
+            [
+                f"La cifra de las {plural} es {x}; se mira la cifra de su derecha, que es {y}.",
+                f"Como {y} es {criterio}, la cifra de las {plural} {efecto} y las cifras de "
+                "la derecha pasan a ser 0.",
+                f"{miles(n)} redondeado a la {singular} es {miles(r)}.",
+            ],
+            _errores(respuesta, candidatos),
+            [
+                "Para redondear, mira la cifra que está justo a la derecha de la posición pedida.",
+                f"La cifra de las {plural} es {x} y la de su derecha es {y}.",
+                f"Como {y} es {criterio}, la cifra de las {plural} {efecto}. Después, todo lo "
+                "de la derecha se vuelve 0.",
+            ],
+        )
+
+
+# 5B-OA7: fracciones equivalentes: amplificar, simplificar y comparar ---------------------
+
+
+class FraccionesEquivalentes:
+    id = "5B-OA7-equivalentes"
+    unidad_id = "5B-OA7"
+    version = 1
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: amplificar por un número dado · N2: simplificar hasta la fracción irreducible ·
+        # N3: comparar fracciones de distinto denominador (a veces son equivalentes).
+        # En amplificar y simplificar la forma ES el objetivo: aceptaEquivalentes = false.
+        if nivel == 1:
+            return self._amplificar(azar)
+        if nivel == 2:
+            return self._simplificar(azar)
+        return self._comparar(azar)
+
+    @staticmethod
+    def _irreducible(azar: random.Random, maximo: int) -> tuple[int, int]:
+        while True:
+            d = azar.randint(2, maximo)
+            a = azar.randint(1, d - 1)
+            if gcd(a, d) == 1:
+                return a, d
+
+    def _amplificar(self, azar: random.Random) -> EjercicioGenerado:
+        a, d = self._irreducible(azar, 10)
+        k = azar.randint(2, 5)
+        A, D = a * k, d * k
+        respuesta = f"{A}/{D}"
+        mismo = "Para amplificar se multiplican el numerador y el denominador por el mismo número."
+        return _ejercicio(
+            self,
+            1,
+            f"Amplifica {a}/{d} por {k}.",
+            "fraccion",
+            respuesta,
+            [
+                f"Para amplificar por {k} se multiplican el numerador y el denominador por {k}.",
+                f"{a} × {k} = {A} y {d} × {k} = {D}.",
+                f"La fracción amplificada es {respuesta}.",
+            ],
+            _errores_texto(
+                respuesta,
+                [
+                    (f"{A}/{d}", "amplificó solo el numerador", mismo),
+                    (f"{a}/{D}", "amplificó solo el denominador", mismo),
+                    (
+                        f"{a + k}/{d + k}",
+                        "sumó en vez de multiplicar",
+                        "Amplificar es multiplicar, no sumar.",
+                    ),
+                    (
+                        f"{a}/{d}",
+                        "no amplificó la fracción",
+                        "Vale lo mismo, pero se pedía escribirla amplificada.",
+                    ),
+                ],
+            ),
+            [
+                "Amplificar una fracción es multiplicar su numerador y su denominador por el "
+                "mismo número.",
+                f"Multiplica el numerador: {a} × {k}.",
+                f"El numerador queda en {A}. Ahora multiplica el denominador: {d} × {k}.",
+            ],
+            {"aceptaEquivalentes": False},
+        )
+
+    def _simplificar(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            a, d = self._irreducible(azar, 12)
+            k = azar.randint(2, 6)
+            if d * k <= 60:
+                break
+        A, D = a * k, d * k
+        respuesta = f"{a}/{d}"
+        divisores = [j for j in range(2, k) if k % j == 0]
+        parcial = f"{A // divisores[0]}/{D // divisores[0]}" if divisores else None
+        return _ejercicio(
+            self,
+            2,
+            f"Simplifica {A}/{D} hasta que ya no se pueda simplificar más.",
+            "fraccion",
+            respuesta,
+            [
+                f"Se busca el mayor número que divide a {A} y a {D}: es {k}.",
+                f"{A} : {k} = {a} y {D} : {k} = {d}.",
+                f"La fracción simplificada es {respuesta}.",
+            ],
+            _errores_texto(
+                respuesta,
+                [
+                    (
+                        parcial,
+                        "simplificó solo una vez",
+                        "Vas bien, pero todavía se puede simplificar: "
+                        "busca otro número que divida a "
+                        "los dos.",
+                    ),
+                    (
+                        f"{a}/{D}",
+                        "simplificó solo el numerador",
+                        "Para simplificar se dividen el numerador y el denominador "
+                        "por el mismo número.",
+                    ),
+                    (
+                        f"{A}/{D}",
+                        "no simplificó",
+                        "Vale lo mismo, pero se pedía escribirla con números más pequeños.",
+                    ),
+                ],
+            ),
+            [
+                "Simplificar es dividir el numerador y el denominador por el mismo número.",
+                f"Busca un número que divida a {A} y a {D} a la vez.",
+                f"El mayor número que divide a los dos es {k}.",
+            ],
+            {"aceptaEquivalentes": False},
+        )
+
+    def _comparar(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            a, d1 = self._irreducible(azar, 12)
+            if azar.random() < 0.25:
+                j = azar.randint(2, 4)
+                b, d2 = a * j, d1 * j  # equivalentes: 3/4 y 6/8
+            else:
+                b, d2 = self._irreducible(azar, 12)
+            if d1 != d2 and lcm(d1, d2) <= 24 and d2 <= 24:
+                break
+        if azar.random() < 0.5:
+            a, d1, b, d2 = b, d2, a, d1
+        x, y = Fraction(a, d1), Fraction(b, d2)
+        m = lcm(d1, d2)
+        A, B = a * (m // d1), b * (m // d2)
+        sim = simbolo(x, y)
+        tx, ty = f"{a}/{d1}", f"{b}/{d2}"
+        ingenuo = simbolo(Fraction(a), Fraction(b))  # mirar solo los numeradores
+
+        def amplificada(t: str, num: int, den: int) -> str:
+            return f"{t} ya tiene denominador {m}" if den == m else f"{t} se amplifica a {num}/{m}"
+
+        escritas = f"{amplificada(tx, A, d1)} y {amplificada(ty, B, d2)}"
+        retro = (
+            "Con distinto denominador no basta mirar los numeradores: primero escribe las dos "
+            "fracciones con el mismo denominador."
+        )
+        return _ejercicio(
+            self,
+            3,
+            f"¿Qué signo va entre {tx} y {ty}?",
+            "comparar",
+            sim,
+            [
+                f"Se escriben con el mismo denominador, {m}.",
+                f"{escritas[0].upper()}{escritas[1:]}.",
+                f"Como {A} {SIMBOLO_EN_PALABRAS[sim]} {B}, {tx} {sim} {ty}.",
+            ],
+            _errores_texto(
+                sim,
+                [
+                    (ingenuo, "comparó solo los numeradores", retro),
+                    (None if sim == "=" else {"<": ">", ">": "<"}[sim], "comparó al revés", retro),
+                    (
+                        None if sim == "=" else "=",
+                        "pensó que eran equivalentes",
+                        "Escríbelas con el mismo denominador y compara los numeradores.",
+                    ),
+                ],
+            ),
+            [
+                "Para comparar fracciones con distinto denominador, escríbelas con el mismo "
+                "denominador.",
+                f"Un denominador común de {d1} y {d2} es {m}.",
+                f"{escritas[0].upper()}{escritas[1:]}. Ahora compara los numeradores.",
+            ],
+            {"valores": [tx, ty]},
+        )
+
+
+# 5B-OA10: fracciones de denominador 2, 4, 5, 10 y 100 como decimales, y al revés --------
+
+NOMBRE_DECIMAL = {10: "décimos", 100: "centésimos"}
+
+
+class FraccionDecimal:
+    id = "5B-OA10-fraccion-decimal"
+    unidad_id = "5B-OA10"
+    version = 1
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: denominador 10 o 100 a decimal · N2: denominador 2, 4 o 5 a decimal (amplificando)
+        # · N3: un decimal a fracción.
+        if nivel == 1:
+            return self._directa(azar)
+        if nivel == 2:
+            return self._amplificando(azar)
+        return self._a_fraccion(azar)
+
+    def _directa(self, azar: random.Random) -> EjercicioGenerado:
+        d = azar.choice((10, 100))
+        n = azar.randint(1, d - 1)
+        v = Fraction(n, d)
+        respuesta = decimal_cl(v)
+        k = 1 if d == 10 else 2
+        nombre = NOMBRE_DECIMAL[d]
+        escrita = fijo(v, k)
+        cifras = "una cifra" if k == 1 else "dos cifras"
+        return _ejercicio(
+            self,
+            1,
+            f"Escribe {n}/{d} como número decimal.",
+            "numerico",
+            respuesta,
+            [
+                f"{n}/{d} son {n} {nombre}.",
+                f"Los {nombre} se escriben con {cifras} después de la coma: {escrita}"
+                + (f", es decir, {respuesta}." if escrita != respuesta else "."),
+            ],
+            _errores(
+                respuesta,
+                [
+                    c
+                    for c in [
+                        (
+                            decimal_cl(Fraction(n, d * 10)),
+                            "puso un cero de más",
+                            f"Los {nombre} ocupan {cifras} después de la coma, no más.",
+                        ),
+                        (
+                            decimal_cl(Fraction(n, d // 10)) if d == 100 else None,
+                            "puso un cero de menos",
+                            f"Los {nombre} ocupan {cifras} después de la coma.",
+                        ),
+                        (
+                            f"{n},{d}",
+                            "juntó numerador y denominador con una coma",
+                            "La fracción no se escribe poniendo una coma entre sus números: "
+                            "piensa en "
+                            "cuántos décimos o centésimos son.",
+                        ),
+                    ]
+                    if c[0]
+                ],
+            ),
+            [
+                "Un décimo se escribe con una cifra después de la coma; un centésimo, con dos.",
+                f"El denominador es {d}: son {nombre}.",
+                f"Son {n} {nombre}: escríbelo de modo que ocupe {cifras} después de la coma.",
+            ],
+        )
+
+    def _amplificando(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            d = azar.choice((2, 4, 5))
+            n = azar.randint(1, d - 1)
+            if gcd(n, d) == 1:
+                break
+        D = 100 if d == 4 else 10
+        k = D // d
+        N = n * k
+        v = Fraction(n, d)
+        respuesta = decimal_cl(v)
+        nombre = NOMBRE_DECIMAL[D]
+        return _ejercicio(
+            self,
+            2,
+            f"Escribe {n}/{d} como número decimal.",
+            "numerico",
+            respuesta,
+            [
+                f"Se amplifica por {k} para que el denominador sea {D}: {n}/{d} = {N}/{D}.",
+                f"{N}/{D} son {N} {nombre}: {respuesta}.",
+            ],
+            _errores(
+                respuesta,
+                [
+                    (
+                        f"0,{n}{d}",
+                        "juntó numerador y denominador",
+                        "Primero amplifica para que el denominador sea 10 o 100.",
+                    ),
+                    (
+                        f"{n},{d}",
+                        "juntó numerador y denominador con una coma",
+                        "Primero amplifica para que el denominador sea 10 o 100.",
+                    ),
+                    (
+                        decimal_cl(Fraction(n, 10)),
+                        "escribió el numerador después de la coma",
+                        "El numerador solo no basta: primero amplifica para que el "
+                        "denominador sea 10 "
+                        "o 100.",
+                    ),
+                ],
+            ),
+            [
+                "Amplifica la fracción para que el denominador sea 10 o 100.",
+                f"Multiplica el numerador y el denominador por {k}.",
+                f"Al amplificar quedan {N} {nombre}. Ahora escríbelo con coma.",
+            ],
+        )
+
+    def _a_fraccion(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            d = azar.choice((2, 4, 5, 10, 100))
+            n = azar.randint(1, d - 1)
+            v = Fraction(n, d)
+            if v.denominator == d:
+                break
+        k = decimales(v)
+        D = 10**k
+        N = int(v * D)
+        respuesta = f"{v.numerator}/{v.denominator}"
+        nombre = NOMBRE_DECIMAL[D]
+        texto = decimal_cl(v)
+        return _ejercicio(
+            self,
+            3,
+            f"Escribe {texto} como fracción.",
+            "fraccion",
+            respuesta,
+            [
+                f"{texto} son {N} {nombre}: {N}/{D}.",
+                f"Se simplifica: {N}/{D} = {respuesta}."
+                if D != v.denominator
+                else f"La fracción es {respuesta}.",
+            ],
+            _errores(
+                respuesta,
+                [
+                    c
+                    for c in [
+                        (
+                            f"{N}/{D * 10}",
+                            "puso un cero de más en el denominador",
+                            f"Con {'una cifra' if k == 1 else 'dos cifras'} después de la coma, el "
+                            f"denominador es {D}.",
+                        ),
+                        (
+                            f"{N}/{D // 10}" if k == 2 else None,
+                            "puso un cero de menos en el denominador",
+                            f"Con dos cifras después de la coma, el denominador es {D}.",
+                        ),
+                        (
+                            f"{D}/{N}",
+                            "invirtió la fracción",
+                            "El número que va después de la coma es el numerador, arriba.",
+                        ),
+                    ]
+                    if c[0]
+                ],
+            ),
+            [
+                "Un decimal con una cifra después de la coma son décimos; con dos, centésimos.",
+                f"Fíjate cuántas cifras hay después de la coma: son {nombre}.",
+                f"Son {N} {nombre}: escribe la fracción con numerador {N} y denominador {D}, "
+                "y simplifícala si se puede.",
+            ],
+        )
+
+
+# 5B-OA11: comparar y ordenar decimales hasta la milésima ---------------------------------
+
+
+def _ingenuo(v: Fraction) -> tuple[int, int]:
+    """Cómo compara un niño que lee las cifras decimales como un número natural: 0,45 > 0,5."""
+    entero = int(v)
+    k = decimales(v)
+    return entero, int((v - entero) * 10**k)
+
+
+class CompararDecimales:
+    id = "5B-OA11-comparar-decimales"
+    unidad_id = "5B-OA11"
+    version = 1
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: comparar dos decimales con la misma cantidad de decimales · N2: comparar con
+        # distinta cantidad de decimales, donde más cifras no es mayor (0,5 y 0,45) ·
+        # N3: ordenar cuatro decimales de hasta tres decimales.
+        if nivel == 3:
+            return self._ordenar(azar)
+        while True:
+            entero = azar.randint(0, 9)
+            if nivel == 1:
+                k1 = k2 = azar.randint(1, 2)
+            else:
+                k1, k2 = azar.sample((1, 2, 3), 2)
+            x = entero + _decimal_al_azar(azar, k1, 0)
+            y = entero + _decimal_al_azar(azar, k2, 0)
+            if x == y:
+                continue
+            # N2 es para la trampa clásica: leer las cifras decimales como un número natural
+            # (0,45 > 0,5) da el resultado equivocado.
+            trampa = simbolo(Fraction(_ingenuo(x)[1]), Fraction(_ingenuo(y)[1])) != simbolo(x, y)
+            if nivel == 1 or trampa:
+                break
+        return self._comparar(x, y)
+
+    def _comparar(self, x: Fraction, y: Fraction) -> EjercicioGenerado:
+        sim = simbolo(x, y)
+        tx, ty = decimal_cl(x), decimal_cl(y)
+        k = max(decimales(x), decimales(y))
+        X, Y = int(x * 10**k), int(y * 10**k)
+        ingenuo = simbolo(Fraction(_ingenuo(x)[1]), Fraction(_ingenuo(y)[1]))
+        palabras = PALABRAS_DECIMALES[k]
+        retro = (
+            "Que un decimal tenga más cifras no lo hace mayor: completa con ceros para que los "
+            "dos tengan la misma cantidad de decimales y compara."
+        )
+        return _ejercicio(
+            self,
+            2 if decimales(x) != decimales(y) else 1,
+            f"¿Qué signo va entre {tx} y {ty}?",
+            "comparar",
+            sim,
+            [
+                f"Se completan con ceros para que los dos tengan {palabras}: {fijo(x, k)} y "
+                f"{fijo(y, k)}.",
+                f"Como {X} {SIMBOLO_EN_PALABRAS[sim]} {Y}, {tx} {sim} {ty}.",
+            ],
+            _errores_texto(
+                sim,
+                [
+                    (
+                        ingenuo if ingenuo != sim else None,
+                        "pensó que el decimal con más cifras es mayor",
+                        retro,
+                    ),
+                    (
+                        {"<": ">", ">": "<"}[sim],
+                        "comparó al revés",
+                        "Compara cifra por cifra desde la coma: décimos con décimos, "
+                        "centésimos con "
+                        "centésimos.",
+                    ),
+                    (
+                        "=",
+                        "pensó que valían lo mismo",
+                        "Revisa con cuidado: los dos números no valen lo mismo.",
+                    ),
+                ],
+            ),
+            [
+                "Para comparar decimales, mira primero la parte entera y después las cifras "
+                "decimales, una por una desde la coma.",
+                f"Completa con ceros para que los dos tengan {palabras}: {fijo(x, k)} y "
+                f"{fijo(y, k)}.",
+                f"Ahora compara {X} y {Y}, como si no hubiera coma.",
+            ],
+            {"valores": [tx, ty]},
+        )
+
+    def _ordenar(self, azar: random.Random) -> EjercicioGenerado:
+        entero = azar.randint(0, 5)
+        valores: set[Fraction] = set()
+        while len(valores) < 4:
+            valores.add(entero + _decimal_al_azar(azar, azar.randint(1, 3), 0))
+        creciente = azar.random() < 0.5
+        orden = sorted(valores, reverse=not creciente)
+        lista = [decimal_cl(v) for v in orden]
+        respuesta = secuencia(lista)
+        por_cifras = secuencia(
+            [decimal_cl(v) for v in sorted(valores, key=_ingenuo, reverse=not creciente)]
+        )
+        extremo = "menor" if creciente else "mayor"
+        mostrados = mezclados(lista, azar)
+        con_ceros = " · ".join(fijo(Fraction(t.replace(",", ".")), 3) for t in mostrados)
+        return _ejercicio(
+            self,
+            3,
+            f"Ordena los números de {'menor a mayor' if creciente else 'mayor a menor'}.",
+            "ordenar",
+            respuesta,
+            [
+                "Se completan con ceros para que todos tengan tres decimales y se comparan "
+                "como números naturales.",
+                f"El orden es: {respuesta}.",
+            ],
+            _errores_texto(
+                respuesta,
+                [
+                    (
+                        por_cifras,
+                        "pensó que el decimal con más cifras es mayor",
+                        "Que un decimal tenga más cifras no lo hace mayor: completa con ceros para "
+                        "que todos tengan la misma cantidad de decimales.",
+                    ),
+                    (secuencia(lista[::-1]), "ordenó al revés", AL_REVES),
+                ],
+            ),
+            [
+                "Para ordenar decimales, completa con ceros para que todos tengan la misma "
+                "cantidad de decimales.",
+                f"Con tres decimales quedan: {con_ceros}. Compáralos como si no hubiera coma.",
+                f"El {extremo} es {lista[0]}. Ahora busca el que sigue.",
+            ],
+            {"valores": mostrados},
         )

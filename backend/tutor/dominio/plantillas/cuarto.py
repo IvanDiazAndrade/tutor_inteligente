@@ -5,8 +5,20 @@ de cada plantilla (tarea 57): se aprueban con la herramienta del revisor antes d
 """
 
 import random
+from fractions import Fraction
 
-from tutor.dominio.plantillas.base import EjercicioGenerado, _errores, _sin_revelar, miles
+from tutor.dominio.plantillas.base import (
+    SIMBOLO_EN_PALABRAS,
+    EjercicioGenerado,
+    _errores,
+    _errores_texto,
+    _sin_revelar,
+    errores_comparar,
+    mezclados,
+    miles,
+    secuencia,
+    simbolo,
+)
 
 UNIDADES, DECENAS, CENTENAS = 0, 1, 2
 NOMBRES_COLUMNA = ("Unidades", "Decenas", "Centenas")
@@ -699,4 +711,415 @@ class SumaIgualDenominador:
                 if pictorico
                 else None
             ),
+        )
+
+
+# Valor posicional, comparar y ordenar naturales (4B-OA1 y 5B-OA1) ------------------------
+
+POSICIONES = (
+    ("unidad", "unidades"),
+    ("decena", "decenas"),
+    ("centena", "centenas"),
+    ("unidad de mil", "unidades de mil"),
+    ("decena de mil", "decenas de mil"),
+    ("centena de mil", "centenas de mil"),
+    ("unidad de millón", "unidades de millón"),
+    ("decena de millón", "decenas de millón"),
+    ("centena de millón", "centenas de millón"),
+)
+CIFRA_DE_MAYOR_VALOR = (
+    "Fíjate en la primera cifra, desde la izquierda, en que los números son distintos: el que "
+    "tiene ahí la cifra mayor es el número mayor."
+)
+AL_REVES = "Fíjate si te piden ordenar de menor a mayor o de mayor a menor."
+CONTAR_POSICIONES = (
+    "Cuenta las posiciones desde la derecha: unidades, decenas, centenas, unidades de mil..."
+)
+
+
+def _ejercicio(
+    plantilla,
+    nivel: int,
+    enunciado: str,
+    formato: str,
+    respuesta: str,
+    solucion,
+    errores,
+    pistas,
+    regla=None,
+    representacion=None,
+) -> EjercicioGenerado:
+    return EjercicioGenerado(
+        unidad_id=plantilla.unidad_id,
+        plantilla_id=plantilla.id,
+        nivel=nivel,
+        enunciado=enunciado,
+        formato_respuesta=formato,
+        respuesta_final=respuesta,
+        solucion_referencia=solucion,
+        errores_comunes=errores,
+        pistas=pistas,
+        regla_validacion={"aceptaEquivalentes": True, **(regla or {})},
+        representacion=representacion,
+    )
+
+
+def valor_posicional(
+    plantilla,
+    nivel: int,
+    azar: random.Random,
+    minimo: int,
+    maximo: int,
+    posiciones: tuple[int, int],
+) -> EjercicioGenerado:
+    """¿Cuál es el valor posicional del 3 en 4.372? -> 300. La cifra no se repite en el número."""
+    while True:
+        n = azar.randint(minimo, maximo)
+        cifras = _cifras(n)
+        p = azar.randint(posiciones[0], min(posiciones[1], len(cifras) - 1))
+        d = cifras[p]
+        if d and cifras.count(d) == 1:
+            break
+    singular, plural = POSICIONES[p]
+    valor = 10**p
+    r = d * valor
+    respuesta = str(r)
+    candidatos = [
+        (
+            str(d),
+            "dio la cifra y no su valor",
+            "La cifra es solo el símbolo; su valor depende de la posición en que está.",
+        ),
+        (
+            str(r * 10),
+            "contó una posición de más",
+            CONTAR_POSICIONES,
+        ),
+        (
+            str(r // 10),
+            "contó una posición de menos",
+            CONTAR_POSICIONES,
+        ),
+    ]
+    return _ejercicio(
+        plantilla,
+        nivel,
+        f"¿Cuál es el valor posicional del {d} en {miles(n)}?",
+        "numerico",
+        respuesta,
+        [
+            f"En {miles(n)}, el {d} está en la posición de las {plural}.",
+            f"Cada {singular} vale {miles(valor)}, así que el {d} vale "
+            f"{d} × {miles(valor)} = {miles(r)}.",
+        ],
+        _errores(respuesta, candidatos),
+        [
+            "El valor de una cifra depende de su posición: unidades, decenas, centenas, "
+            "unidades de mil...",
+            f"El {d} está en la posición de las {plural}.",
+            _sin_revelar(
+                f"Cada {singular} vale {miles(valor)}: multiplica {d} × {miles(valor)}.",
+                respuesta,
+                "Multiplica la cifra por el valor de su posición.",
+            ),
+        ],
+    )
+
+
+def _cambia_una_cifra(n: int, azar: random.Random) -> int:
+    """Otro número del mismo largo que difiere de n en una cifra que no es la primera."""
+    cifras = _cifras(n)
+    while True:
+        p = azar.randint(0, len(cifras) - 2)
+        nueva = azar.randint(0, 9)
+        if nueva != cifras[p]:
+            return n + (nueva - cifras[p]) * 10**p
+
+
+def comparar_naturales(
+    plantilla, nivel: int, azar: random.Random, minimo: int, maximo: int
+) -> EjercicioGenerado:
+    a = azar.randint(minimo, maximo)
+    b = _cambia_una_cifra(a, azar)
+    sim = simbolo(Fraction(a), Fraction(b))
+    ca, cb = _cifras(a), _cifras(b)
+    p = max(i for i in range(len(ca)) if ca[i] != cb[i])
+    plural = POSICIONES[p][1]
+    ta, tb = miles(a), miles(b)
+    return _ejercicio(
+        plantilla,
+        nivel,
+        f"¿Qué signo va entre {ta} y {tb}?",
+        "comparar",
+        sim,
+        [
+            "Se comparan las cifras de izquierda a derecha, empezando por la de mayor valor.",
+            f"Las cifras son iguales hasta las {plural}: {ca[p]} y {cb[p]}.",
+            f"Como {ca[p]} {SIMBOLO_EN_PALABRAS[sim]} {cb[p]}, {ta} {sim} {tb}.",
+        ],
+        errores_comparar(sim, "comparó al revés", CIFRA_DE_MAYOR_VALOR),
+        [
+            "Para comparar, mira primero la cifra de mayor valor, la de más a la izquierda.",
+            f"Los dos números son iguales hasta llegar a las {plural}.",
+            f"En las {plural}, {ta} tiene un {ca[p]} y {tb} tiene un {cb[p]}.",
+        ],
+        {"valores": [ta, tb]},
+    )
+
+
+def ordenar_naturales(
+    plantilla, nivel: int, azar: random.Random, minimo: int, maximo: int
+) -> EjercicioGenerado:
+    base = azar.randint(minimo, maximo)
+    numeros = {base}
+    while len(numeros) < 4:
+        numeros.add(_cambia_una_cifra(base, azar))
+    creciente = azar.random() < 0.5
+    orden = sorted(numeros, reverse=not creciente)
+    textos = [miles(x) for x in orden]
+    respuesta = secuencia(textos)
+    extremo = "menor" if creciente else "mayor"
+    return _ejercicio(
+        plantilla,
+        nivel,
+        f"Ordena los números de {'menor a mayor' if creciente else 'mayor a menor'}.",
+        "ordenar",
+        respuesta,
+        [
+            "Se comparan las cifras de izquierda a derecha, empezando por la de mayor valor.",
+            f"El orden es: {respuesta}.",
+        ],
+        _errores_texto(respuesta, [(secuencia(textos[::-1]), "ordenó al revés", AL_REVES)]),
+        [
+            "Para ordenar, compara las cifras de izquierda a derecha.",
+            f"Empieza buscando el {extremo} de todos.",
+            f"El {extremo} es {textos[0]}. Ahora busca el que sigue.",
+        ],
+        {"valores": mezclados(textos, azar)},
+    )
+
+
+# 4B-OA1: números hasta 10.000 -----------------------------------------------------------
+
+
+class NumerosHasta10000:
+    id = "4B-OA1-numeros-10000"
+    unidad_id = "4B-OA1"
+    version = 1
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: valor posicional de una cifra · N2: componer un número desde sus unidades de mil,
+        # centenas, decenas y unidades (a veces con un cero) · N3: comparar dos números u
+        # ordenar cuatro.
+        if nivel == 1:
+            return valor_posicional(self, 1, azar, 1000, 9999, (1, 3))
+        if nivel == 2:
+            return self._componer(azar)
+        if azar.random() < 0.5:
+            return comparar_naturales(self, 3, azar, 1000, 9999)
+        return ordenar_naturales(self, 3, azar, 1000, 9999)
+
+    def _componer(self, azar: random.Random) -> EjercicioGenerado:
+        while True:
+            n = azar.randint(1000, 9999)
+            cifras = _cifras(n)
+            con_cero = 0 in cifras
+            if con_cero or azar.random() < 0.5:
+                break
+        nombradas = [
+            f"{c} {POSICIONES[p][0] if c == 1 else POSICIONES[p][1]}"
+            for p, c in reversed(list(enumerate(cifras)))
+            if c
+        ]
+        texto = (
+            nombradas[0]
+            if len(nombradas) == 1
+            else (", ".join(nombradas[:-1]) + " y " + nombradas[-1])
+        )
+        respuesta = str(n)
+        sin_ceros = "".join(str(c) for c in reversed(cifras) if c)
+        candidatos = [
+            (
+                sin_ceros if con_cero else None,
+                "olvidó escribir el cero",
+                "Si una posición no tiene nada, se escribe un 0 en ella para que cada cifra quede "
+                "en su lugar.",
+            ),
+            (
+                str(sum(cifras)),
+                "sumó las cifras",
+                "No se suman: cada cifra se escribe en su posición.",
+            ),
+        ]
+        um = cifras[3]
+        return _ejercicio(
+            self,
+            2,
+            f"¿Qué número tiene {texto}?",
+            "numerico",
+            respuesta,
+            [
+                "Se escribe cada cifra en su posición, de izquierda a derecha: unidades de mil, "
+                "centenas, decenas y unidades.",
+                *(["Las posiciones que no se nombran llevan un 0."] if con_cero else []),
+                f"El número es {miles(n)}.",
+            ],
+            _errores(respuesta, [c for c in candidatos if c[0]]),
+            [
+                "Escribe cada cifra en su posición: unidades de mil, centenas, decenas y unidades.",
+                f"La primera cifra, la de las unidades de mil, es {um}.",
+                "Si alguna posición no aparece, escribe un 0 en ella."
+                if con_cero
+                else f"Después del {um} van las centenas, las decenas y las unidades.",
+            ],
+        )
+
+
+# 4B-OA8: concepto de fracción -------------------------------------------------------------
+
+
+class ConceptoFraccion:
+    id = "4B-OA8-fracciones"
+    unidad_id = "4B-OA8"
+    version = 1
+    DENOMINADORES = (2, 3, 4, 5, 6, 8, 10, 12)
+
+    def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
+        # N1: qué fracción del círculo está pintada · N2: comparar dos fracciones de igual
+        # denominador o de igual numerador · N3: ordenar tres fracciones de igual denominador o
+        # de igual numerador.
+        if nivel == 1:
+            return self._parte_de_un_todo(azar)
+        igual_denominador = azar.random() < 0.5
+        cantidad = 2 if nivel == 2 else 3
+        while True:
+            if igual_denominador:
+                d = azar.choice(self.DENOMINADORES[2:])
+                fracciones = [Fraction(a, d) for a in azar.sample(range(1, d), cantidad)]
+                textos = {f: f"{f.numerator * d // f.denominator}/{d}" for f in fracciones}
+            else:
+                a = azar.randint(1, 4)
+                dens = azar.sample([d for d in self.DENOMINADORES if d > a], cantidad)
+                fracciones = [Fraction(a, d) for d in dens]
+                textos = {Fraction(a, d): f"{a}/{d}" for d in dens}
+            if len(set(fracciones)) == cantidad:
+                break
+        if nivel == 2:
+            return self._comparar(fracciones, textos, igual_denominador)
+        return self._ordenar(fracciones, textos, igual_denominador, azar)
+
+    def _parte_de_un_todo(self, azar: random.Random) -> EjercicioGenerado:
+        d = azar.choice(self.DENOMINADORES)
+        a = azar.randint(1, d - 1)
+        respuesta = f"{a}/{d}"
+        return _ejercicio(
+            self,
+            1,
+            "¿Qué fracción del círculo está pintada?",
+            "fraccion",
+            respuesta,
+            [
+                f"El círculo está dividido en {d} partes iguales: el denominador es {d}.",
+                f"Hay {a} partes pintadas: el numerador es {a}.",
+                f"La fracción pintada es {respuesta}.",
+            ],
+            _errores(
+                respuesta,
+                [
+                    (
+                        f"{d}/{a}",
+                        "invirtió numerador y denominador",
+                        "Abajo va en cuántas partes iguales se dividió el círculo; arriba, cuántas "
+                        "están pintadas.",
+                    ),
+                    (
+                        f"{a}/{d - a}",
+                        "comparó las partes pintadas con las sin pintar",
+                        "El denominador cuenta todas las partes del círculo, también las pintadas.",
+                    ),
+                    (
+                        f"{d - a}/{d}",
+                        "contó las partes sin pintar",
+                        "El numerador son las partes pintadas.",
+                    ),
+                ],
+            ),
+            [
+                "El denominador dice en cuántas partes iguales se dividió el entero; el "
+                "numerador, cuántas se toman.",
+                f"Cuenta todas las partes del círculo: son {d}.",
+                "Ahora cuenta las partes pintadas: ese es el numerador.",
+            ],
+            representacion={
+                "tipo": "fraccion-circulo",
+                "parametros": {"denominador": d, "partesDestacadas": [a]},
+            },
+        )
+
+    @staticmethod
+    def _explicacion(igual_denominador: bool) -> tuple[str, str]:
+        if igual_denominador:
+            return (
+                "Si los denominadores son iguales, las partes son del mismo tamaño: es mayor "
+                "la fracción que toma más partes.",
+                "Compara los numeradores.",
+            )
+        return (
+            "Si los numeradores son iguales, se toma la misma cantidad de partes: fíjate en el "
+            "tamaño de cada parte.",
+            "Mientras en más partes se divide el entero, más pequeña es cada parte.",
+        )
+
+    def _comparar(self, fracciones, textos, igual_denominador) -> EjercicioGenerado:
+        x, y = fracciones
+        sim = simbolo(x, y)
+        tx, ty = textos[x], textos[y]
+        regla, segunda = self._explicacion(igual_denominador)
+        if igual_denominador:
+            causa, retro = (
+                "comparó al revés",
+                "Con el mismo denominador, mientras más partes, mayor es la fracción.",
+            )
+            tercera = (
+                f"Fíjate cuál de las dos toma más partes: {tx.split('/')[0]} o {ty.split('/')[0]}."
+            )
+        else:
+            causa = "pensó que un denominador mayor es una fracción mayor"
+            retro = "Con el mismo numerador, un denominador mayor significa partes más pequeñas."
+            tercera = f"Piensa qué parte es más grande: 1/{x.denominator} o 1/{y.denominator}."
+        return _ejercicio(
+            self,
+            2,
+            f"¿Qué signo va entre {tx} y {ty}?",
+            "comparar",
+            sim,
+            [regla, segunda, f"Entonces {tx} {sim} {ty}."],
+            errores_comparar(sim, causa, retro),
+            [regla, segunda, tercera],
+            {"valores": [tx, ty]},
+        )
+
+    def _ordenar(self, fracciones, textos, igual_denominador, azar) -> EjercicioGenerado:
+        creciente = azar.random() < 0.5
+        orden = sorted(fracciones, reverse=not creciente)
+        lista = [textos[f] for f in orden]
+        respuesta = secuencia(lista)
+        regla, segunda = self._explicacion(igual_denominador)
+        extremo = "menor" if creciente else "mayor"
+        causa = "ordenó al revés" if igual_denominador else "ordenó por el tamaño del denominador"
+        retro = (
+            AL_REVES
+            if igual_denominador
+            else ("Con el mismo numerador, un denominador mayor significa partes más pequeñas.")
+        )
+        return _ejercicio(
+            self,
+            3,
+            f"Ordena las fracciones de {'menor a mayor' if creciente else 'mayor a menor'}.",
+            "ordenar",
+            respuesta,
+            [regla, segunda, f"El orden es: {respuesta}."],
+            _errores_texto(respuesta, [(secuencia(lista[::-1]), causa, retro)]),
+            [regla, segunda, f"La {extremo} es {lista[0]}. Ahora busca la que sigue."],
+            {"valores": mezclados(lista, azar)},
         )

@@ -8,6 +8,7 @@ import pytest
 
 from tutor.dominio.corrector import corregir, fraccion
 from tutor.dominio.plantillas import PLANTILLAS, EjercicioGenerado, menciona
+from tutor.dominio.plantillas.base import huella
 from tutor.mensajes import revela
 
 INSTANCIAS_POR_NIVEL = 300
@@ -54,9 +55,12 @@ def test_toda_instancia_es_coherente(plantilla_id, nivel):
 @pytest.mark.parametrize("plantilla_id", PLANTILLAS)
 @pytest.mark.parametrize("nivel", [1, 2, 3])
 def test_cada_celda_tiene_variedad_para_el_banco(plantilla_id, nivel):
-    """El banco pide 5 enunciados distintos por celda (modelo_dominio.md §5). 4B-OA9 nivel 1
+    """El banco pide 5 ejercicios distintos por celda (modelo_dominio.md §5). 4B-OA9 nivel 1
     solo admite 4 (pendientes.md §9)."""
-    distintos = {e.enunciado for e in _instancias(plantilla_id, nivel)}
+    distintos = {
+        huella(e.enunciado, e.representacion, e.regla_validacion)
+        for e in _instancias(plantilla_id, nivel)
+    }
     minimo = 4 if (plantilla_id, nivel) == ("4B-OA9-suma-igual-den", 1) else 5
     assert len(distintos) >= minimo
 
@@ -311,3 +315,47 @@ def test_decimales_por_natural_respetan_los_rangos(nivel):
             assert y in (10, 100, 1000)
         else:
             assert 2 <= y <= 9 and ("×" in texto) == (nivel == 2)
+
+
+# Ordenar, comparar y formas que son el objetivo ------------------------------------------
+
+
+@pytest.mark.parametrize("plantilla_id", PLANTILLAS)
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_ordenar_y_comparar_muestran_los_valores_sin_la_respuesta(plantilla_id, nivel):
+    for e in _instancias(plantilla_id, nivel):
+        valores = e.regla_validacion.get("valores")
+        if e.formato_respuesta == "ordenar":
+            orden = e.respuesta_final.split("; ")
+            assert sorted(valores) == sorted(orden) and len(valores) >= 3
+            assert valores not in (orden, orden[::-1])  # desordenados
+        elif e.formato_respuesta == "comparar":
+            assert len(valores) == 2 and e.respuesta_final in ("<", "=", ">")
+            assert all(v in e.enunciado for v in valores)
+        else:
+            assert valores is None
+
+
+def test_comparar_decimales_nivel_2_siempre_es_la_trampa_de_las_cifras():
+    for e in _instancias("5B-OA11-comparar-decimales", 2):
+        causas = {err["causa"] for err in e.errores_comunes}
+        assert "pensó que el decimal con más cifras es mayor" in causas
+
+
+@pytest.mark.parametrize("nivel", [1, 2])
+def test_amplificar_y_simplificar_exigen_la_forma_pedida(nivel):
+    for e in _instancias("5B-OA7-equivalentes", nivel):
+        assert e.regla_validacion["aceptaEquivalentes"] is False
+        original = re.findall(r"\d+/\d+", e.enunciado)[0]
+        resultado = corregir(original, Corregible(e))
+        assert resultado.estado == "incorrecta"  # vale lo mismo, pero no es lo pedido
+        assert resultado.error_comun["causa"] in ("no amplificó la fracción", "no simplificó")
+
+
+def test_el_banco_distingue_ejercicios_con_el_mismo_enunciado():
+    circulos = {
+        huella(e.enunciado, e.representacion, e.regla_validacion)
+        for e in _instancias("4B-OA8-fracciones", 1)
+    }
+    assert len({e.enunciado for e in _instancias("4B-OA8-fracciones", 1)}) == 1
+    assert len(circulos) >= 5

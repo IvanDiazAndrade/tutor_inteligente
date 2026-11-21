@@ -182,3 +182,26 @@ def test_no_puede_responder_el_ejercicio_de_otro(cliente, cabecera, sesion):
     sesion.commit()
     ajena = {"Authorization": f"Bearer {crear_token(otro.id, 'estudiante')}"}
     assert _responder(cliente, ajena, servido["servidoId"], "1").status_code == 404
+
+
+def test_comparar_envia_los_valores_y_acepta_el_simbolo(cliente, cabecera, sesion):
+    """Comparar y ordenar: la app recibe los valores que muestra, nunca la respuesta."""
+    import random
+
+    from tutor.dominio.banco import aprobar_plantilla, registrar_plantillas, reponer_parametricos
+
+    registrar_plantillas(sesion)
+    aprobar_plantilla(sesion, "4B-OA8-fracciones", revisor="Pruebas")
+    reponer_parametricos(sesion, random.Random(3))
+    servido = _servir(cliente, cabecera, "4B-OA8")  # arranque en frío: nivel 2, comparar
+    assert servido["formatoRespuesta"] == "comparar"
+    assert len(servido["valores"]) == 2
+    assert all(v in servido["enunciado"] for v in servido["valores"])
+    correcta = _ejercicio(sesion, servido["servidoId"]).respuesta_final
+    assert correcta in "<=>" and "respuestaFinal" not in servido
+    resultado = _responder(cliente, cabecera, servido["servidoId"], correcta).json()
+    assert resultado["resultado"] == "correcta"
+
+
+def test_ejercicios_numericos_no_envian_valores(cliente, cabecera):
+    assert _servir(cliente, cabecera)["valores"] is None
