@@ -12,7 +12,14 @@ from tutor.dominio.plantillas.cuarto import (
     SumaIgualDenominador,
     SumaRestaHasta1000,
 )
-from tutor.dominio.plantillas.quinto import DivisionConResto
+from tutor.dominio.plantillas.quinto import (
+    DivisionConResto,
+    FraccionesDistintoDenominador,
+    Multiplicacion2x2,
+    OperatoriaCombinada,
+    SumaRestaDecimales,
+)
+from tutor.dominio.plantillas.sexto import DecimalesPorNatural
 
 PLANTILLAS: dict[str, Plantilla] = {
     p.id: p
@@ -23,6 +30,11 @@ PLANTILLAS: dict[str, Plantilla] = {
         SumaRestaHasta1000(),
         Multiplicacion3x1(),
         Division2x1(),
+        Multiplicacion2x2(),
+        OperatoriaCombinada(),
+        FraccionesDistintoDenominador(),
+        SumaRestaDecimales(),
+        DecimalesPorNatural(),
     )
 }
 

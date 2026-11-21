@@ -227,3 +227,87 @@ def test_division_2_cifras_respeta_los_rangos_de_cada_nivel(nivel):
 def test_division_2_cifras_nivel_3_a_veces_pregunta_el_factor():
     preguntas = {"multiplicar" in e.enunciado for e in _instancias("4B-OA6-div-2d", 3)}
     assert preguntas == {True, False}
+
+
+# Plantillas de 5° y 6° básico: rangos de cada nivel ----------------------------------------
+
+
+def _decimales_de(texto: str) -> list[Fraction]:
+    return [Fraction(n.replace(",", ".")) for n in re.findall(r"\d+(?:,\d+)?", texto)]
+
+
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_multiplicacion_2x2_respeta_los_rangos_de_cada_nivel(nivel):
+    for e in _instancias("5B-OA3-mult-2x2", nivel):
+        a, b = _enteros(e.enunciado)
+        assert 10 <= a <= 99 and 10 <= b <= 99 and a % 10
+        assert e.respuesta_final == str(a * b)
+        if nivel == 1:
+            assert b % 10 == 0
+        else:
+            assert b % 10
+            assert (a <= 49 and b <= 49) if nivel == 2 else a >= 51
+
+
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_operatoria_combinada_da_el_resultado_correcto(nivel):
+    for e in _instancias("5B-OA5-combinada", nivel):
+        expresion = e.enunciado.removeprefix("Calcula ").removesuffix(".")
+        python = expresion.replace("×", "*").replace("−", "-").replace(":", "//")
+        assert e.respuesta_final == str(eval(python))  # noqa: S307 (expresión generada aquí)
+        assert int(e.respuesta_final) > 0
+        if nivel == 3:
+            assert ":" in expresion
+        else:
+            assert ":" not in expresion
+
+
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_fracciones_distinto_denominador_respetan_los_rangos(nivel):
+    from math import lcm
+
+    for e in _instancias("5B-OA9-distinto-den", nivel):
+        a, d1, b, d2 = _enteros(e.enunciado)
+        assert d1 != d2 and d1 <= 12 and d2 <= 12 and lcm(d1, d2) <= 24
+        resta = "−" in e.enunciado
+        valor = Fraction(a, d1) - Fraction(b, d2) if resta else Fraction(a, d1) + Fraction(b, d2)
+        assert fraccion(e.respuesta_final) == valor and 0 < valor < 1
+        assert resta == (nivel == 3)
+        multiplo = lcm(d1, d2) == max(d1, d2)
+        if nivel == 1:
+            assert multiplo
+        elif nivel == 2:
+            assert not multiplo
+
+
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_decimales_suma_y_resta_respetan_los_rangos(nivel):
+    from tutor.dominio.plantillas.base import decimales
+
+    for e in _instancias("5B-OA12-decimales", nivel):
+        x, y = _decimales_de(e.enunciado)
+        valor = x - y if "−" in e.enunciado else x + y
+        assert valor > 0
+        assert corregir(e.respuesta_final.replace(",", "."), Corregible(e)).estado == "correcta"
+        assert Fraction(e.respuesta_final.replace(",", ".")) == valor
+        k1, k2 = decimales(x), decimales(y)
+        if nivel == 1:
+            assert k1 == k2 == 1
+        else:
+            assert k1 != k2 and max(k1, k2) == nivel
+
+
+@pytest.mark.parametrize("nivel", [1, 2, 3])
+def test_decimales_por_natural_respetan_los_rangos(nivel):
+    from tutor.dominio.plantillas.base import decimales
+
+    for e in _instancias("6B-OA7-mult-div-decimales", nivel):
+        texto = e.enunciado.replace("1.000", "1000")
+        x, y = _decimales_de(texto)
+        valor = x * y if "×" in texto else x / y
+        assert Fraction(e.respuesta_final.replace(",", ".")) == valor
+        assert decimales(valor) <= 3
+        if nivel == 1:
+            assert y in (10, 100, 1000)
+        else:
+            assert 2 <= y <= 9 and ("×" in texto) == (nivel == 2)

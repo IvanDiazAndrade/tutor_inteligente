@@ -74,3 +74,34 @@ def miles(n: int) -> str:
     """Entero con punto de miles, como se escribe en Chile (1.800, 12.500). El corrector acepta
     la respuesta con o sin el punto (modelo_dominio.md §3.1)."""
     return f"{n:,}".replace(",", ".")
+
+
+PALABRAS_DECIMALES = {1: "un decimal", 2: "dos decimales", 3: "tres decimales"}
+PALABRAS_LUGARES = {1: "un lugar", 2: "dos lugares", 3: "tres lugares"}
+
+
+def decimales(v: Fraction) -> int:
+    """Cantidad de decimales de un número decimal exacto (2,35 -> 2; 7 -> 0)."""
+    k = 0
+    while (v * 10**k).denominator != 1:
+        k += 1
+        if k > 6:
+            raise ValueError(f"{v} no es un decimal finito")
+    return k
+
+
+def fijo(v: Fraction, k: int) -> str:
+    """Decimal con coma y exactamente k decimales (3,50), como se escribe al alinear comas."""
+    escalado = v * 10**k
+    if escalado.denominator != 1:
+        raise ValueError(f"{v} tiene más de {k} decimales")
+    n = abs(int(escalado))
+    signo = "-" if v < 0 else ""
+    if k == 0:
+        return f"{signo}{n}"
+    return f"{signo}{n // 10**k},{n % 10**k:0{k}d}"
+
+
+def decimal_cl(v: Fraction) -> str:
+    """Decimal con coma y sin ceros sobrantes, como se escribe en Chile (9,4; 0,125; 7)."""
+    return fijo(v, decimales(v))
