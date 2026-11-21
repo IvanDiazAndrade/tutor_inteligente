@@ -47,6 +47,7 @@ function PantallaEjercicio() {
   const [estado, setEstado] = useState<Estado>('cargando');
   const [numerador, setNumerador] = useState('');
   const [denominador, setDenominador] = useState('');
+  const [entero, setEntero] = useState(''); // número mixto
   const [seleccion, setSeleccion] = useState<string[]>([]); // formato "ordenar"
   const [simbolo, setSimbolo] = useState(''); // formato "comparar"
   const [mensaje, setMensaje] = useState(MENSAJE_INICIAL);
@@ -101,6 +102,7 @@ function PantallaEjercicio() {
     setEstado('respondiendo');
     setNumerador('');
     setDenominador('');
+    setEntero('');
     setSeleccion([]);
     setSimbolo('');
     setMensaje(mensajeInicial);
@@ -162,7 +164,12 @@ function PantallaEjercicio() {
     }
     Keyboard.dismiss();
     const respuesta = {
-      fraccion: `${numerador}/${denominador}`,
+      // Número mixto: "2 3/4"; solo el entero, "3"; sin entero, la fracción como siempre.
+      fraccion: !entero
+        ? `${numerador}/${denominador}`
+        : numerador || denominador
+          ? `${entero} ${numerador}/${denominador}`
+          : entero,
       numerico: numerador,
       ordenar: seleccion.join('; '), // como lo lee el corrector: "1/4; 0,5; 1 1/2"
       comparar: simbolo,
@@ -356,6 +363,9 @@ function PantallaEjercicio() {
             onEnviar={responder}
             deshabilitado={estado !== 'respondiendo' || ocupado}
             grande={g}
+            mixto={ejercicio.entradaMixta}
+            entero={entero}
+            onEntero={setEntero}
           />
         )}
       </View>

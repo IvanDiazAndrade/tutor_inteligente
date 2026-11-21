@@ -120,3 +120,12 @@ def test_comparar_con_simbolos():
     assert estado("=", ejercicio) == "correcta"
     assert estado("<", ejercicio) == "incorrecta"
     assert estado("mayor", ejercicio) == "formato_invalido"
+
+
+def test_un_numero_mixto_no_se_confunde_con_una_fraccion_de_mismas_cifras():
+    """'1 3/4' y '13/4' tienen las mismas cifras: sin el espacio serían la misma escritura."""
+    from tutor.dominio.corrector import _misma_escritura
+
+    assert not _misma_escritura("1 3/4", "13/4")
+    assert _misma_escritura("1  3 / 4", "1 3/4")
+    assert _misma_escritura(" 3/4 ", "3/4")

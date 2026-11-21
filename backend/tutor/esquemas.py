@@ -120,6 +120,8 @@ class EjercicioParaEstudiante(Esquema):
     # Ordenar: los valores en el orden en que se muestran (desordenados). Comparar: los dos
     # valores, izquierdo y derecho. Nunca traen la respuesta.
     valores: list[str] | None = None
+    # Fracción: la app muestra además una casilla para la parte entera (número mixto).
+    entrada_mixta: bool = False
     pistas_restantes: int
 
 

@@ -60,8 +60,11 @@ def _errores(respuesta: str, candidatos: list[tuple[str, str, str]]) -> list[dic
 
 
 def menciona(texto: str, respuesta: str) -> bool:
-    """¿El texto contiene la respuesta como número o fracción suelto (no dentro de otro)?"""
-    return re.search(rf"(?<![\d/]){re.escape(respuesta)}(?![\d/])", texto) is not None
+    """¿El texto contiene la respuesta como número o fracción suelto (no dentro de otro)? La
+    fracción de un número mixto no cuenta: "2 4/5" no nombra a 4/5."""
+    mixto = r"(?<!\d\s)" if respuesta[:1].isdigit() else ""
+    patron = rf"(?<![\d/]){mixto}{re.escape(respuesta)}(?![\d/])"
+    return re.search(patron, texto) is not None
 
 
 def _sin_revelar(pista: str, respuesta: str, alternativa: str) -> str:

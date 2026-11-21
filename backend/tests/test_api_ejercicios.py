@@ -203,5 +203,22 @@ def test_comparar_envia_los_valores_y_acepta_el_simbolo(cliente, cabecera, sesio
     assert resultado["resultado"] == "correcta"
 
 
-def test_ejercicios_numericos_no_envian_valores(cliente, cabecera):
-    assert _servir(cliente, cabecera)["valores"] is None
+def test_ejercicios_numericos_no_envian_valores_ni_casilla_de_entero(cliente, cabecera):
+    servido = _servir(cliente, cabecera)
+    assert servido["valores"] is None and servido["entradaMixta"] is False
+
+
+def test_numero_mixto_pide_la_casilla_de_entero_y_se_corrige(cliente, cabecera, sesion, estudiante):
+    import random
+
+    from tutor.dominio.banco import aprobar_plantilla, registrar_plantillas, reponer_parametricos
+
+    estudiante.curso = 6
+    registrar_plantillas(sesion)
+    aprobar_plantilla(sesion, "6B-OA6-mixtos", revisor="Pruebas")
+    reponer_parametricos(sesion, random.Random(5))
+    servido = _servir(cliente, cabecera, "6B-OA6")
+    assert servido["entradaMixta"] is True
+    correcta = _ejercicio(sesion, servido["servidoId"]).respuesta_final  # p. ej. "2 1/2"
+    resultado = _responder(cliente, cabecera, servido["servidoId"], correcta).json()
+    assert resultado["resultado"] == "correcta"

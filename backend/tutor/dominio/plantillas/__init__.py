@@ -25,7 +25,7 @@ from tutor.dominio.plantillas.quinto import (
     OperatoriaCombinada,
     SumaRestaDecimales,
 )
-from tutor.dominio.plantillas.sexto import DecimalesPorNatural
+from tutor.dominio.plantillas.sexto import DecimalesPorNatural, ImpropiasYMixtos, SumaRestaMixtos
 
 PLANTILLAS: dict[str, Plantilla] = {
     p.id: p
@@ -47,6 +47,8 @@ PLANTILLAS: dict[str, Plantilla] = {
         FraccionesEquivalentes(),
         FraccionDecimal(),
         CompararDecimales(),
+        ImpropiasYMixtos(),
+        SumaRestaMixtos(),
     )
 }
 

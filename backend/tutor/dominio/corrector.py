@@ -98,8 +98,14 @@ def fraccion(texto: str) -> Fraction:
     return entero + Fraction(num, den)
 
 
+def _forma(texto: str) -> str:
+    """Escritura normalizada: sin espacios alrededor de la barra, pero conservando el que separa
+    la parte entera de un número mixto ("1 3/4" no es lo mismo que "13/4")."""
+    return re.sub(r"\s*/\s*", "/", _limpiar(texto))
+
+
 def _misma_escritura(texto: str, canonico: str) -> bool:
-    return re.sub(r"\s", "", _limpiar(texto)) == re.sub(r"\s", "", _limpiar(canonico))
+    return _forma(texto) == _forma(canonico)
 
 
 def _secuencia(texto: str) -> list[Fraction]:

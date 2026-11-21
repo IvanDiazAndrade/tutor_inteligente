@@ -161,6 +161,7 @@ def _para_estudiante(servido: EjercicioServido, ejercicio: Ejercicio, unidad: Un
         representacion=ejercicio.representacion,
         formato_respuesta=ejercicio.formato_respuesta,
         valores=ejercicio.regla_validacion.get("valores"),
+        entrada_mixta=ejercicio.regla_validacion.get("numeroMixto", False),
         pistas_restantes=get_settings().max_pistas - servido.pistas_usadas,
     )
 

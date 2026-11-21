@@ -9,9 +9,15 @@ type Props = {
   onEnviar: () => void;
   deshabilitado?: boolean;
   grande?: boolean;
+  // Número mixto: una casilla más, a la izquierda, para la parte entera (opcional).
+  mixto?: boolean;
+  entero?: string;
+  onEntero?: (entero: string) => void;
 };
 
-// Casilla para una cifra: teclado numérico del sistema, solo dígitos (RF-D7).
+// Casilla de respuesta con el teclado numérico del sistema (RF-D7). En las de fracción van solo
+// dígitos; en la numérica también la coma decimal y el punto de miles (0,75 o 81.500.000), que
+// el corrector acepta (modelo_dominio.md §3.1).
 function Casilla({
   valor,
   onCambio,
@@ -21,6 +27,7 @@ function Casilla({
   ancho,
   onEnviar,
   ref,
+  decimal = false,
 }: {
   valor: string;
   onCambio: (v: string) => void;
@@ -30,14 +37,22 @@ function Casilla({
   ancho: string;
   onEnviar?: () => void;
   ref?: React.Ref<TextInput>;
+  decimal?: boolean;
 }) {
+  // Una respuesta larga achica la letra para que quepa en la casilla.
+  const largo = valor.length > 6;
   return (
     <TextInput
       ref={ref}
       accessibilityLabel={etiqueta}
       value={valor}
-      onChangeText={(v) => onCambio(v.replace(/\D/g, '').slice(0, 4))}
-      keyboardType="number-pad"
+      onChangeText={(v) =>
+        onCambio(
+          decimal ? v.replace(/[^\d.,]/g, '').slice(0, 12) : v.replace(/\D/g, '').slice(0, 4),
+        )
+      }
+      // "numeric" trae la coma y el punto; "number-pad", solo dígitos.
+      keyboardType={decimal ? 'numeric' : 'number-pad'}
       // En horizontal Android abre el teclado a pantalla completa y tapa el ejercicio.
       disableFullscreenUI
       placeholder="?"
@@ -48,7 +63,9 @@ function Casilla({
       // Android agrega relleno vertical propio: sin esto el "?" queda descentrado.
       style={{ paddingVertical: 0, textAlignVertical: 'center' }}
       className={`rounded-2xl border-[2.5px] border-lila-suave bg-fondo text-center font-nunito-black text-tinta focus:border-primario ${ancho} ${
-        grande ? 'h-20 text-4xl' : 'h-16 text-[32px]'
+        grande
+          ? `h-20 ${largo ? 'text-3xl' : 'text-4xl'}`
+          : `h-16 ${largo ? 'text-2xl' : 'text-[32px]'}`
       }`}
     />
   );
@@ -64,7 +81,11 @@ export function CampoRespuesta({
   onEnviar,
   deshabilitado = false,
   grande = false,
+  mixto = false,
+  entero = '',
+  onEntero,
 }: Props) {
+  const arriba = useRef<TextInput>(null);
   const abajo = useRef<TextInput>(null);
 
   if (formato === 'numerico') {
@@ -75,15 +96,18 @@ export function CampoRespuesta({
         etiqueta="Tu respuesta"
         deshabilitado={deshabilitado}
         grande={grande}
-        ancho={grande ? 'w-44' : 'w-40'}
+        // Más ancha que las de fracción: hay respuestas como 81.500.000 o 30,543.
+        ancho={grande ? 'w-72' : 'w-56'}
         onEnviar={onEnviar}
+        decimal
       />
     );
   }
 
-  return (
+  const fraccion = (
     <View className="items-center gap-2">
       <Casilla
+        ref={arriba}
         valor={numerador}
         onCambio={(v) => onCambio(v, denominador)}
         etiqueta="Numerador, el número de arriba"
@@ -103,6 +127,22 @@ export function CampoRespuesta({
         ancho={grande ? 'w-28' : 'w-[88px]'}
         onEnviar={onEnviar}
       />
+    </View>
+  );
+
+  if (!mixto) return fraccion;
+  return (
+    <View className="flex-row items-center gap-3">
+      <Casilla
+        valor={entero}
+        onCambio={(v) => onEntero?.(v)}
+        etiqueta="Parte entera del número mixto (si no hay, déjala vacía)"
+        deshabilitado={deshabilitado}
+        grande={grande}
+        ancho={grande ? 'w-28' : 'w-[88px]'}
+        onEnviar={() => arriba.current?.focus()}
+      />
+      {fraccion}
     </View>
   );
 }

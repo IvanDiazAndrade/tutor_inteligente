@@ -321,6 +321,11 @@ export interface components {
       formatoRespuesta: 'numerico' | 'fraccion' | 'ordenar' | 'comparar';
       /** Valores */
       valores?: string[] | null;
+      /**
+       * Entradamixta
+       * @default false
+       */
+      entradaMixta: boolean;
       /** Pistasrestantes */
       pistasRestantes: number;
     };
