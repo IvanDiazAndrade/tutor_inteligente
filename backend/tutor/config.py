@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     motor_racha_subir: int = 3
     motor_descuento_pista: Decimal = Decimal("0.15")
     motor_piso_con_pistas: Decimal = Decimal("0.4")
+    # Reposición automática del banco (F5): cada cuántos minutos; 0 = no se programa (en
+    # desarrollo y pruebas se repone a mano). En Render: 60.
+    reposicion_minutos: int = 0
     # Panel del apoderado: semanas de lunes a domingo en hora de Chile.
     zona_horaria: str = "America/Santiago"
     # Política de intentos (modelo_pedagogico.md §5; RF-P7).

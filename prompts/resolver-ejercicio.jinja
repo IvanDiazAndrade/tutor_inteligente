@@ -1,0 +1,12 @@
+{#- version: resolver-v1 · origen: modelo_dominio.md §8, capa 1 (doble pasada en fracciones, RF-D6)
+    Uso: resolverEjercicio (temperatura 0, salida {pasos[], respuesta_final}). Borrador: se
+    calibra en la tarea 58 junto con los demás prompts. -#}
+Resuelve el siguiente problema de matemática de {{ curso }}° básico, paso a paso.
+
+PROBLEMA: «{{ enunciado }}»
+
+Reglas:
+- Escribe cada operación con su resultado (por ejemplo "3/4 + 1/8 = 7/8").
+- Usa la notación chilena: coma decimal, punto de miles y ":" para dividir.
+- respuesta_final: solo el resultado, en formato {{ formatoRespuesta }}, sin unidades ni
+  palabras (por ejemplo "7/8", "1 1/2" o "2,5").

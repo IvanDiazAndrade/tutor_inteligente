@@ -259,7 +259,8 @@ class LlamadaLLM(Base):
     __table_args__ = (
         CheckConstraint(
             "operacion IN ('generarEjercicio', 'triajeEjercicio', "
-            "'generarRetroalimentacion', 'generarPista', 'narrarExplicacionGuiada')"
+            "'generarRetroalimentacion', 'generarPista', 'narrarExplicacionGuiada', "
+            "'resolverEjercicio')"
         ),
         CheckConstraint("resultado IN ('ok', 'timeout', 'error', 'filtrado', 'degradado', 'tope')"),
         # Costo del mes en curso (alerta 80 %, corte 100 %).

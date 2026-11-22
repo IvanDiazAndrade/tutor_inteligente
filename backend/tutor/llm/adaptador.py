@@ -80,6 +80,13 @@ class PasosNarrados(BaseModel):
     pasos: list[str]
 
 
+class SolucionLLM(BaseModel):
+    """Segunda resolución independiente de un problema de fracciones (RF-D6)."""
+
+    pasos: list[str]
+    respuesta_final: str
+
+
 class VeredictoTriaje(BaseModel):
     veredicto: str = Field(pattern="^(ok|dudoso)$")
     razones: list[str]
@@ -229,6 +236,22 @@ class AdaptadorLLM:
             EjercicioLLM,
             None,
             sistema="Responde solo con el ejercicio en el formato pedido.",
+        )
+        return r.datos if r else None
+
+    def resolver(self, bd: Session, curso: int, enunciado: str, formato: str) -> SolucionLLM | None:
+        """Resuelve el enunciado sin ver la solución generada: si las dos respuestas difieren,
+        el ejercicio se descarta (doble pasada en fracciones, RF-D6)."""
+        r = self._llamar(
+            bd,
+            "resolverEjercicio",
+            "resolver-ejercicio",
+            {"curso": curso, "enunciado": enunciado, "formatoRespuesta": formato},
+            0.0,
+            400,
+            SolucionLLM,
+            None,
+            sistema="Resuelve con cuidado, paso a paso. Responde solo con el JSON pedido.",
         )
         return r.datos if r else None
 
