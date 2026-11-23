@@ -1,4 +1,6 @@
-"""Registro, ingreso, dispositivo vinculado y perfil del estudiante (CU-1, CU-9; RF-A1–A3)."""
+"""Registro, ingreso, dispositivo vinculado y perfiles de estudiante (CU-1, CU-9; RF-A1–A3)."""
+
+import uuid
 
 APODERADO = {"email": "apoderado@ejemplo.cl", "contrasena": "clave-segura-1", "pin": "1234"}
 LOGIN = {"email": APODERADO["email"], "contrasena": APODERADO["contrasena"]}
@@ -16,12 +18,20 @@ def _registrar_e_ingresar(cliente) -> dict:
     return respuesta.json()
 
 
-def _crear_estudiante(cliente, token: str) -> str:
+def _crear_estudiante(cliente, token: str, alias: str = "Vale", curso: int = 5) -> str:
     respuesta = cliente.post(
-        "/apoderado/estudiante", json={"alias": "Vale", "curso": 5}, headers=_cabecera(token)
+        "/apoderado/estudiantes", json={"alias": alias, "curso": curso}, headers=_cabecera(token)
     )
     assert respuesta.status_code == 201
     return respuesta.json()["id"]
+
+
+def _entrar(cliente, token_dispositivo: str, estudiante_id: str):
+    return cliente.post(
+        "/auth/dispositivo/estudiante",
+        json={"estudianteId": estudiante_id},
+        headers=_cabecera(token_dispositivo),
+    )
 
 
 def _abrir_panel(cliente, token_dispositivo: str, pin: str):
@@ -70,12 +80,10 @@ def test_el_estudiante_entra_sin_pin_desde_un_dispositivo_vinculado(cliente):
     tokens = _registrar_e_ingresar(cliente)
     estudiante_id = _crear_estudiante(cliente, tokens["token"])
 
-    perfil = cliente.get("/apoderado/estudiante", headers=_cabecera(tokens["token"])).json()
-    assert perfil == {"id": estudiante_id, "alias": "Vale", "curso": 5, "puntajeTotal": 0}
+    perfiles = cliente.get("/apoderado/estudiantes", headers=_cabecera(tokens["token"])).json()
+    assert perfiles == [{"id": estudiante_id, "alias": "Vale", "curso": 5, "puntajeTotal": 0}]
 
-    respuesta = cliente.post(
-        "/auth/dispositivo/estudiante", headers=_cabecera(tokens["tokenDispositivo"])
-    )
+    respuesta = _entrar(cliente, tokens["tokenDispositivo"], estudiante_id)
     assert respuesta.status_code == 200
     assert respuesta.json()["rol"] == "estudiante"
     token_estudiante = respuesta.json()["token"]
@@ -86,10 +94,67 @@ def test_el_estudiante_entra_sin_pin_desde_un_dispositivo_vinculado(cliente):
 
 def test_sin_perfil_creado_no_se_puede_entrar_como_estudiante(cliente):
     tokens = _registrar_e_ingresar(cliente)
-    respuesta = cliente.post(
-        "/auth/dispositivo/estudiante", headers=_cabecera(tokens["tokenDispositivo"])
-    )
+    respuesta = _entrar(cliente, tokens["tokenDispositivo"], str(uuid.uuid4()))
     assert respuesta.status_code == 404
+
+
+def test_hasta_tres_estudiantes_por_cuenta_y_cada_uno_entra_con_su_perfil(cliente):
+    tokens = _registrar_e_ingresar(cliente)
+    ids = [
+        _crear_estudiante(cliente, tokens["token"], alias, curso)
+        for alias, curso in [("Vale", 5), ("Tomás", 4), ("Sofi", 6)]
+    ]
+
+    cuarto = {"alias": "Mati", "curso": 4}
+    respuesta = cliente.post(
+        "/apoderado/estudiantes", json=cuarto, headers=_cabecera(tokens["token"])
+    )
+    assert respuesta.status_code == 409
+    assert "3" in respuesta.json()["detail"]
+
+    perfiles = cliente.get("/apoderado/estudiantes", headers=_cabecera(tokens["token"])).json()
+    assert [p["alias"] for p in perfiles] == ["Vale", "Tomás", "Sofi"]  # en orden de creación
+    for estudiante_id, curso in zip(ids, [5, 4, 6], strict=True):
+        token = _entrar(cliente, tokens["tokenDispositivo"], estudiante_id).json()["token"]
+        perfil = cliente.get("/estudiante/perfil", headers=_cabecera(token)).json()
+        assert (perfil["id"], perfil["curso"]) == (estudiante_id, curso)
+
+
+def test_el_telefono_solo_lista_los_perfiles_de_su_cuenta(cliente):
+    ajena = _registrar_e_ingresar(cliente)
+    _crear_estudiante(cliente, ajena["token"], "Sofi", 4)
+    otra = {**APODERADO, "email": "otra@ejemplo.cl"}
+    assert cliente.post("/auth/apoderado/registro", json=otra).status_code == 201
+    propia = cliente.post(
+        "/auth/apoderado/login", json={"email": otra["email"], "contrasena": otra["contrasena"]}
+    ).json()
+    _crear_estudiante(cliente, propia["token"], "Pedro", 5)
+
+    perfiles = cliente.get(
+        "/auth/dispositivo/estudiantes", headers=_cabecera(propia["tokenDispositivo"])
+    ).json()
+    assert [p["alias"] for p in perfiles] == ["Pedro"]
+    # Solo con el token del dispositivo: el del panel o el del estudiante no sirven.
+    panel = cliente.get("/auth/dispositivo/estudiantes", headers=_cabecera(propia["token"]))
+    assert panel.status_code == 403
+
+
+def test_un_telefono_no_entra_a_perfiles_de_otra_cuenta(cliente):
+    ajena = _registrar_e_ingresar(cliente)
+    estudiante_ajeno = _crear_estudiante(cliente, ajena["token"])
+    otra = {**APODERADO, "email": "otra@ejemplo.cl"}
+    assert cliente.post("/auth/apoderado/registro", json=otra).status_code == 201
+    propia = cliente.post(
+        "/auth/apoderado/login", json={"email": otra["email"], "contrasena": otra["contrasena"]}
+    ).json()
+
+    assert _entrar(cliente, propia["tokenDispositivo"], estudiante_ajeno).status_code == 404
+    cambio = cliente.patch(
+        f"/apoderado/estudiantes/{estudiante_ajeno}",
+        json={"curso": 6},
+        headers=_cabecera(propia["token"]),
+    )
+    assert cambio.status_code == 404
 
 
 def test_el_panel_se_abre_con_el_pin_del_apoderado(cliente):
@@ -101,7 +166,7 @@ def test_el_panel_se_abre_con_el_pin_del_apoderado(cliente):
     assert respuesta.status_code == 200
     assert respuesta.json()["rol"] == "apoderado"
     panel = _cabecera(respuesta.json()["token"])
-    assert cliente.get("/apoderado/estudiante", headers=panel).status_code == 200
+    assert cliente.get("/apoderado/estudiantes", headers=panel).status_code == 200
 
 
 def test_cinco_pin_incorrectos_bloquean_el_panel(cliente):
@@ -139,34 +204,28 @@ def test_cuenta_sin_pin_fijado_abre_el_panel_sin_pin(cliente, sesion):
 
 def test_el_apoderado_cambia_el_curso(cliente):
     token = _registrar_e_ingresar(cliente)["token"]
-    _crear_estudiante(cliente, token)
+    estudiante_id = _crear_estudiante(cliente, token)
 
-    respuesta = cliente.patch("/apoderado/estudiante", json={"curso": 6}, headers=_cabecera(token))
+    respuesta = cliente.patch(
+        f"/apoderado/estudiantes/{estudiante_id}", json={"curso": 6}, headers=_cabecera(token)
+    )
     assert respuesta.json()["curso"] == 6
-
-
-def test_un_apoderado_no_puede_crear_un_segundo_estudiante(cliente):
-    token = _registrar_e_ingresar(cliente)["token"]
-    _crear_estudiante(cliente, token)
-
-    otro = {"alias": "Tomás", "curso": 4}
-    respuesta = cliente.post("/apoderado/estudiante", json=otro, headers=_cabecera(token))
-    assert respuesta.status_code == 409
 
 
 def test_cada_token_solo_entra_a_sus_rutas(cliente):
     tokens = _registrar_e_ingresar(cliente)
-    _crear_estudiante(cliente, tokens["token"])
+    estudiante_id = _crear_estudiante(cliente, tokens["token"])
     panel, dispositivo = tokens["token"], tokens["tokenDispositivo"]
-    estudiante = cliente.post("/auth/dispositivo/estudiante", headers=_cabecera(dispositivo))
-    estudiante = estudiante.json()["token"]
+    estudiante = _entrar(cliente, dispositivo, estudiante_id).json()["token"]
 
-    assert cliente.get("/apoderado/estudiante").status_code == 401
-    assert cliente.get("/apoderado/estudiante", headers=_cabecera("no-es-token")).status_code == 401
-    assert cliente.get("/apoderado/estudiante", headers=_cabecera(estudiante)).status_code == 403
+    assert cliente.get("/apoderado/estudiantes").status_code == 401
+    assert (
+        cliente.get("/apoderado/estudiantes", headers=_cabecera("no-es-token")).status_code == 401
+    )
+    assert cliente.get("/apoderado/estudiantes", headers=_cabecera(estudiante)).status_code == 403
     assert cliente.get("/estudiante/unidades", headers=_cabecera(panel)).status_code == 403
     # El token del dispositivo no abre el panel ni las rutas del estudiante por sí solo.
-    assert cliente.get("/apoderado/estudiante", headers=_cabecera(dispositivo)).status_code == 403
+    assert cliente.get("/apoderado/estudiantes", headers=_cabecera(dispositivo)).status_code == 403
     assert cliente.get("/estudiante/unidades", headers=_cabecera(dispositivo)).status_code == 403
     # Y los tokens del panel o del estudiante no sirven como token de dispositivo.
     assert _abrir_panel(cliente, panel, "1234").status_code == 403

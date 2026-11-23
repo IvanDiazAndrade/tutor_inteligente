@@ -13,6 +13,7 @@ unidades solo LLM de §4 no tienen plantilla: se llenan con el pipeline de F5.
 
 import random
 
+from tutor.dominio.columnas import con_bloque, pistas_division, separar_bloque
 from tutor.dominio.plantillas_base import (
     EjercicioGenerado,
     Plantilla,
@@ -54,7 +55,7 @@ __all__ = ["PLANTILLAS", "EjercicioGenerado", "Plantilla", "menciona", "revela"]
 class DivisionConResto:
     id = "5B-OA4-div-resto"
     unidad_id = "5B-OA4"
-    version = 1
+    version = 2  # v2: pistas con la división escrita paso a paso (columnas.py)
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: resto 0 y divisor 2-5 · N2: resto > 0 · N3: resto > 0 y se pregunta cociente o resto.
@@ -67,7 +68,7 @@ class DivisionConResto:
 
         pregunta = "¿Cuál es el resto?" if pide_resto else "¿Cuál es el cociente?"
         respuesta = str(resto if pide_resto else cociente)
-        pasos, ultimo_parcial = _pasos_division(dividendo, divisor)
+        pasos, _ = _pasos_division(dividendo, divisor)
         solucion = [*pasos, f"El cociente es {cociente} y el resto es {resto}."]
 
         if pide_resto:
@@ -87,12 +88,6 @@ class DivisionConResto:
                     ),
                 ],
             )
-            pista_final = _sin_revelar(
-                f"El cociente es {cociente}. Multiplica {cociente} × {divisor} "
-                "y réstalo al dividendo.",
-                respuesta,
-                "Multiplica el cociente por el divisor y réstalo al dividendo.",
-            )
         else:
             errores = _errores(
                 respuesta,
@@ -110,13 +105,14 @@ class DivisionConResto:
                     ),
                 ],
             )
-            # A un paso del final (§4.3 del modelo pedagógico): todas las cifras menos la última.
-            pista_final = _sin_revelar(
-                f"El cociente empieza con {str(cociente)[:-1]}. "
-                f"Ahora divide {ultimo_parcial} : {divisor}.",
-                respuesta,
-                "Ya tienes casi todo el cociente: te falta dividir la última parte.",
-            )
+
+        # La división escrita paso a paso (columnas.py): la pista 3 deja todo hecho salvo el
+        # último paso, así no se ve ni la última cifra del cociente ni el resto.
+        estrategia, primer_paso, casi = pistas_division(dividendo, divisor)
+        if pide_resto:
+            frase, bloque = separar_bloque(casi)
+            casi = con_bloque(f"{frase} Lo que sobra al final es el resto.", bloque)
+        generica = "Divide la parte que falta y fíjate en lo que sobra."
 
         return EjercicioGenerado(
             unidad_id=self.unidad_id,
@@ -127,16 +123,7 @@ class DivisionConResto:
             respuesta_final=respuesta,
             solucion_referencia=solucion,
             errores_comunes=errores,
-            pistas=[
-                "Dividir es repartir en partes iguales. "
-                "Empieza por las primeras cifras del dividendo.",
-                _sin_revelar(
-                    pasos[0],
-                    respuesta,
-                    "Divide las primeras cifras del dividendo por el divisor y anota lo que sobra.",
-                ),
-                pista_final,
-            ],
+            pistas=[_sin_revelar(p, respuesta, generica) for p in (estrategia, primer_paso, casi)],
         )
 
 

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,6 +16,7 @@ import { useConsulta } from '@/sesion/useConsulta';
 import { banda, type Dominio, paraRepasar, type Unidad, unidadSugerida } from '@/modelo/progreso';
 
 const PISTAS_ALTAS = 1.5;
+const MAX_ESTUDIANTES = 3; // RF-A1 (el servidor también lo controla)
 
 const duracion = (minutos: number) => {
   const h = Math.floor(minutos / 60);
@@ -38,14 +39,35 @@ function comentarioDe(dominio: Dominio, pistas: number, hoy: Date): string {
 
 // Panel del apoderado (CU-10; mockup "Dashboard Apoderado"): resumen semanal, qué está
 // aprendiendo y sugerencia de la semana. Pocos indicadores y encuadre de avance (RF-DA4, DA6).
-// El nombre del estudiante viene del servidor; los indicadores siguen siendo de ejemplo hasta
-// que el servicio dashboard (F4) esté disponible (tarea 65).
+// Con varios estudiantes en la cuenta (hasta 3, RF-A1) se elige de cuál ver el progreso. Los
+// perfiles vienen del servidor; los indicadores siguen siendo de ejemplo hasta que el servicio
+// dashboard (F4) esté disponible (tarea 65).
 function Panel() {
   const { dosColumnas, esTablet: g } = useDistribucion();
   const [periodo, setPeriodo] = useState<Periodo>('esta');
-  const { cerrar, desvincular } = useSesion();
-  const perfil = useConsulta('estudiante-del-apoderado', api.estudianteDelApoderado);
-  const estudiante = { ...ESTUDIANTE_EJEMPLO, alias: perfil.data?.alias ?? '…' };
+  const [elegidoId, setElegidoId] = useState<string | null>(null);
+  const { cerrar, desvincular, perfiles: recordados, recordarPerfiles } = useSesion();
+  const lista = useConsulta('estudiantes-del-apoderado', api.estudiantesDelApoderado);
+  const estudiantes = useMemo(() => lista.data ?? [], [lista.data]);
+  const elegido = estudiantes.find((e) => e.id === elegidoId) ?? estudiantes[0];
+  const estudiante = {
+    alias: elegido?.alias ?? '…',
+    curso: elegido?.curso ?? ESTUDIANTE_EJEMPLO.curso,
+  };
+
+  // La pantalla de acceso muestra los perfiles guardados en el teléfono: se mantienen al día con
+  // los del servidor (p. ej. si se agregó un estudiante desde otro teléfono).
+  useEffect(() => {
+    const iguales =
+      estudiantes.length === recordados.length &&
+      estudiantes.every(
+        (e, i) =>
+          e.id === recordados[i].id &&
+          e.alias === recordados[i].alias &&
+          e.curso === recordados[i].curso,
+      );
+    if (lista.data && !iguales) recordarPerfiles(estudiantes);
+  }, [lista.data, estudiantes, recordados, recordarPerfiles]);
   const resumen = RESUMENES_EJEMPLO[periodo];
 
   const { medidores, sugerencia } = useMemo(() => {
@@ -94,8 +116,46 @@ function Panel() {
     </View>
   );
 
+  const chip = (texto: string, activo: boolean, onPress: () => void, etiqueta?: string) => (
+    <Pressable
+      key={texto}
+      accessibilityRole={etiqueta ? 'button' : 'radio'}
+      accessibilityLabel={etiqueta}
+      accessibilityState={etiqueta ? undefined : { selected: activo }}
+      onPress={onPress}
+      className={`rounded-full border-[1.5px] px-4 ${g ? 'py-2.5' : 'py-1.5'} ${
+        activo ? 'border-primario bg-primario' : 'border-borde bg-white active:bg-fondo'
+      }`}
+    >
+      <Text
+        className={`font-nunito-extrabold ${g ? 'text-base' : 'text-[13px]'} ${
+          activo ? 'text-white' : 'text-tinta-tecla'
+        }`}
+      >
+        {texto}
+      </Text>
+    </Pressable>
+  );
+
+  // Selector de estudiante (solo si hay más de uno) y botón para agregar otro (hasta 3).
+  const selector = (estudiantes.length > 1 || estudiantes.length < MAX_ESTUDIANTES) && (
+    <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
+      {estudiantes.length > 1 &&
+        estudiantes.map((e) => chip(e.alias, e.id === elegido?.id, () => setElegidoId(e.id)))}
+      {lista.data &&
+        estudiantes.length < MAX_ESTUDIANTES &&
+        chip(
+          '+ Agregar estudiante',
+          false,
+          () => router.push('/apoderado/perfil'),
+          'Agregar otro estudiante',
+        )}
+    </View>
+  );
+
   const encabezado = (
     <View className="gap-3">
+      {selector}
       <View className="flex-row items-end justify-between gap-3">
         <View className="flex-1">
           <Text className={`font-nunito-bold text-seccion ${g ? 'text-base' : 'text-xs'}`}>

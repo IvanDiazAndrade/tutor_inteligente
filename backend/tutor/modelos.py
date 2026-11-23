@@ -53,7 +53,11 @@ class Apoderado(Base):
     bloqueado_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), **AHORA)
 
-    estudiante: Mapped["Estudiante | None"] = relationship(back_populates="apoderado")
+    # Hasta `max_estudiantes` por cuenta (RF-A1, actualización 23-nov-2026), en el orden en que
+    # se crearon.
+    estudiantes: Mapped[list["Estudiante"]] = relationship(
+        back_populates="apoderado", order_by="Estudiante.creado_en"
+    )
 
 
 class Estudiante(Base):
@@ -64,16 +68,16 @@ class Estudiante(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(**UUID_PK)
-    # UNIQUE = un apoderado, un estudiante (RF-A1, por ratificar).
+    # Varios estudiantes por apoderado; el máximo lo controla la API (RF-A1).
     apoderado_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("apoderado.id", ondelete="CASCADE"), unique=True
+        ForeignKey("apoderado.id", ondelete="CASCADE"), index=True
     )
     alias: Mapped[str] = mapped_column(String(30))  # sin datos identificatorios (RNF-S2)
     curso: Mapped[int] = mapped_column(SmallInteger)
     puntaje_total: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), **AHORA)
 
-    apoderado: Mapped[Apoderado] = relationship(back_populates="estudiante")
+    apoderado: Mapped[Apoderado] = relationship(back_populates="estudiantes")
 
 
 # Catálogo curricular (datos, sin lógica: RNF-M2) -------------------------------------------

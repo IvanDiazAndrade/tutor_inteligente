@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,11 +12,24 @@ import { useSesion } from '@/sesion/SesionContext';
 
 const CURSOS = [4, 5, 6] as const;
 
-// Crear el perfil del estudiante (CU-9; RF-A1, A5): solo alias y curso. No se piden nombre
+// Crear un perfil de estudiante (CU-9; RF-A1, A5): solo alias y curso. No se piden nombre
 // completo, RUT, colegio ni fecha de nacimiento (RNF-S2). El estudiante no tiene PIN: entra
-// tocando su perfil en el dispositivo vinculado (RF-A3).
+// tocando su perfil en el dispositivo vinculado (RF-A3). Una cuenta puede tener hasta 3. El
+// primero se crea al registrarse (y luego se vuelve al acceso); los demás, desde el panel.
 function CrearPerfil() {
-  const { sesion, recordarPerfil, cerrar } = useSesion();
+  const { sesion, perfiles, actualizarPerfil, cerrar } = useSesion();
+  const primero = perfiles.length === 0;
+  // Desde la pantalla de acceso ("+ Agregar estudiante") se vuelve a ella; desde el panel, al panel.
+  const { volver } = useLocalSearchParams<{ volver?: 'acceso' }>();
+  const alAcceso = primero || volver === 'acceso';
+  const regresar = async () => {
+    if (alAcceso) {
+      await cerrar();
+      router.replace('/');
+    } else {
+      router.replace('/apoderado');
+    }
+  };
   const [alias, setAlias] = useState('');
   const [curso, setCurso] = useState<number | null>(null);
   const [aviso, setAviso] = useState('');
@@ -29,10 +42,9 @@ function CrearPerfil() {
     setEnviando(true);
     try {
       const perfil = await api.crearEstudiante(sesion!.token, { alias: alias.trim(), curso });
-      await recordarPerfil({ id: perfil.id, alias: perfil.alias, curso: perfil.curso });
-      // Con el perfil creado se vuelve a la pantalla de acceso para elegir a qué entrar.
-      await cerrar();
-      router.replace('/');
+      await actualizarPerfil({ id: perfil.id, alias: perfil.alias, curso: perfil.curso });
+      // Con el perfil creado se vuelve a la pantalla de acceso (para elegir a qué entrar) o al panel.
+      await regresar();
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {
@@ -51,7 +63,7 @@ function CrearPerfil() {
             <View className="flex-row items-center gap-3">
               <Octavio tamano={56} conVarita />
               <Text className="flex-1 font-nunito-black text-lg text-tinta">
-                Perfil del estudiante
+                {primero ? 'Perfil del estudiante' : 'Agregar otro estudiante'}
               </Text>
             </View>
             <Text className="font-nunito-bold text-sm text-apagado-oscuro">
@@ -96,6 +108,17 @@ function CrearPerfil() {
                 deshabilitado={enviando}
               />
             </View>
+            {!primero && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={regresar}
+                className="items-center py-2"
+              >
+                <Text className="font-nunito-extrabold text-sm text-apagado-oscuro">
+                  {alAcceso ? '← Volver' : '← Volver al panel'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

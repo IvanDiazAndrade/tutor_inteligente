@@ -3,7 +3,7 @@
 El apoderado inicia sesión una vez por dispositivo con correo y contraseña. La respuesta trae,
 además del token del panel, un token de dispositivo de larga duración que solo sirve para:
 
-- entrar como el estudiante, sin PIN (el niño toca su perfil), y
+- entrar como uno de los estudiantes de la cuenta, sin PIN (el niño toca su perfil), y
 - abrir el panel del apoderado con su PIN de 4 números.
 
 Así el niño no necesita PIN y el apoderado no escribe su contraseña cada vez (RF-A3).
@@ -17,13 +17,16 @@ from sqlalchemy import select
 from tutor.config import get_settings
 from tutor.esquemas import (
     ApoderadoCreado,
+    EntradaEstudiante,
     IngresoApoderado,
     IngresoConDispositivo,
+    PerfilEstudiante,
     PinPanel,
     RegistroApoderado,
     Token,
 )
 from tutor.modelos import Apoderado
+from tutor.rutas.apoderado import estudiante_de
 from tutor.seguridad import ApoderadoDelDispositivo, SesionBD, crear_token, hashear, verificar
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
@@ -63,12 +66,20 @@ def ingresar_apoderado(datos: IngresoApoderado, sesion: SesionBD) -> IngresoConD
     )
 
 
+@router.get("/dispositivo/estudiantes", response_model=list[PerfilEstudiante])
+def perfiles_del_dispositivo(apoderado: ApoderadoDelDispositivo) -> list:
+    """Los perfiles que muestra la pantalla de acceso: solo los de la cuenta vinculada a este
+    teléfono. La app guarda una copia para mostrarla mientras llega esta respuesta, pero manda
+    lo que diga el servidor (un perfil borrado o de otra cuenta no debe aparecer)."""
+    return apoderado.estudiantes
+
+
 @router.post("/dispositivo/estudiante", response_model=Token)
-def entrar_como_estudiante(apoderado: ApoderadoDelDispositivo) -> Token:
-    """El estudiante toca su perfil en un dispositivo vinculado y entra sin PIN (RF-A3)."""
-    if apoderado.estudiante is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Todavía no hay un perfil de estudiante.")
-    return Token(token=crear_token(apoderado.estudiante.id, "estudiante"), rol="estudiante")
+def entrar_como_estudiante(datos: EntradaEstudiante, apoderado: ApoderadoDelDispositivo) -> Token:
+    """El estudiante toca su perfil en un dispositivo vinculado y entra sin PIN (RF-A3). Solo
+    a los perfiles de la cuenta vinculada."""
+    estudiante = estudiante_de(apoderado, datos.estudiante_id)
+    return Token(token=crear_token(estudiante.id, "estudiante"), rol="estudiante")
 
 
 @router.post("/dispositivo/apoderado", response_model=Token)

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Any, Protocol
 
+from tutor.dominio.columnas import con_bloque, separar_bloque
 from tutor.dominio.corrector import FormatoInvalido, fraccion, numero
 
 
@@ -96,8 +97,13 @@ def revela(texto: str, respuesta: str) -> bool:
 
 def _sin_revelar(pista: str, respuesta: str, alternativa: str) -> str:
     """Si por casualidad la pista nombra la respuesta (p. ej. 99 : 9 -> "divide 11 : 9"),
-    se usa una versión sin números. El filtro del tutor lo revisa de nuevo al servirla."""
-    return alternativa if revela(pista, respuesta) else pista
+    se usa una versión sin números. El filtro del tutor lo revisa de nuevo al servirla.
+
+    Si la pista trae una operación en columnas, se revisa solo la frase: el bloque se arma para
+    no mostrar nunca el resultado (columnas.py, con sus pruebas), y sus cifras sueltas harían
+    saltar el filtro cuando la respuesta es de una cifra."""
+    frase, bloque = separar_bloque(pista)
+    return con_bloque(alternativa if revela(frase, respuesta) else frase, bloque)
 
 
 # Escritura de números (convención chilena, RF-P6) ------------------------------------------

@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     motor_piso_con_pistas: Decimal = Decimal("0.4")
     # Política de intentos (modelo_pedagogico.md §5; RF-P7).
     max_pistas: int = 3
+    # Estudiantes por cuenta (RF-A1, actualización 23-nov-2026: antes uno solo).
+    max_estudiantes: int = 3
     fallos_para_resolver_juntos: int = 3
     # LLM (estrategia_llm.md). Sin OPENAI_API_KEY el tutor funciona con sus mensajes locales
     # (modo degradado F6), así que la app se puede usar y probar sin clave.

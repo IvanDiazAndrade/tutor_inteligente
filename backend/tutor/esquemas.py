@@ -77,6 +77,12 @@ class EstudianteNuevo(Esquema):
     curso: Curso
 
 
+class EntradaEstudiante(Esquema):
+    """Qué perfil tocó el niño en la pantalla de acceso (uno de los de la cuenta)."""
+
+    estudiante_id: uuid.UUID
+
+
 class EstudianteCambios(Esquema):
     alias: Alias | None = None
     curso: Curso | None = None  # promover de curso conserva el historial (RF-A4)

@@ -14,7 +14,7 @@ import { useSesion } from '@/sesion/SesionContext';
 // panel A). Es la primera pantalla mientras el dispositivo no esté vinculado a una cuenta; al
 // entrar queda vinculado y después el niño entra tocando su perfil.
 export default function IngresoApoderado() {
-  const { vincular, iniciar, recordarPerfil } = useSesion();
+  const { vincular, iniciar, recordarPerfiles } = useSesion();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [aviso, setAviso] = useState('');
@@ -29,7 +29,7 @@ export default function IngresoApoderado() {
     setEnviando(true);
     try {
       const ingreso = await api.ingresarApoderado(correo.trim(), contrasena);
-      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfil });
+      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfiles });
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {

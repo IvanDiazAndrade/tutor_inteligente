@@ -23,7 +23,7 @@
 
 ```mermaid
 erDiagram
-    apoderado ||--o| estudiante : "es titular de"
+    apoderado ||--o{ estudiante : "es titular de (hasta 3)"
     estudiante ||--o{ sesion : "abre"
     estudiante ||--o{ dominio_oa : "tiene índice en"
     unidad ||--o{ dominio_oa : "se mide en"
@@ -167,13 +167,14 @@ CREATE TABLE apoderado (
 
 CREATE TABLE estudiante (
     id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    apoderado_id     uuid NOT NULL UNIQUE           -- UNIQUE = 1 apoderado ↔ 1 estudiante (RF-A1, por ratificar)
+    apoderado_id     uuid NOT NULL                  -- hasta 3 por apoderado; el máximo lo controla la API (RF-A1)
                      REFERENCES apoderado(id) ON DELETE CASCADE,
     alias            varchar(30) NOT NULL,          -- sin datos identificatorios (RF-A5, RNF-S2)
     curso            smallint NOT NULL CHECK (curso BETWEEN 4 AND 6),
     puntaje_total    integer NOT NULL DEFAULT 0 CHECK (puntaje_total >= 0),
     creado_en        timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX ix_estudiante_apoderado_id ON estudiante (apoderado_id);
 
 -- Catálogo curricular (datos, sin lógica: RNF-M2) ----------------------------
 
@@ -385,5 +386,5 @@ Las garantiza la capa de servicios y se prueban en la tarea 52:
 ## 6. Puntos abiertos
 
 - **Marca "para repasar":** `modelo_estudiante.md` §5 dice que se limpia tras ≥ 3 intentos nuevos, pero §8 dice que se deriva por consulta, y la consulta la limpia con el primer intento. Se adopta la derivación (sin columna extra); si el equipo prefiere exigir 3 intentos, basta con un contador `intentos_desde_repaso` en `dominio_oa`.
-- **Un apoderado ↔ un estudiante** (RF-A1) está pendiente de ratificar. Si se permiten varios estudiantes, basta con quitar `UNIQUE` de `estudiante.apoderado_id`.
+- **Varios estudiantes por apoderado** (RF-A1, actualización 23-nov-2026): hasta 3. La migración `8d4f2a6c1e37` quitó el `UNIQUE` de `estudiante.apoderado_id` y dejó el índice `ix_estudiante_apoderado_id`; el máximo lo controla la API (`Settings.max_estudiantes`).
 - **Retención de `evento_filtro.texto_bloqueado`:** es útil para analizar los fallos de la prueba adversarial. Si en el futuro se opera con usuarios reales, conviene fijar un plazo de borrado.

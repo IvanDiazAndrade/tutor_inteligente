@@ -72,20 +72,26 @@ export const api = {
     pedir<Esquemas['IngresoConDispositivo']>('POST', '/auth/apoderado/login', {
       cuerpo: { email, contrasena },
     }),
-  // Con el token del dispositivo vinculado (RF-A3): el niño entra sin PIN y el panel pide
-  // el PIN del apoderado.
-  entrarComoEstudiante: (tokenDispositivo: string) =>
-    pedir<Token>('POST', '/auth/dispositivo/estudiante', { token: tokenDispositivo }),
+  // Con el token del dispositivo vinculado (RF-A3): el niño entra sin PIN tocando su perfil
+  // (uno de los de la cuenta) y el panel pide el PIN del apoderado.
+  entrarComoEstudiante: (tokenDispositivo: string, estudianteId: string) =>
+    pedir<Token>('POST', '/auth/dispositivo/estudiante', {
+      token: tokenDispositivo,
+      cuerpo: { estudianteId },
+    }),
+  perfilesDelDispositivo: (tokenDispositivo: string) =>
+    pedir<PerfilEstudiante[]>('GET', '/auth/dispositivo/estudiantes', { token: tokenDispositivo }),
   abrirPanel: (tokenDispositivo: string, pin: string) =>
     pedir<Token>('POST', '/auth/dispositivo/apoderado', {
       token: tokenDispositivo,
       cuerpo: { pin },
     }),
 
-  estudianteDelApoderado: (token: string) =>
-    pedir<PerfilEstudiante>('GET', '/apoderado/estudiante', { token }),
+  // Hasta 3 estudiantes por cuenta (RF-A1, actualización 23-nov-2026).
+  estudiantesDelApoderado: (token: string) =>
+    pedir<PerfilEstudiante[]>('GET', '/apoderado/estudiantes', { token }),
   crearEstudiante: (token: string, datos: Esquemas['EstudianteNuevo']) =>
-    pedir<PerfilEstudiante>('POST', '/apoderado/estudiante', { token, cuerpo: datos }),
+    pedir<PerfilEstudiante>('POST', '/apoderado/estudiantes', { token, cuerpo: datos }),
   cambiarPin: (token: string, pin: string) =>
     pedir<void>('PUT', '/apoderado/pin', { token, cuerpo: { pin } }),
 

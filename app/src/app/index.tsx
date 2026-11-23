@@ -11,20 +11,44 @@ import { LARGO_PIN, TecladoPin } from '@/components/TecladoPin';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { useSesion } from '@/sesion/SesionContext';
 
+const MAX_ESTUDIANTES = 3; // RF-A1 (el servidor también lo controla)
+
 // Pantalla de acceso (CU-1, RF-A2, RF-A3; mockup "Acceso"). Sin un dispositivo vinculado abre
 // directamente el inicio de sesión. Con el dispositivo vinculado, el estudiante toca su perfil
 // y entra sin PIN; el apoderado entra al panel con su PIN de 4 números, que valida el servidor.
 export default function Acceso() {
   const { dosColumnas, esTablet } = useDistribucion();
   const compacta = dosColumnas && !esTablet;
-  const { cargando, dispositivo, sesion, perfiles, iniciar, desvincular } = useSesion();
+  const { cargando, dispositivo, sesion, perfiles, iniciar, desvincular, recordarPerfiles } =
+    useSesion();
   const [pidiendoPin, setPidiendoPin] = useState(false);
+  const [paraAgregar, setParaAgregar] = useState(false); // el PIN es para agregar un estudiante
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [entrando, setEntrando] = useState<string | null>(null); // id del perfil o 'panel'
 
   const temporizador = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(temporizador.current), []);
+
+  // Los perfiles se muestran al tiro con la copia guardada en el teléfono, pero manda el
+  // servidor: solo los de la cuenta vinculada (un perfil borrado o de otra cuenta desaparece).
+  // Sin conexión se queda la copia; si el vínculo ya no vale, se vuelve a iniciar sesión.
+  useEffect(() => {
+    if (!dispositivo || sesion) return;
+    let activa = true;
+    api
+      .perfilesDelDispositivo(dispositivo)
+      .then((lista) => {
+        if (activa) recordarPerfiles(lista);
+      })
+      .catch((e) => {
+        if (activa && e instanceof ErrorApi && (e.estado === 401 || e.estado === 403))
+          desvincular();
+      });
+    return () => {
+      activa = false;
+    };
+  }, [dispositivo, sesion, recordarPerfiles, desvincular]);
 
   if (cargando) return null;
   if (sesion?.rol === 'estudiante') return <Redirect href="/estudiante/lecciones" />;
@@ -42,7 +66,7 @@ export default function Acceso() {
     setEntrando(perfilId);
     setError(null);
     try {
-      const { token } = await api.entrarComoEstudiante(dispositivo);
+      const { token } = await api.entrarComoEstudiante(dispositivo, perfilId);
       await iniciar(token, 'estudiante');
       router.replace('/estudiante/lecciones');
     } catch (e) {
@@ -70,7 +94,11 @@ export default function Acceso() {
     try {
       const { token } = await api.abrirPanel(dispositivo, nuevo);
       await iniciar(token, 'apoderado');
-      router.replace(perfiles.length === 0 ? '/apoderado/perfil' : '/apoderado');
+      if (paraAgregar) {
+        router.replace({ pathname: '/apoderado/perfil', params: { volver: 'acceso' } });
+      } else {
+        router.replace(perfiles.length === 0 ? '/apoderado/perfil' : '/apoderado');
+      }
     } catch (e) {
       if (e instanceof ErrorApi && e.estado === 401)
         mostrarErrorPin('Ese PIN no es. Prueba otra vez');
@@ -82,9 +110,10 @@ export default function Acceso() {
     }
   };
 
-  const alternarPin = (pedir: boolean) => {
+  const alternarPin = (pedir: boolean, agregar = false) => {
     clearTimeout(temporizador.current);
     setPidiendoPin(pedir);
+    setParaAgregar(agregar);
     setPin('');
     setError(null);
   };
@@ -112,6 +141,23 @@ export default function Acceso() {
           />
         ))
       )}
+      {/* Agregar otro perfil (hasta 3, RF-A1) es tarea del apoderado: pide su PIN. */}
+      {perfiles.length > 0 && perfiles.length < MAX_ESTUDIANTES && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Agregar otro estudiante (pide el PIN del apoderado)"
+          onPress={() => alternarPin(true, true)}
+          className={`items-center rounded-2xl border-[1.5px] border-dashed border-lila-suave active:bg-white ${
+            esTablet ? 'py-4' : 'py-3'
+          }`}
+        >
+          <Text
+            className={`font-nunito-extrabold text-primario ${esTablet ? 'text-lg' : 'text-sm'}`}
+          >
+            + Agregar estudiante
+          </Text>
+        </Pressable>
+      )}
       {error && !pidiendoPin && (
         <Text className="font-nunito-bold text-sm text-amber-700">{error}</Text>
       )}
@@ -125,7 +171,12 @@ export default function Acceso() {
         <Text
           className={`shrink font-nunito-black text-tinta ${esTablet ? 'text-xl' : 'text-base'}`}
         >
-          {error ?? (entrando === 'panel' ? 'Revisando…' : 'Escribe tu PIN de apoderado')}
+          {error ??
+            (entrando === 'panel'
+              ? 'Revisando…'
+              : paraAgregar
+                ? 'Para agregar un estudiante, escribe tu PIN de apoderado'
+                : 'Escribe tu PIN de apoderado')}
         </Text>
       </View>
       <TecladoPin pin={pin} onCambio={cambiarPin} error={error !== null} grande={esTablet} />

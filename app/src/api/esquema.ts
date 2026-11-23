@@ -38,6 +38,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/auth/dispositivo/estudiantes': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Perfiles Del Dispositivo
+     * @description Los perfiles que muestra la pantalla de acceso: solo los de la cuenta vinculada a este
+     *     teléfono. La app guarda una copia para mostrarla mientras llega esta respuesta, pero manda
+     *     lo que diga el servidor (un perfil borrado o de otra cuenta no debe aparecer).
+     */
+    get: operations['perfiles_del_dispositivo_auth_dispositivo_estudiantes_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/dispositivo/estudiante': {
     parameters: {
       query?: never;
@@ -49,7 +71,8 @@ export interface paths {
     put?: never;
     /**
      * Entrar Como Estudiante
-     * @description El estudiante toca su perfil en un dispositivo vinculado y entra sin PIN (RF-A3).
+     * @description El estudiante toca su perfil en un dispositivo vinculado y entra sin PIN (RF-A3). Solo
+     *     a los perfiles de la cuenta vinculada.
      */
     post: operations['entrar_como_estudiante_auth_dispositivo_estudiante_post'];
     delete?: never;
@@ -79,23 +102,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/apoderado/estudiante': {
+  '/apoderado/estudiantes': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** Ver Estudiante */
-    get: operations['ver_estudiante_apoderado_estudiante_get'];
+    /**
+     * Ver Estudiantes
+     * @description Los perfiles de la cuenta, en el orden en que se crearon.
+     */
+    get: operations['ver_estudiantes_apoderado_estudiantes_get'];
     put?: never;
     /** Crear Estudiante */
-    post: operations['crear_estudiante_apoderado_estudiante_post'];
+    post: operations['crear_estudiante_apoderado_estudiantes_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/apoderado/estudiantes/{estudiante_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
     /** Editar Estudiante */
-    patch: operations['editar_estudiante_apoderado_estudiante_patch'];
+    patch: operations['editar_estudiante_apoderado_estudiantes__estudiante_id__patch'];
     trace?: never;
   };
   '/apoderado/pin': {
@@ -365,6 +407,17 @@ export interface components {
       entradaMixta: boolean;
       /** Pistasrestantes */
       pistasRestantes: number;
+    };
+    /**
+     * EntradaEstudiante
+     * @description Qué perfil tocó el niño en la pantalla de acceso (uno de los de la cuenta).
+     */
+    EntradaEstudiante: {
+      /**
+       * Estudianteid
+       * Format: uuid
+       */
+      estudianteId: string;
     };
     /** EstudianteCambios */
     EstudianteCambios: {
@@ -646,7 +699,7 @@ export interface operations {
       };
     };
   };
-  entrar_como_estudiante_auth_dispositivo_estudiante_post: {
+  perfiles_del_dispositivo_auth_dispositivo_estudiantes_get: {
     parameters: {
       query?: never;
       header?: never;
@@ -661,7 +714,40 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          'application/json': components['schemas']['PerfilEstudiante'][];
+        };
+      };
+    };
+  };
+  entrar_como_estudiante_auth_dispositivo_estudiante_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EntradaEstudiante'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
           'application/json': components['schemas']['Token'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };
@@ -699,7 +785,7 @@ export interface operations {
       };
     };
   };
-  ver_estudiante_apoderado_estudiante_get: {
+  ver_estudiantes_apoderado_estudiantes_get: {
     parameters: {
       query?: never;
       header?: never;
@@ -714,12 +800,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['PerfilEstudiante'];
+          'application/json': components['schemas']['PerfilEstudiante'][];
         };
       };
     };
   };
-  crear_estudiante_apoderado_estudiante_post: {
+  crear_estudiante_apoderado_estudiantes_post: {
     parameters: {
       query?: never;
       header?: never;
@@ -752,11 +838,13 @@ export interface operations {
       };
     };
   };
-  editar_estudiante_apoderado_estudiante_patch: {
+  editar_estudiante_apoderado_estudiantes__estudiante_id__patch: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        estudiante_id: string;
+      };
       cookie?: never;
     };
     requestBody: {

@@ -6,8 +6,8 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useS
 //   iniciar sesión con correo y contraseña y solo sirve para entrar como el estudiante (sin
 //   PIN) o para abrir el panel con el PIN del apoderado.
 // - sesion: la sesión activa, del estudiante o del panel. Cerrarla no desvincula el teléfono.
-// También se recuerdan los perfiles de estudiante de la cuenta (solo id, alias y curso) para
-// que el niño elija el suyo sin escribir nada.
+// También se recuerdan los perfiles de estudiante de la cuenta (solo id, alias y curso; hasta 3,
+// RF-A1) para que cada niño elija el suyo sin escribir nada.
 
 export type Rol = 'apoderado' | 'estudiante';
 export type PerfilRecordado = { id: string; alias: string; curso: number };
@@ -23,7 +23,8 @@ type ValorSesion = {
   iniciar: (token: string, rol: Rol) => Promise<void>;
   cerrar: () => Promise<void>;
   desvincular: () => Promise<void>;
-  recordarPerfil: (perfil: PerfilRecordado) => Promise<void>;
+  recordarPerfiles: (lista: PerfilRecordado[]) => Promise<void>;
+  actualizarPerfil: (perfil: PerfilRecordado) => Promise<void>;
 };
 
 const CLAVE_DISPOSITIVO = 'tutor.dispositivo';
@@ -92,13 +93,23 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     setPerfiles([]);
   }, []);
 
-  // Una cuenta tiene un estudiante (RF-A1), así que la lista es solo el perfil de la cuenta
-  // vinculada. Se mantiene como lista para cuando se admita más de un estudiante por cuenta.
-  const recordarPerfil = useCallback(async (perfil: PerfilRecordado) => {
-    const lista = [perfil];
-    await SecureStore.setItemAsync(CLAVE_PERFILES, JSON.stringify(lista));
-    setPerfiles(lista);
+  // Los perfiles de la cuenta vinculada, tal como los entrega el servidor (en orden de creación).
+  const recordarPerfiles = useCallback(async (lista: PerfilRecordado[]) => {
+    const solo = lista.map(({ id, alias, curso }) => ({ id, alias, curso }));
+    await SecureStore.setItemAsync(CLAVE_PERFILES, JSON.stringify(solo));
+    setPerfiles(solo);
   }, []);
+
+  // Agrega un perfil nuevo al final o reemplaza el que tiene el mismo id.
+  const actualizarPerfil = useCallback(
+    async (perfil: PerfilRecordado) => {
+      const existe = perfiles.some((p) => p.id === perfil.id);
+      await recordarPerfiles(
+        existe ? perfiles.map((p) => (p.id === perfil.id ? perfil : p)) : [...perfiles, perfil],
+      );
+    },
+    [perfiles, recordarPerfiles],
+  );
 
   return (
     <ContextoSesion.Provider
@@ -111,7 +122,8 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
         iniciar,
         cerrar,
         desvincular,
-        recordarPerfil,
+        recordarPerfiles,
+        actualizarPerfil,
       }}
     >
       {children}

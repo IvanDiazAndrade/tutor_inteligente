@@ -1,44 +1,55 @@
-"""Gestión de la cuenta por el apoderado: perfil del estudiante y PIN del panel
+"""Gestión de la cuenta por el apoderado: perfiles de estudiante y PIN del panel
 (CU-9; RF-A1, A3, A4, A5)."""
+
+import uuid
 
 from fastapi import APIRouter, HTTPException, status
 
+from tutor.config import get_settings
 from tutor.esquemas import EstudianteCambios, EstudianteNuevo, PerfilEstudiante, PinPanel
-from tutor.modelos import Estudiante
+from tutor.modelos import Apoderado, Estudiante
 from tutor.seguridad import ApoderadoActual, SesionBD, hashear
 
 router = APIRouter(prefix="/apoderado", tags=["apoderado"])
 
-SIN_PERFIL = HTTPException(status.HTTP_404_NOT_FOUND, "Todavía no hay un perfil de estudiante.")
+
+def estudiante_de(apoderado: Apoderado, estudiante_id: uuid.UUID) -> Estudiante:
+    """Un estudiante de la cuenta; si no es de ella, 404 (no se distingue de uno inexistente)."""
+    for estudiante in apoderado.estudiantes:
+        if estudiante.id == estudiante_id:
+            return estudiante
+    raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese perfil no es de esta cuenta.")
 
 
-@router.post("/estudiante", status_code=status.HTTP_201_CREATED, response_model=PerfilEstudiante)
+@router.get("/estudiantes", response_model=list[PerfilEstudiante])
+def ver_estudiantes(apoderado: ApoderadoActual) -> list[Estudiante]:
+    """Los perfiles de la cuenta, en el orden en que se crearon."""
+    return apoderado.estudiantes
+
+
+@router.post("/estudiantes", status_code=status.HTTP_201_CREATED, response_model=PerfilEstudiante)
 def crear_estudiante(
     datos: EstudianteNuevo, apoderado: ApoderadoActual, sesion: SesionBD
 ) -> Estudiante:
-    if apoderado.estudiante is not None:
-        # Un apoderado, un estudiante (RF-A1, por ratificar con el equipo).
-        raise HTTPException(status.HTTP_409_CONFLICT, "La cuenta ya tiene un estudiante.")
+    maximo = get_settings().max_estudiantes
+    if len(apoderado.estudiantes) >= maximo:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, f"Una cuenta puede tener hasta {maximo} estudiantes."
+        )
     estudiante = Estudiante(apoderado=apoderado, alias=datos.alias, curso=datos.curso)
     sesion.add(estudiante)
     sesion.commit()
     return estudiante
 
 
-@router.get("/estudiante", response_model=PerfilEstudiante)
-def ver_estudiante(apoderado: ApoderadoActual) -> Estudiante:
-    if apoderado.estudiante is None:
-        raise SIN_PERFIL
-    return apoderado.estudiante
-
-
-@router.patch("/estudiante", response_model=PerfilEstudiante)
+@router.patch("/estudiantes/{estudiante_id}", response_model=PerfilEstudiante)
 def editar_estudiante(
-    cambios: EstudianteCambios, apoderado: ApoderadoActual, sesion: SesionBD
+    estudiante_id: uuid.UUID,
+    cambios: EstudianteCambios,
+    apoderado: ApoderadoActual,
+    sesion: SesionBD,
 ) -> Estudiante:
-    estudiante = apoderado.estudiante
-    if estudiante is None:
-        raise SIN_PERFIL
+    estudiante = estudiante_de(apoderado, estudiante_id)
     if cambios.alias is not None:
         estudiante.alias = cambios.alias
     if cambios.curso is not None:

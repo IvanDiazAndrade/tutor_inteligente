@@ -11,6 +11,7 @@ import pytest
 
 from tests.test_api_ejercicios import _ejercicio, _incorrecta, _responder, _servir
 from tutor.config import get_settings
+from tutor.dominio.columnas import con_bloque, separar_bloque, suma_vertical
 from tutor.llm.adaptador import AdaptadorLLM, ContextoError, PasosNarrados, get_adaptador
 from tutor.llm.proveedores import ErrorPermanente, ErrorTransitorio, ProveedorSimulado
 from tutor.main import app
@@ -137,21 +138,43 @@ def test_pista_reformulada_y_pista_con_numeros_nuevos(cliente, cabecera, sesion,
     primera = cliente.post(ruta, headers=cabecera).json()
     segunda = cliente.post(ruta, headers=cabecera).json()
 
-    assert primera["mensaje"] == "Pista 1: Vale, piensa en armar grupos iguales."
+    # La pista del banco trae la división escrita: el LLM reformula la frase y el bloque va igual.
+    bloque = separar_bloque(ejercicio.pistas[0])[1]
+    assert primera["mensaje"] == f"Pista 1: Vale, piensa en armar grupos iguales.\n{bloque}"
     # La segunda inventó un número: se entrega la pista verificada del banco.
     assert segunda["mensaje"] == f"Pista 2: {ejercicio.pistas[1]}"
     assert [ll.resultado for ll in _llamadas(sesion)] == ["ok", "filtrado"]
     assert sesion.query(EventoFiltro).one().operacion == "generarPista"
 
 
-def test_no_entiendo_pide_una_explicacion_mas_simple(cliente, cabecera, con_llm):
+def test_pista_en_columnas_el_llm_solo_reformula_la_frase(cliente, cabecera, sesion, con_llm):
+    proveedor = con_llm("{nombre}, ordena los números en columnas.")
+    servido = _servir(cliente, cabecera)
+    ejercicio = _ejercicio(sesion, servido["servidoId"])
+    bloque = suma_vertical([125, 125], 0)
+    ejercicio.pistas = [con_bloque("Escribe un número debajo del otro.", bloque)] + list(
+        ejercicio.pistas[1:]
+    )
+    sesion.commit()
+
+    ruta = f"/estudiante/servidos/{servido['servidoId']}/pistas"
+    mensaje = cliente.post(ruta, headers=cabecera).json()["mensaje"]
+
+    # El bloque no viaja al LLM (podría desalinearlo) y se agrega tal cual a su frase.
+    assert mensaje == f"Pista 1: Vale, ordena los números en columnas.\n{bloque}"
+    assert "Escribe un número debajo del otro." in proveedor.solicitudes[0].entrada
+    assert "1 2 5" not in proveedor.solicitudes[0].entrada
+
+
+def test_no_entiendo_pide_una_explicacion_mas_simple(cliente, cabecera, sesion, con_llm):
     proveedor = con_llm("Imagina que repartes dulces entre amigos, {nombre}.")
     servido = _servir(cliente, cabecera)
+    bloque = separar_bloque(_ejercicio(sesion, servido["servidoId"]).pistas[0])[1]
 
     ruta = f"/estudiante/servidos/{servido['servidoId']}/no-entiendo"
     mensaje = cliente.post(ruta, headers=cabecera).json()["mensaje"]
 
-    assert mensaje == "Imagina que repartes dulces entre amigos, Vale."
+    assert mensaje == f"Imagina que repartes dulces entre amigos, Vale.\n{bloque}"
     assert "palabras más simples" in proveedor.solicitudes[0].entrada
 
 

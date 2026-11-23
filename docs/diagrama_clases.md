@@ -111,7 +111,7 @@ classDiagram
         +str textoBloqueado
     }
 
-    Apoderado "1" --> "0..1" Estudiante : titular
+    Apoderado "1" --> "0..3" Estudiante : titular
     Estudiante "1" --> "*" Sesion
     Estudiante "1" --> "*" DominioOA
     DominioOA "*" --> "1" Unidad

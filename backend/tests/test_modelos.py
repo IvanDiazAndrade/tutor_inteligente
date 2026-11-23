@@ -41,14 +41,16 @@ def test_dominio_oa_parte_en_indice_05_y_nivel_2(sesion):
     assert dominio.nivel_actual == 2
 
 
-def test_un_apoderado_tiene_un_solo_estudiante(sesion):
+def test_un_apoderado_puede_tener_varios_estudiantes(sesion):
+    """RF-A1 (actualización 23-nov-2026): el máximo de 3 lo controla la API, no la base."""
     apoderado = Apoderado(email="b@ejemplo.cl", password_hash="x")
     _estudiante(sesion, apoderado)
     sesion.flush()
 
     sesion.add(Estudiante(apoderado_id=apoderado.id, alias="Tomás", curso=4))
-    with pytest.raises(IntegrityError):
-        sesion.flush()
+    sesion.flush()
+    sesion.refresh(apoderado)
+    assert len(apoderado.estudiantes) == 2
 
 
 def test_el_correo_no_distingue_mayusculas(sesion):

@@ -13,6 +13,7 @@ from tutor.dominio.banco import (
     reponer_parametricos,
     stock_por_celda,
 )
+from tutor.dominio.plantillas import PLANTILLAS
 from tutor.modelos import Ejercicio, Plantilla
 
 
@@ -74,7 +75,7 @@ def test_cambiar_la_version_obliga_a_aprobar_de_nuevo(banco):
 
     fila = banco.get(Plantilla, "5B-OA4-div-resto")
     banco.refresh(fila)
-    assert fila.version == 1 and not fila.aprobada
+    assert fila.version == PLANTILLAS["5B-OA4-div-resto"].version and not fila.aprobada
 
 
 def test_aprobar_una_plantilla_inexistente(banco):

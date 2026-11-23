@@ -4,6 +4,7 @@ import random
 from fractions import Fraction
 from math import gcd, lcm
 
+from tutor.dominio.columnas import pistas_producto_dos_cifras
 from tutor.dominio.plantillas_base import (
     EjercicioGenerado,
     Ficha,
@@ -157,6 +158,7 @@ class NumerosGrandes(Ficha):
 class Multiplicacion2x2(Ficha):
     id = "5B-OA3-multiplicacion"
     unidad_id = "5B-OA3"
+    version = 2  # v2: pistas con la multiplicación escrita en el nivel 2
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: por un múltiplo de 10 · N2: dos dígitos × dos dígitos · N3: estimar.
@@ -191,7 +193,11 @@ class Multiplicacion2x2(Ficha):
                 ),
                 (str(a + b), "sumó en vez de multiplicar", "Fíjate en el signo: es una ×."),
             ],
-            [
+            # Dos cifras × dos cifras: la multiplicación escrita (columnas.py). Por una decena
+            # exacta (nivel 1) sirve más "multiplica y agrega un cero".
+            pistas_producto_dos_cifras(a, b)
+            if unidades
+            else [
                 f"Separa {b} en decenas y unidades." if unidades else f"{b} es {b // 10} × 10.",
                 f"Multiplica {a} por cada parte."
                 if unidades

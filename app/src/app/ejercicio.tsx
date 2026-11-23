@@ -135,6 +135,7 @@ function PantallaEjercicio() {
       servir();
       return;
     }
+    setTecladoAbierto(false); // para que se vea el globo de Octavio
     if (!respuesta) {
       setMensaje(
         ejercicio.formatoRespuesta === 'ordenar'
@@ -145,7 +146,6 @@ function PantallaEjercicio() {
       );
       return;
     }
-    setTecladoAbierto(false);
     const segundos = Math.round((Date.now() - inicio.current) / 1000);
     conManejo(async () => {
       const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);

@@ -1,10 +1,14 @@
 import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { useDistribucion } from '@/hooks/useDistribucion';
+import { api } from '@/api/cliente';
 import { Protegida } from '@/sesion/Protegida';
+import { useSesion } from '@/sesion/SesionContext';
+import { useConsulta } from '@/sesion/useConsulta';
 
 const ACTIVO = '#6D28D9';
 const INACTIVO = '#9A91BC';
@@ -47,6 +51,21 @@ function IconoPerfil({ color, tamano, relleno }: PropsIcono) {
   );
 }
 
+// La pantalla de acceso muestra la copia del perfil guardada en el teléfono. Al entrar se
+// actualiza con la del servidor, por si el alias o el curso cambiaron desde otro dispositivo.
+function SincronizarPerfil() {
+  const { perfiles, actualizarPerfil } = useSesion();
+  const { data } = useConsulta('perfil-estudiante', api.perfilEstudiante);
+  useEffect(() => {
+    if (!data) return;
+    const guardado = perfiles.find((p) => p.id === data.id);
+    if (guardado?.alias !== data.alias || guardado?.curso !== data.curso) {
+      actualizarPerfil({ id: data.id, alias: data.alias, curso: data.curso });
+    }
+  }, [data, perfiles, actualizarPerfil]);
+  return null;
+}
+
 // Navegación del estudiante (RNF-U1, actualización 23-nov-2026): dos pestañas fijas abajo,
 // Lecciones y Perfil. Lecciones tiene dos niveles: la lista y el detalle de cada unidad, que
 // separa la lección y sus ejercicios en pestañas superiores.
@@ -59,6 +78,7 @@ export default function LayoutEstudiante() {
   const alto = esTablet ? 92 : 64;
   return (
     <Protegida rol="estudiante">
+      <SincronizarPerfil />
       <Tabs
         screenOptions={{
           headerShown: false,

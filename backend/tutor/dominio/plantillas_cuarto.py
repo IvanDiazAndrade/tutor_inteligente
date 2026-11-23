@@ -3,6 +3,7 @@
 import random
 from fractions import Fraction
 
+from tutor.dominio.columnas import pistas_division, pistas_producto, pistas_resta, pistas_suma
 from tutor.dominio.plantillas_base import EjercicioGenerado, Ficha, circulo, miles, recta
 
 
@@ -210,6 +211,7 @@ class TablasMentales(Ficha):
 class SumaResta(Ficha):
     id = "4B-OA3-suma-resta"
     unidad_id = "4B-OA3"
+    version = 2  # v2: pistas con la operación en columnas (reservas y canjes a la vista)
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: sin reserva ni canje · N2: con reserva o canje · N3: hasta 4 sumandos.
@@ -259,14 +261,7 @@ class SumaResta(Ficha):
                 f"{a} {signo} {b} = {miles(resultado)}.",
             ],
             errores,
-            [
-                "Escribe un número debajo del otro, con las posiciones alineadas.",
-                "Empieza por las unidades, luego las decenas y al final las centenas.",
-                (
-                    f"En las unidades tienes {a % 10} {signo} {b % 10}. Sigue con las demás.",
-                    "Revisa primero la columna de las unidades y sigue con las demás.",
-                ),
-            ],
+            pistas_suma([a, b]) if es_suma else pistas_resta(a, b),
         )
 
     def _varios_sumandos(self, azar: random.Random) -> EjercicioGenerado:
@@ -291,20 +286,14 @@ class SumaResta(Ficha):
                     "Revisa que hayas sumado todos los números.",
                 ),
             ],
-            [
-                "Puedes sumar de a dos números, en orden.",
-                f"Parte con {sumandos[0]} + {sumandos[1]}.",
-                (
-                    f"{sumandos[0]} + {sumandos[1]} = {parcial}. Ahora suma lo que falta.",
-                    "Suma el resultado que llevas con el número que sigue.",
-                ),
-            ],
+            pistas_suma(sumandos),
         )
 
 
 class Multiplicacion(Ficha):
     id = "4B-OA5-multiplicacion"
     unidad_id = "4B-OA5"
+    version = 2  # v2: pistas con la multiplicación escrita (niveles 1 y 2)
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: sin reserva · N2: con reserva · N3: con la propiedad distributiva.
@@ -348,7 +337,10 @@ class Multiplicacion(Ficha):
                     "Multiplica también las decenas y las unidades.",
                 ),
             ],
-            [
+            # La multiplicación escrita (columnas.py); en el nivel 3 se trabaja la descomposición.
+            pistas_producto(a, factor)
+            if nivel != 3
+            else [
                 f"Multiplica por {factor} cada posición: unidades, decenas y centenas.",
                 f"Empieza con {u} × {factor}.",
                 f"Ahora suma {c} × {factor}, {d} × {factor} y {u} × {factor}.",
@@ -359,6 +351,7 @@ class Multiplicacion(Ficha):
 class Division(Ficha):
     id = "4B-OA6-division"
     unidad_id = "4B-OA6"
+    version = 2  # v2: pistas con la división escrita, cuando el cociente tiene dos cifras
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: divisor 2 a 5 · N2: divisor 2 a 9 · N3: la división como multiplicación inversa.
@@ -391,7 +384,10 @@ class Division(Ficha):
                     "Comprueba multiplicando tu respuesta por el divisor.",
                 ),
             ],
-            [
+            # Con cociente de dos cifras, la división escrita paso a paso; con una cifra (o si se
+            # pregunta como multiplicación inversa), la tabla del divisor.
+            (nivel != 3 and pistas_division(dividendo, divisor))
+            or [
                 "Dividir es repartir en partes iguales.",
                 (
                     f"Piensa en la tabla del {divisor}.",

@@ -18,7 +18,7 @@ const soloDigitos = (v: string) => v.replace(/\D/g, '').slice(0, 4);
 // del panel (RF-A3). Tras registrarse entra directamente, el teléfono queda vinculado y pasa a
 // crear el perfil del estudiante.
 export default function RegistroApoderado() {
-  const { vincular, iniciar, recordarPerfil } = useSesion();
+  const { vincular, iniciar, recordarPerfiles } = useSesion();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [repetida, setRepetida] = useState('');
@@ -53,7 +53,7 @@ export default function RegistroApoderado() {
     try {
       await api.registrarApoderado(correo.trim(), contrasena, pin);
       const ingreso = await api.ingresarApoderado(correo.trim(), contrasena);
-      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfil });
+      await entrarComoApoderado(ingreso, { vincular, iniciar, recordarPerfiles });
     } catch (e) {
       setAviso(e instanceof ErrorApi ? e.message : 'Algo salió mal. Intenta otra vez.');
     } finally {

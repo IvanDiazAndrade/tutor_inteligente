@@ -7,6 +7,7 @@ from fractions import Fraction
 import pytest
 
 from tutor.catalogo import RUTA_POR_DEFECTO, leer_catalogo
+from tutor.dominio.columnas import separar_bloque
 from tutor.dominio.corrector import corregir, fraccion, numero
 from tutor.dominio.plantillas import PLANTILLAS, EjercicioGenerado, revela
 
@@ -40,8 +41,10 @@ def test_toda_instancia_es_coherente(plantilla_id, nivel):
             assert resultado.error_comun == error
         assert len(e.pistas) == 3
         # Ninguna pista revela la respuesta final (RF-P3; la pista 3 queda a un paso del final).
+        # Si trae una operación en columnas, se revisa la frase: el bloque no muestra el
+        # resultado por construcción (test_columnas.py).
         for pista in e.pistas:
-            assert not revela(pista, e.respuesta_final), (e.enunciado, pista)
+            assert not revela(separar_bloque(pista)[0], e.respuesta_final), (e.enunciado, pista)
         assert revela(e.solucion_referencia[-1], e.respuesta_final), e
         assert e.unidad_id == PLANTILLAS[plantilla_id].unidad_id and e.nivel == nivel
 
