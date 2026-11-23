@@ -2,7 +2,7 @@ import { api, type LeccionEstudiante, type UnidadEstudiante } from '@/api/client
 import { useConsulta } from '@/sesion/useConsulta';
 
 // Perfil, unidades (estrellas, etiqueta, sugerida) y lecciones del estudiante, compartidos por
-// las tres pestañas. React Query guarda cada consulta una vez, así que cambiar de pestaña o
+// la lista de lecciones, su detalle y el perfil. React Query guarda cada consulta una vez, así que cambiar de pestaña o
 // abrir un detalle no vuelve a pedirlas.
 export function useContenidoEstudiante() {
   const perfil = useConsulta('perfil-estudiante', api.perfilEstudiante);

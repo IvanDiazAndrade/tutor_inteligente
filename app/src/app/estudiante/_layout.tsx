@@ -32,26 +32,6 @@ function IconoLecciones({ color, tamano, relleno }: PropsIcono) {
   );
 }
 
-function IconoEjercicios({ color, tamano, relleno }: PropsIcono) {
-  return (
-    <Svg width={tamano} height={tamano} viewBox="0 0 24 24">
-      <Path
-        d="M15.5 4.5 L19.5 8.5 L9 19 L4 20 L5 15 Z"
-        fill={relleno ? color : 'none'}
-        stroke={color}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M13 7 L17 11"
-        stroke={relleno ? '#FFFFFF' : color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
 function IconoPerfil({ color, tamano, relleno }: PropsIcono) {
   return (
     <Svg width={tamano} height={tamano} viewBox="0 0 24 24">
@@ -67,8 +47,9 @@ function IconoPerfil({ color, tamano, relleno }: PropsIcono) {
   );
 }
 
-// Navegación del estudiante (RNF-U1, actualización 2-nov-2026): tres pestañas fijas abajo,
-// Lecciones, Ejercicios y Perfil. Lecciones y Ejercicios tienen dos niveles: lista y detalle.
+// Navegación del estudiante (RNF-U1, actualización 23-nov-2026): dos pestañas fijas abajo,
+// Lecciones y Perfil. Lecciones tiene dos niveles: la lista y el detalle de cada unidad, que
+// separa la lección y sus ejercicios en pestañas superiores.
 // Solo con una sesión de estudiante; sin ella vuelve a la pantalla de acceso.
 export default function LayoutEstudiante() {
   const { bottom } = useSafeAreaInsets();
@@ -104,15 +85,6 @@ export default function LayoutEstudiante() {
             title: 'Lecciones',
             tabBarIcon: ({ color, focused }) => (
               <IconoLecciones color={color} tamano={icono} relleno={focused} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="ejercicios"
-          options={{
-            title: 'Ejercicios',
-            tabBarIcon: ({ color, focused }) => (
-              <IconoEjercicios color={color} tamano={icono} relleno={focused} />
             ),
           }}
         />

@@ -7,24 +7,24 @@ import Svg, { Path } from 'react-native-svg';
 import { Octavio } from '@/components/Octavio';
 import { useDistribucion } from '@/hooks/useDistribucion';
 
+// Márgenes y ancho máximo del contenido de las pantallas del estudiante.
+export const clasesContenido = (esTablet: boolean) =>
+  `w-full self-center pb-6 ${
+    esTablet ? 'max-w-[960px] gap-5 px-6 pt-5' : 'max-w-[720px] gap-4 px-4 pt-3'
+  }`;
+
 // Contenedor de las pantallas de las pestañas del estudiante: fondo, márgenes y ancho máximo.
 // La barra de pestañas queda abajo, fuera del desplazamiento.
 export function PantallaEstudiante({ children }: { children: ReactNode }) {
   const { esTablet } = useDistribucion();
   return (
     <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-panel">
-      <ScrollView
-        contentContainerClassName={`w-full self-center pb-6 ${
-          esTablet ? 'max-w-[960px] gap-5 px-6 pt-5' : 'max-w-[720px] gap-4 px-4 pt-3'
-        }`}
-      >
-        {children}
-      </ScrollView>
+      <ScrollView contentContainerClassName={clasesContenido(esTablet)}>{children}</ScrollView>
     </SafeAreaView>
   );
 }
 
-// Título grande de una pantalla de lista ("Lecciones", "Ejercicios", "Mi perfil").
+// Título grande de una pantalla de lista ("Lecciones", "Mi perfil").
 export function TituloPantalla({ titulo, subtitulo }: { titulo: string; subtitulo?: string }) {
   const { esTablet } = useDistribucion();
   return (
@@ -41,17 +41,19 @@ export function TituloPantalla({ titulo, subtitulo }: { titulo: string; subtitul
   );
 }
 
-// Encabezado del detalle: botón para volver a la lista, título y una línea divisoria.
+// Encabezado del detalle: botón para volver a la lista, título y, si se pide, una línea divisoria.
 export function EncabezadoDetalle({
   antetitulo,
   titulo,
   alVolver,
   derecha,
+  divisor = true,
 }: {
   antetitulo: string;
   titulo: string;
   alVolver: () => void;
   derecha?: ReactNode;
+  divisor?: boolean;
 }) {
   const { esTablet: g } = useDistribucion();
   return (
@@ -90,15 +92,15 @@ export function EncabezadoDetalle({
         </View>
         {derecha}
       </View>
-      <View className="h-[1.5px] bg-borde" />
+      {divisor && <View className="h-[1.5px] bg-borde" />}
     </View>
   );
 }
 
-// Vuelve a la lista de la misma pestaña. No se usa router.back(): si el detalle se abrió desde
-// otra pestaña (p. ej. "Practicar esta lección"), back() volvería a esa otra pestaña.
-export function volverALista(lista: '/estudiante/lecciones' | '/estudiante/ejercicios') {
-  router.dismissTo(lista);
+// Vuelve a la lista de lecciones. No se usa router.back(): si el detalle se abrió desde otra
+// pestaña, back() volvería a esa otra pestaña.
+export function volverALista() {
+  router.dismissTo('/estudiante/lecciones');
 }
 
 // Lista de tarjetas: una columna en teléfono vertical, dos en tablet o en horizontal.

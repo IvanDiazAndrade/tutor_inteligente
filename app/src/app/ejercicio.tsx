@@ -1,18 +1,19 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { api, type EjercicioServido, ErrorApi } from '@/api/cliente';
 import { BotonAccion } from '@/components/BotonAccion';
 import { BotonPrimario } from '@/components/BotonPrimario';
-import { CampoRespuesta } from '@/components/CampoRespuesta';
+import { CampoRespuesta, type ControlCampo, usaTeclado } from '@/components/CampoRespuesta';
 import { EnunciadoResaltado } from '@/components/EnunciadoResaltado';
 import { FiguraEjercicio, type Representacion } from '@/components/FiguraEjercicio';
 import { GloboOctavio } from '@/components/GloboOctavio';
 import { Octavio } from '@/components/Octavio';
+import { TecladoMatematico } from '@/components/TecladoMatematico';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { Protegida } from '@/sesion/Protegida';
 import { useSesion } from '@/sesion/SesionContext';
@@ -48,6 +49,10 @@ function PantallaEjercicio() {
   const [seguidas, setSeguidas] = useState(0);
   const [ocupado, setOcupado] = useState(false);
   const inicio = useRef(0); // se fija al mostrar cada ejercicio
+  const campo = useRef<ControlCampo>(null);
+  // El teclado se cierra al responder o pedir ayuda, para que se vea el globo de Octavio, y
+  // vuelve a abrirse al tocar una casilla.
+  const [tecladoAbierto, setTecladoAbierto] = useState(true);
 
   // Errores de red o de sesión: se muestran en el globo de Octavio; con 401 vuelve al acceso.
   const conManejo = useCallback(
@@ -79,6 +84,7 @@ function PantallaEjercicio() {
     setPasos([]);
     setPasoGuiado(0);
     setAnalogo(null);
+    setTecladoAbierto(true);
     inicio.current = Date.now();
   }, []);
 
@@ -129,7 +135,6 @@ function PantallaEjercicio() {
       servir();
       return;
     }
-    Keyboard.dismiss();
     if (!respuesta) {
       setMensaje(
         ejercicio.formatoRespuesta === 'ordenar'
@@ -140,6 +145,7 @@ function PantallaEjercicio() {
       );
       return;
     }
+    setTecladoAbierto(false);
     const segundos = Math.round((Date.now() - inicio.current) / 1000);
     conManejo(async () => {
       const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);
@@ -156,6 +162,7 @@ function PantallaEjercicio() {
   const pedirPista = () =>
     ejercicio &&
     conManejo(async () => {
+      setTecladoAbierto(false);
       const pista = await api.pedirPista(token, ejercicio.servidoId);
       setMensaje(pista.mensaje);
       setPistasRestantes(pista.pistasRestantes);
@@ -165,13 +172,13 @@ function PantallaEjercicio() {
   const noEntiendo = () =>
     ejercicio &&
     conManejo(async () => {
+      setTecladoAbierto(false);
       setMensaje((await api.noEntiendo(token, ejercicio.servidoId)).mensaje);
     });
 
   const resolverJuntos = () =>
     ejercicio &&
     conManejo(async () => {
-      Keyboard.dismiss();
       const guiada = await api.resolverJuntos(token, ejercicio.servidoId);
       setPasos(guiada.pasos);
       setPasoGuiado(0);
@@ -287,7 +294,9 @@ function PantallaEjercicio() {
             representacion?.tipo === 'valores-ordenar' ? representacion.parametros.valores : []
           }
           onCambio={setRespuesta}
-          onEnviar={responder}
+          ref={campo}
+          editando={tecladoAbierto}
+          onEditar={() => setTecladoAbierto(true)}
           deshabilitado={estado !== 'respondiendo' || ocupado}
           grande={g}
         />
@@ -345,6 +354,28 @@ function PantallaEjercicio() {
     </View>
   );
 
+  // Teclado propio fijo abajo, como en las calculadoras: solo mientras se escribe la respuesta.
+  const teclado = estado === 'respondiendo' &&
+    tecladoAbierto &&
+    usaTeclado(ejercicio.formatoRespuesta) && (
+      <View
+        className={
+          dosColumnas
+            ? `mb-3 rounded-2xl bg-fondo ${g ? 'p-3' : 'p-1.5'}`
+            : `border-t-[1.5px] border-borde bg-fondo ${g ? 'px-8 py-4' : 'px-4 py-2.5'}`
+        }
+      >
+        <TecladoMatematico
+          onTecla={(t) => campo.current?.tecla(t)}
+          decimal={ejercicio.formatoRespuesta === 'numerico'}
+          variasCasillas={ejercicio.formatoRespuesta === 'fraccion'}
+          deshabilitado={ocupado}
+          grande={g}
+          compacto={dosColumnas && !g}
+        />
+      </View>
+    );
+
   return (
     <SafeAreaView className="flex-1 bg-panel">
       {dosColumnas ? (
@@ -363,6 +394,7 @@ function PantallaEjercicio() {
               {tutor}
               {acciones}
             </ScrollView>
+            {teclado}
           </View>
         </View>
       ) : (
@@ -381,6 +413,7 @@ function PantallaEjercicio() {
           </View>
         </ScrollView>
       )}
+      {!dosColumnas && teclado}
     </SafeAreaView>
   );
 }

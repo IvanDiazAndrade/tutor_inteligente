@@ -16,7 +16,7 @@ type Props = {
   grande?: boolean;
 };
 
-// Tarjeta común de las pestañas Lecciones y Ejercicios, para que ambas se vean iguales.
+// Tarjeta común de las listas del estudiante (lecciones, partes de la lección y ejercicios).
 // Al tocarla, el borde y el fondo toman el color de acento y la tarjeta se eleva.
 export function TarjetaLista({
   antetitulo,

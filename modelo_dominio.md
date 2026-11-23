@@ -31,7 +31,7 @@ Cada unidad tiene una **lección breve** que el estudiante puede leer antes de p
 | `unidad_id` | la unidad del catálogo (una lección por unidad) |
 | `titulo` | nombre corto para el niño (ej. "Sumar y restar fracciones") |
 | `resumen` | 1–2 líneas sobre de qué trata la lección |
-| `partes` | 2 a 4 subtemas. Cada parte tiene `titulo`, `explicacion` (lo básico con un ejemplo, a nivel de lectura de 4° básico) y `practica` (qué se ejercita en esa parte; se muestra como "Ejercicio N" en la pestaña Ejercicios) |
+| `partes` | 2 a 4 subtemas. Cada parte tiene `titulo`, `explicacion` (lo básico con un ejemplo, a nivel de lectura de 4° básico) y `practica` (qué se ejercita en esa parte; se muestra como "Ejercicio N" en la pestaña superior Ejercicios del detalle de la unidad) |
 | `revisado_por` | nombre de quien la revisó; `null` mientras sea borrador |
 
 - **Origen:** las partes salen de los subtemas del resumen de cada OA en el catálogo (por ejemplo, 4B-OA1: leer y escribir, valor posicional, componer y descomponer, comparar y ordenar).
