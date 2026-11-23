@@ -1,0 +1,42 @@
+# Blueprint de Render (docs/diagrama_despliegue.md): API FastAPI + PostgreSQL gestionado.
+# Uso: en Render, New > Blueprint > este repositorio. Las variables con sync: false se
+# escriben a mano en el panel (nunca en el repositorio).
+databases:
+  - name: tutor-db
+    plan: free # en el mes de validación: basic (la gratuita expira a los 30 días)
+    databaseName: tutor
+    user: tutor
+    postgresMajorVersion: "16"
+    region: oregon
+
+services:
+  - type: web
+    name: tutor-api
+    runtime: python
+    plan: free # en el mes de validación: starter (~US$7), que no se duerme
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # Migraciones, catálogo y plantillas en cada arranque: son idempotentes. La aprobación de
+    # plantillas la hace el equipo (python -m tutor.dominio.banco aprobar ... --revisor ...).
+    startCommand: >-
+      alembic upgrade head &&
+      python -m tutor.catalogo &&
+      python -m tutor.dominio.banco registrar &&
+      uvicorn tutor.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /salud
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tutor-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REPOSICION_MINUTOS
+        value: "60"
+      - key: LLM_TOPE_USD
+        value: "5"
+      - key: OPENAI_API_KEY
+        sync: false # paso 6: se agrega al final

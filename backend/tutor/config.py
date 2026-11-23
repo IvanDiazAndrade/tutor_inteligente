@@ -4,7 +4,7 @@ from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +12,16 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     database_url: str = "postgresql+psycopg://tutor:tutor@127.0.0.1:5432/tutor"
+
+    @field_validator("database_url")
+    @classmethod
+    def _con_psycopg(cls, url: str) -> str:
+        """Render entrega postgres:// o postgresql://; SQLAlchemy necesita el driver psycopg 3."""
+        for prefijo in ("postgres://", "postgresql://"):
+            if url.startswith(prefijo):
+                return "postgresql+psycopg://" + url.removeprefix(prefijo)
+        return url
+
     # En Render se define JWT_SECRET con un valor aleatorio largo; este es solo para desarrollo.
     jwt_secret: SecretStr = SecretStr("solo-para-desarrollo-no-usar-en-produccion-0123456789")
     # Vigencia de los tokens (RNF-S1: sesiones con expiración).
