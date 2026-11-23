@@ -154,6 +154,7 @@ function PantallaEjercicio() {
   const actualizarProgreso = () => {
     clienteConsultas.invalidateQueries({ queryKey: ['perfil-estudiante'] });
     clienteConsultas.invalidateQueries({ queryKey: ['unidades'] });
+    clienteConsultas.invalidateQueries({ queryKey: ['progreso'] });
   };
 
   const responder = () => {

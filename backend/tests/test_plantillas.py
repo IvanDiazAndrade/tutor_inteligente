@@ -40,14 +40,15 @@ def test_toda_instancia_es_coherente(plantilla_id, nivel):
             assert resultado.estado == "incorrecta", (e.enunciado, error)
             assert resultado.error_comun == error
             # La retroalimentación local tampoco revela (si lo hiciera, el filtro la cambiaría).
-            assert not revela(error["retroalimentacion"], e.respuesta_final), (e, error)
+            retro = error["retroalimentacion"]
+            assert not revela(retro, e.respuesta_final, e.enunciado), (e, error)
         assert len(e.pistas) == 3
         # Ninguna pista revela la respuesta final (RF-P3; la pista 3 queda a un paso del final).
         # Se usa el mismo filtro del tutor, que también ve 1.800 en 1800 o 6/8 en 3/4: una pista
         # que lo dispare se serviría como el mensaje de respaldo genérico.
         for pista in e.pistas:
             assert not menciona(pista, e.respuesta_final), (e.enunciado, pista)
-            assert not revela(pista, e.respuesta_final), (e.enunciado, pista)
+            assert not revela(pista, e.respuesta_final, e.enunciado), (e.enunciado, pista)
         assert revela(e.solucion_referencia[-1], e.respuesta_final)
         assert e.unidad_id == PLANTILLAS[plantilla_id].unidad_id and e.nivel == nivel
 

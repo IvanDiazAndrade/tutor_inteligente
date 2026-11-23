@@ -98,6 +98,30 @@ class UnidadEstudiante(Esquema):
     sugerida: bool
 
 
+class LogroUnidad(Esquema):
+    """Una unidad iniciada, como la ve el estudiante en "Mis logros" (CU-6)."""
+
+    id: str
+    curso: int
+    descripcion: str
+    estrellas: int = Field(ge=1, le=3)
+    nivel: int = Field(ge=1, le=3)
+    insignia: bool  # la unidad está dominada (CU-5)
+
+
+class ProgresoEstudiante(Esquema):
+    """Solo progreso personal: sin rankings ni comparación con otros (RF-G3, G4)."""
+
+    alias: str
+    puntos_total: int
+    puntos_semana: int
+    mejor_semana_anterior: int  # la marca personal a superar (0 si es la primera semana)
+    ejercicios_resueltos: int
+    insignias: int
+    mensaje: str
+    unidades: list[LogroUnidad]
+
+
 class SesionPractica(Esquema):
     id: uuid.UUID
     inicio: datetime
@@ -137,6 +161,7 @@ class RespuestaTutor(Esquema):
     pistas_restantes: int
     ofrece_resolver_juntos: bool
     cambio_nivel: Literal["sube", "baja"] | None
+    insignia: str | None = None  # la unidad que se acaba de dominar (CU-5)
     degradado: bool  # True mientras el tutor responda con mensajes locales (sin LLM)
 
 

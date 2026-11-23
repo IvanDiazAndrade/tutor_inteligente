@@ -181,6 +181,17 @@ function Panel() {
       </Text>
       <Pressable
         accessibilityRole="button"
+        onPress={() => router.push('/apoderado/perfil')}
+        className="py-1"
+      >
+        <Text
+          className={`font-nunito-extrabold text-primario-claro underline ${g ? 'text-base' : 'text-[13px]'}`}
+        >
+          Editar perfil de {estudiante.alias} (apodo, curso o PIN)
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
         onPress={() => cerrar().then(() => router.replace('/'))}
         className="py-2"
       >

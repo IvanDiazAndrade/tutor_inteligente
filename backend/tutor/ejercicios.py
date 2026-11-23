@@ -21,6 +21,7 @@ from tutor.esquemas import (
     PistaTutor,
     RespuestaTutor,
 )
+from tutor.gamificacion import puntos_por
 from tutor.llm.adaptador import AdaptadorLLM, ContextoEjercicio, ContextoError, ContextoPista
 from tutor.modelos import (
     DominioOA,
@@ -46,12 +47,6 @@ class SinEjercicios(Exception):
 
 class NoPermitido(Exception):
     """La acción no corresponde al estado del ejercicio (p. ej., ya resuelto)."""
-
-
-def puntos_por(nivel: int, pistas: int) -> int:
-    """Puntos provisorios (RF-G1): 10 por nivel, con el mismo descuento por pista que el índice
-    (−15 % por pista, piso 40 %). La fórmula definitiva se fija con la gamificación (tarea 64)."""
-    return round(10 * nivel * max(0.4, 1 - 0.15 * pistas))
 
 
 # LLM: contexto y filtros --------------------------------------------------------------------
@@ -239,6 +234,7 @@ def responder(
 
     ahora = datetime.now(UTC)
     correcta = resultado.estado == "correcta"
+    insignia = None
     puntos = puntos_por(servido.nivel, servido.pistas_usadas) if correcta else 0
     sesion.add(
         Intento(
@@ -255,6 +251,7 @@ def responder(
 
     # Motor adaptativo: índice, racha y nivel de la unidad (modelo_estudiante.md §2-3).
     dominio = _dominio(sesion, estudiante, ejercicio.unidad_id)
+    dominada_antes = dominio.intentos_en_unidad > 0 and banda(dominio.indice) == "Dominado"
     estado, cambio = registrar_intento(
         EstadoMotor(
             dominio.indice,
@@ -281,6 +278,10 @@ def responder(
         practica = sesion.get(Sesion, servido.sesion_id)
         practica.puntaje_obtenido += puntos
         mensaje = mensajes.refuerzo(estado.racha, cambio == "sube")
+        if not dominada_antes and banda(estado.indice) == "Dominado":
+            # La unidad llega a 3 estrellas: insignia (CU-5). Se avisa una vez, al ganarla.
+            insignia = sesion.get(Unidad, ejercicio.unidad_id).descripcion_ciudadana
+            mensaje += " ¡Ganaste la insignia de esta unidad!"
         if resultado.forma_distinta:
             mensaje += " " + mensajes.forma_canonica(ejercicio.respuesta_final)
         mensaje += f" Ganaste {puntos} puntos."
@@ -300,13 +301,16 @@ def responder(
                 sesion,
                 servido,
                 "generarRetroalimentacion",
-                lambda t: mensajes.revela(t, ejercicio.respuesta_final),
+                lambda t: mensajes.revela(t, ejercicio.respuesta_final, ejercicio.enunciado),
             )
             mensaje = adaptador.retroalimentacion(sesion, ctx, servido.sesion_id, aceptable)
         degradado = mensaje is None
         if mensaje is None:
             mensaje = mensajes.error_local(
-                resultado.error_comun, ejercicio.solucion_referencia, ejercicio.respuesta_final
+                resultado.error_comun,
+                ejercicio.solucion_referencia,
+                ejercicio.respuesta_final,
+                ejercicio.enunciado,
             )
         mensaje = mensajes.personalizar(mensaje, estudiante.alias)
     sesion.commit()
@@ -319,6 +323,7 @@ def responder(
             not correcta and servido.fallos >= ajustes.fallos_para_resolver_juntos
         ),
         cambio_nivel=cambio,
+        insignia=insignia,
         degradado=degradado,
     )
 
@@ -353,7 +358,8 @@ def _pista_llm(
         servido,
         "generarPista",
         lambda t: (
-            mensajes.revela(t, ejercicio.respuesta_final) or mensajes.numeros_nuevos(t, permitido)
+            mensajes.revela(t, ejercicio.respuesta_final, ejercicio.enunciado)
+            or mensajes.numeros_nuevos(t, permitido)
         ),
     )
     return adaptador.pista(sesion, ctx, servido.sesion_id, aceptable)
@@ -374,7 +380,9 @@ def pedir_pista(
     numero = servido.pistas_usadas
     texto = _pista_llm(sesion, estudiante, servido, ejercicio, adaptador, numero, False)
     if texto is None:
-        texto = mensajes.sin_revelar(ejercicio.pistas[numero - 1], ejercicio.respuesta_final)
+        texto = mensajes.sin_revelar(
+            ejercicio.pistas[numero - 1], ejercicio.respuesta_final, ejercicio.enunciado
+        )
     texto = mensajes.personalizar(texto, estudiante.alias)
     sesion.commit()
     return PistaTutor(
@@ -397,7 +405,9 @@ def no_entiendo(
     numero = max(servido.pistas_usadas, 1)
     texto = _pista_llm(sesion, estudiante, servido, ejercicio, adaptador, numero, True)
     if texto is None:
-        texto = mensajes.reexplicacion_local(ejercicio.pistas, ejercicio.respuesta_final)
+        texto = mensajes.reexplicacion_local(
+            ejercicio.pistas, ejercicio.respuesta_final, ejercicio.enunciado
+        )
     sesion.commit()  # registros de llamada_llm y evento_filtro
     return mensajes.personalizar(texto, estudiante.alias)
 

@@ -177,7 +177,7 @@ def verificar_forma(ej: EjercicioVerbal, curso: int, rango: dict[str, Any]) -> s
     if len(ej.pistas) != 3:
         return "no trae exactamente 3 pistas"
     for i, pista in enumerate(ej.pistas, 1):
-        if revela(pista, ej.respuesta_final):
+        if revela(pista, ej.respuesta_final, ej.enunciado):
             return f"la pista {i} revela la respuesta"
     esperado = _respuesta(ej.respuesta_final, ej.formato_respuesta)
     if not ej.errores_comunes:
@@ -188,7 +188,7 @@ def verificar_forma(ej: EjercicioVerbal, curso: int, rango: dict[str, Any]) -> s
                 return f"el error común «{error.respuesta}» vale lo mismo que la respuesta"
         except FormatoInvalido:
             return f"el error común «{error.respuesta}» no se puede leer"
-        if revela(error.retroalimentacion, ej.respuesta_final):
+        if revela(error.retroalimentacion, ej.respuesta_final, ej.enunciado):
             return "una retroalimentación de error revela la respuesta"
     return None
 

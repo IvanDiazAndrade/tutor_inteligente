@@ -7,7 +7,13 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from tutor.esquemas import PerfilEstudiante, SesionPractica, UnidadEstudiante
+from tutor import gamificacion
+from tutor.esquemas import (
+    PerfilEstudiante,
+    ProgresoEstudiante,
+    SesionPractica,
+    UnidadEstudiante,
+)
 from tutor.modelos import DominioOA, Estudiante, Sesion, Unidad
 from tutor.progreso import EstadoDominio, estrellas, para_repasar, unidad_sugerida
 from tutor.seguridad import EstudianteActual, SesionBD
@@ -19,6 +25,12 @@ router = APIRouter(prefix="/estudiante", tags=["estudiante"])
 def ver_perfil(estudiante: EstudianteActual) -> Estudiante:
     """Alias, curso y puntos para la home (CU-6)."""
     return estudiante
+
+
+@router.get("/progreso", response_model=ProgresoEstudiante)
+def ver_progreso(estudiante: EstudianteActual, sesion: SesionBD) -> ProgresoEstudiante:
+    """ "Mis logros" (CU-6): puntos, marca semanal, estrellas e insignias, sin comparación."""
+    return gamificacion.progreso(sesion, estudiante)
 
 
 @router.get("/unidades", response_model=list[UnidadEstudiante])

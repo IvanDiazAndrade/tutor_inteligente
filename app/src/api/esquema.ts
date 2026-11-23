@@ -118,6 +118,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/estudiante/progreso': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Ver Progreso
+     * @description "Mis logros" (CU-6): puntos, marca semanal, estrellas e insignias, sin comparación.
+     */
+    get: operations['ver_progreso_estudiante_progreso_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/estudiante/unidades': {
     parameters: {
       query?: never;
@@ -378,6 +398,24 @@ export interface components {
       /** Pin */
       pin: string;
     };
+    /**
+     * LogroUnidad
+     * @description Una unidad iniciada, como la ve el estudiante en "Mis logros" (CU-6).
+     */
+    LogroUnidad: {
+      /** Id */
+      id: string;
+      /** Curso */
+      curso: number;
+      /** Descripcion */
+      descripcion: string;
+      /** Estrellas */
+      estrellas: number;
+      /** Nivel */
+      nivel: number;
+      /** Insignia */
+      insignia: boolean;
+    };
     /** MedidorUnidad */
     MedidorUnidad: {
       /** Unidadid */
@@ -440,6 +478,28 @@ export interface components {
       /** Pistasrestantes */
       pistasRestantes: number;
     };
+    /**
+     * ProgresoEstudiante
+     * @description Solo progreso personal: sin rankings ni comparación con otros (RF-G3, G4).
+     */
+    ProgresoEstudiante: {
+      /** Alias */
+      alias: string;
+      /** Puntostotal */
+      puntosTotal: number;
+      /** Puntossemana */
+      puntosSemana: number;
+      /** Mejorsemanaanterior */
+      mejorSemanaAnterior: number;
+      /** Ejerciciosresueltos */
+      ejerciciosResueltos: number;
+      /** Insignias */
+      insignias: number;
+      /** Mensaje */
+      mensaje: string;
+      /** Unidades */
+      unidades: components['schemas']['LogroUnidad'][];
+    };
     /** RegistroApoderado */
     RegistroApoderado: {
       /** Email */
@@ -471,6 +531,8 @@ export interface components {
       ofreceResolverJuntos: boolean;
       /** Cambionivel */
       cambioNivel: ('sube' | 'baja') | null;
+      /** Insignia */
+      insignia?: string | null;
       /** Degradado */
       degradado: boolean;
     };
@@ -768,6 +830,26 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PerfilEstudiante'];
+        };
+      };
+    };
+  };
+  ver_progreso_estudiante_progreso_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProgresoEstudiante'];
         };
       };
     };

@@ -76,11 +76,15 @@ export const api = {
     pedir<PerfilEstudiante>('GET', '/apoderado/estudiante', { token }),
   crearEstudiante: (token: string, datos: Esquemas['EstudianteNuevo']) =>
     pedir<PerfilEstudiante>('POST', '/apoderado/estudiante', { token, cuerpo: datos }),
+  editarEstudiante: (token: string, cambios: Esquemas['EstudianteCambios']) =>
+    pedir<PerfilEstudiante>('PATCH', '/apoderado/estudiante', { token, cuerpo: cambios }),
   panelApoderado: (token: string) =>
     pedir<PanelApoderado>('GET', '/apoderado/dashboard', { token }),
 
   perfilEstudiante: (token: string) =>
     pedir<PerfilEstudiante>('GET', '/estudiante/perfil', { token }),
+  progreso: (token: string) =>
+    pedir<Esquemas['ProgresoEstudiante']>('GET', '/estudiante/progreso', { token }),
   unidades: (token: string) => pedir<UnidadEstudiante[]>('GET', '/estudiante/unidades', { token }),
 
   // Ejercicio (F1, F2, F3 y RF-P7). La app nunca recibe la respuesta ni la solución.
