@@ -6,6 +6,7 @@ from fractions import Fraction
 
 import pytest
 
+from tutor.dominio.columnas import separar_bloque
 from tutor.dominio.corrector import corregir, fraccion
 from tutor.dominio.plantillas import PLANTILLAS, EjercicioGenerado, menciona
 from tutor.dominio.plantillas.base import huella
@@ -46,7 +47,8 @@ def test_toda_instancia_es_coherente(plantilla_id, nivel):
         # Ninguna pista revela la respuesta final (RF-P3; la pista 3 queda a un paso del final).
         # Se usa el mismo filtro del tutor, que también ve 1.800 en 1800 o 6/8 en 3/4: una pista
         # que lo dispare se serviría como el mensaje de respaldo genérico.
-        for pista in e.pistas:
+        # De una operación en columnas se revisa la frase (el bloque, en test_columnas.py).
+        for pista in (separar_bloque(p)[0] for p in e.pistas):
             assert not menciona(pista, e.respuesta_final), (e.enunciado, pista)
             assert not revela(pista, e.respuesta_final, e.enunciado), (e.enunciado, pista)
         assert revela(e.solucion_referencia[-1], e.respuesta_final)
@@ -357,6 +359,39 @@ def test_el_banco_distingue_ejercicios_con_el_mismo_enunciado():
     circulos = {
         huella(e.enunciado, e.representacion, e.regla_validacion)
         for e in _instancias("4B-OA8-fracciones", 1)
+        if "círculo" in e.enunciado
     }
-    assert len({e.enunciado for e in _instancias("4B-OA8-fracciones", 1)}) == 1
-    assert len(circulos) >= 5
+    assert len(circulos) >= 5  # el enunciado es siempre el mismo
+
+
+def test_la_figura_corresponde_a_la_respuesta():
+    tipos = set()
+    for e in _instancias("4B-OA8-fracciones", 1):
+        p = e.representacion["parametros"]
+        tipos.add(e.representacion["tipo"])
+        if e.representacion["tipo"] == "recta-numerica":
+            assert (p["minimo"], p["maximo"]) == (0, 1)
+            assert e.respuesta_final == f"{p['punto']}/{p['divisiones']}"
+        else:
+            assert e.respuesta_final == f"{p['partesDestacadas'][0]}/{p['denominador']}"
+    assert tipos == {"fraccion-circulo", "recta-numerica"}
+    for nivel in (1, 2):
+        for e in _instancias("5B-OA10-fraccion-decimal", nivel):
+            pintadas = e.representacion["parametros"]["pintadas"]
+            assert Fraction(pintadas, 100) == Fraction(e.respuesta_final.replace(",", "."))
+
+
+@pytest.mark.parametrize(
+    ("plantilla_id", "niveles"),
+    [
+        ("4B-OA3-suma-resta", (1, 2, 3)),
+        ("4B-OA5-mult-3x1", (1, 2, 3)),
+        ("4B-OA6-div-2d", (2,)),
+        ("5B-OA3-mult-2x2", (2, 3)),
+        ("5B-OA4-div-resto", (1, 2, 3)),
+    ],
+)
+def test_las_pistas_muestran_la_operacion_en_columnas(plantilla_id, niveles):
+    for nivel in niveles:
+        for e in _instancias(plantilla_id, nivel):
+            assert all(separar_bloque(p)[1] for p in e.pistas), e

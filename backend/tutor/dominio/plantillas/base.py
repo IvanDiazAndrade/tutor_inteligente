@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Any, Protocol
 
+from tutor.dominio.columnas import con_bloque, separar_bloque
 from tutor.dominio.corrector import fraccion, numero
 
 
@@ -69,9 +70,13 @@ def menciona(texto: str, respuesta: str) -> bool:
 
 def _sin_revelar(pista: str, respuesta: str, alternativa: str) -> str:
     """Si por casualidad la pista nombra la respuesta (p. ej. 99 : 9 -> "divide 11 : 9"),
-    se usa una versión sin números. El filtro del tutor lo revisa de nuevo al servirla."""
+    se usa una versión sin números. El filtro del tutor lo revisa de nuevo al servirla. Si la
+    pista trae una operación en columnas se cambia solo la frase: el bloque ya se arma sin el
+    resultado (dominio/columnas.py)."""
+    frase, bloque = separar_bloque(pista)
     formas = {respuesta, miles(int(respuesta))} if respuesta.isdigit() else {respuesta}
-    return alternativa if any(menciona(pista, forma) for forma in formas) else pista
+    revelada = any(menciona(frase, forma) for forma in formas)
+    return con_bloque(alternativa if revelada else frase, bloque)
 
 
 def miles(n: int) -> str:

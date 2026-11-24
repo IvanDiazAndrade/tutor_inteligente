@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from tutor import mensajes
 from tutor.config import get_settings
+from tutor.dominio.columnas import con_bloque, separar_bloque
 from tutor.dominio.corrector import corregir
 from tutor.esquemas import (
     EjercicioParaEstudiante,
@@ -341,15 +342,18 @@ def _pista_llm(
     simplificar: bool,
 ) -> str | None:
     """Reformula la pista `numero` del banco. Sin números nuevos (no adelanta pasos) y sin
-    revelar la respuesta; si no pasa, None y se usa la pista del banco."""
+    revelar la respuesta; si no pasa, None y se usa la pista del banco. Si la pista trae una
+    operación en columnas, el LLM solo reformula la frase y el bloque se agrega tal cual, para
+    que no se desalinee."""
     if not _habilitado(adaptador):
         return None
-    vistas = ejercicio.pistas[:numero]
+    vistas = [separar_bloque(p)[0] for p in ejercicio.pistas[:numero]]
+    bloque = separar_bloque(ejercicio.pistas[numero - 1])[1]
     ctx = ContextoPista(
         **_contexto(sesion, estudiante, ejercicio),
-        pista=ejercicio.pistas[numero - 1],
+        pista=vistas[-1],
         numero=numero,
-        pistas_anteriores=list(vistas[:-1]),
+        pistas_anteriores=vistas[:-1],
         simplificar=simplificar,
     )
     permitido = " ".join([ejercicio.enunciado, *vistas])
@@ -362,7 +366,11 @@ def _pista_llm(
             or mensajes.numeros_nuevos(t, permitido)
         ),
     )
-    return adaptador.pista(sesion, ctx, servido.sesion_id, aceptable)
+    texto = adaptador.pista(sesion, ctx, servido.sesion_id, aceptable)
+    if texto is None or bloque is None:
+        return texto
+    # En una sola línea: el primer salto de línea separa la frase del bloque.
+    return con_bloque(" ".join(texto.split()), bloque)
 
 
 def pedir_pista(

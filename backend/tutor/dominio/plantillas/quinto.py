@@ -4,6 +4,12 @@ import random
 from fractions import Fraction
 from math import gcd, lcm
 
+from tutor.dominio.columnas import (
+    con_bloque,
+    pistas_division,
+    pistas_producto_dos_cifras,
+    separar_bloque,
+)
 from tutor.dominio.plantillas.base import (
     PALABRAS_DECIMALES,
     SIMBOLO_EN_PALABRAS,
@@ -34,7 +40,7 @@ from tutor.dominio.plantillas.cuarto import (
 class DivisionConResto:
     id = "5B-OA4-div-resto"
     unidad_id = "5B-OA4"
-    version = 1
+    version = 2  # v2: pistas con la división escrita
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: resto 0 y divisor 2-5 · N2: resto > 0 · N3: resto > 0 y se pregunta cociente o resto.
@@ -47,7 +53,7 @@ class DivisionConResto:
 
         pregunta = "¿Cuál es el resto?" if pide_resto else "¿Cuál es el cociente?"
         respuesta = str(resto if pide_resto else cociente)
-        pasos, ultimo_parcial = _pasos_division(dividendo, divisor)
+        pasos, _ = _pasos_division(dividendo, divisor)
         solucion = [*pasos, f"El cociente es {cociente} y el resto es {resto}."]
 
         if pide_resto:
@@ -67,12 +73,6 @@ class DivisionConResto:
                     ),
                 ],
             )
-            pista_final = _sin_revelar(
-                f"El cociente es {cociente}. Multiplica {cociente} × {divisor} "
-                "y réstalo al dividendo.",
-                respuesta,
-                "Multiplica el cociente por el divisor y réstalo al dividendo.",
-            )
         else:
             errores = _errores(
                 respuesta,
@@ -90,13 +90,13 @@ class DivisionConResto:
                     ),
                 ],
             )
-            # A un paso del final (§4.3 del modelo pedagógico): todas las cifras menos la última.
-            pista_final = _sin_revelar(
-                f"El cociente empieza con {str(cociente)[:-1]}. "
-                f"Ahora divide {ultimo_parcial} : {divisor}.",
-                respuesta,
-                "Ya tienes casi todo el cociente: te falta dividir la última parte.",
-            )
+
+        # La división escrita (columnas.py): la pista 3 queda a un paso del final (§4.3 del modelo
+        # pedagógico), sin la última cifra del cociente ni el resto.
+        estrategia, primer_paso, casi = pistas_division(dividendo, divisor)
+        if pide_resto:
+            frase, bloque = separar_bloque(casi)
+            casi = con_bloque(f"{frase} Lo que sobra al final es el resto.", bloque)
 
         return EjercicioGenerado(
             unidad_id=self.unidad_id,
@@ -108,14 +108,15 @@ class DivisionConResto:
             solucion_referencia=solucion,
             errores_comunes=errores,
             pistas=[
-                "Dividir es repartir en partes iguales. "
-                "Empieza por las primeras cifras del dividendo.",
+                estrategia,
                 _sin_revelar(
-                    pasos[0],
+                    primer_paso,
                     respuesta,
                     "Divide las primeras cifras del dividendo por el divisor y anota lo que sobra.",
                 ),
-                pista_final,
+                _sin_revelar(
+                    casi, respuesta, "Divide la parte que falta y fíjate en lo que sobra."
+                ),
             ],
         )
 
@@ -151,7 +152,7 @@ def _pasos_division(dividendo: int, divisor: int) -> tuple[list[str], int]:
 class Multiplicacion2x2:
     id = "5B-OA3-mult-2x2"
     unidad_id = "5B-OA3"
-    version = 1
+    version = 2  # v2: pistas con la multiplicación escrita (niveles 2 y 3)
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: el segundo factor es una decena exacta (34 × 20) · N2: factores de 11 a 49 ·
@@ -203,12 +204,7 @@ class Multiplicacion2x2:
                 f"{a} × {unidades} = {miles(p2)}.",
                 f"Se suman los productos: {miles(p1)} + {miles(p2)} = {miles(producto)}.",
             ]
-            pistas = [
-                "Descompón el segundo factor en decenas y unidades, y multiplica el primero "
-                "por cada parte.",
-                f"Descompón {b} en {decenas} + {unidades}.",
-                f"{a} × {decenas} = {miles(p1)} y {a} × {unidades} = {miles(p2)}. Ahora súmalos.",
-            ]
+            pistas = pistas_producto_dos_cifras(a, b)
             errores = [
                 (
                     str(p1 // 10 + p2),
@@ -897,10 +893,15 @@ class FraccionesEquivalentes:
 NOMBRE_DECIMAL = {10: "décimos", 100: "centésimos"}
 
 
+def _cuadricula(v: Fraction) -> dict:
+    """Cuadrícula de 10 × 10 con v pintado: cada cuadrado es un centésimo (v < 1)."""
+    return {"tipo": "cuadricula-decimal", "parametros": {"pintadas": int(v * 100)}}
+
+
 class FraccionDecimal:
     id = "5B-OA10-fraccion-decimal"
     unidad_id = "5B-OA10"
-    version = 1
+    version = 2  # v2: cuadrícula de 100 en los niveles 1 y 2
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: denominador 10 o 100 a decimal · N2: denominador 2, 4 o 5 a decimal (amplificando)
@@ -962,6 +963,7 @@ class FraccionDecimal:
                 f"El denominador es {d}: son {nombre}.",
                 f"Son {n} {nombre}: escríbelo de modo que ocupe {cifras} después de la coma.",
             ],
+            representacion=_cuadricula(v),
         )
 
     def _amplificando(self, azar: random.Random) -> EjercicioGenerado:
@@ -1013,6 +1015,7 @@ class FraccionDecimal:
                 f"Multiplica el numerador y el denominador por {k}.",
                 f"Al amplificar quedan {N} {nombre}. Ahora escríbelo con coma.",
             ],
+            representacion=_cuadricula(v),
         )
 
     def _a_fraccion(self, azar: random.Random) -> EjercicioGenerado:

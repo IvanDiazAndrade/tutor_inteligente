@@ -7,6 +7,16 @@ de cada plantilla (tarea 57): se aprueban con la herramienta del revisor antes d
 import random
 from fractions import Fraction
 
+from tutor.dominio.columnas import (
+    columnas_producto,
+    explicar_columna_producto,
+    explicar_paso_division,
+    pasos_division,
+    pistas_division,
+    pistas_producto,
+    pistas_resta,
+    pistas_suma,
+)
 from tutor.dominio.plantillas.base import (
     SIMBOLO_EN_PALABRAS,
     EjercicioGenerado,
@@ -281,7 +291,7 @@ def _canje_sin_descontar(minuendo: int, sustraendo: int) -> int:
 class SumaRestaHasta1000:
     id = "4B-OA3-suma-resta"
     unidad_id = "4B-OA3"
-    version = 1
+    version = 2  # v2: pistas con la operación en columnas
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: dos números de 3 cifras, sin reserva ni canje · N2: con reserva o canje ·
@@ -302,7 +312,7 @@ class SumaRestaHasta1000:
             total = sum(sumandos)
             if not 100 <= total <= 999:
                 continue
-            pasos, cifras, reservas = _suma_columnas(sumandos)
+            pasos, _, reservas = _suma_columnas(sumandos)
             if (nivel == 1 and reservas == 0) or (nivel == 2 and reservas >= 1):
                 break
             if nivel == 3 and reservas >= 2:
@@ -339,17 +349,7 @@ class SumaRestaHasta1000:
             respuesta_final=respuesta,
             solucion_referencia=[*pasos, f"El resultado es {total}."],
             errores_comunes=_errores(respuesta, candidatos),
-            pistas=[
-                "Escribe los números uno debajo del otro: unidades con unidades, "
-                "decenas con decenas y centenas con centenas.",
-                _sin_revelar(pasos[0], respuesta, "Empieza sumando la columna de las unidades."),
-                _sin_revelar(
-                    f"Las unidades del resultado son {cifras[UNIDADES]} y las decenas son "
-                    f"{cifras[DECENAS]}. Ahora suma las centenas.",
-                    respuesta,
-                    "Ya tienes las unidades y las decenas. Ahora suma las centenas.",
-                ),
-            ],
+            pistas=pistas_suma(sumandos),
         )
 
     def _resta(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
@@ -360,7 +360,7 @@ class SumaRestaHasta1000:
                 minuendo = minuendo // 100 * 100 + minuendo % 10  # un cero en las decenas
                 if minuendo - sustraendo < 100:
                     continue
-            pasos, cifras, canjes, por_cero = _resta_columnas(minuendo, sustraendo)
+            pasos, _, canjes, por_cero = _resta_columnas(minuendo, sustraendo)
             if (nivel == 1 and canjes == 0) or (nivel == 2 and canjes == 1 and not por_cero):
                 break
             if nivel == 3 and (canjes >= 2 or por_cero):
@@ -396,17 +396,7 @@ class SumaRestaHasta1000:
                     ),
                 ],
             ),
-            pistas=[
-                "Escribe el número mayor arriba y resta columna por columna, empezando por "
-                "las unidades. Si arriba hay menos que abajo, canjea.",
-                _sin_revelar(pasos[0], respuesta, "Empieza restando la columna de las unidades."),
-                _sin_revelar(
-                    f"Las unidades del resultado son {cifras[UNIDADES]} y las decenas son "
-                    f"{cifras[DECENAS]}. Ahora resta las centenas.",
-                    respuesta,
-                    "Ya tienes las unidades y las decenas. Ahora resta las centenas.",
-                ),
-            ],
+            pistas=pistas_resta(minuendo, sustraendo),
         )
 
 
@@ -416,7 +406,7 @@ class SumaRestaHasta1000:
 class Multiplicacion3x1:
     id = "4B-OA5-mult-3x1"
     unidad_id = "4B-OA5"
-    version = 1
+    version = 2  # v2: pistas y solución con la operación en columnas
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: sin reserva (cada cifra por el factor da menos de 10) · N2: con reserva ·
@@ -425,7 +415,7 @@ class Multiplicacion3x1:
             factor = azar.randint(2, 4) if nivel == 1 else azar.randint(3, 9)
             numero = azar.randint(101, 999)
             if numero % 100 == 0:
-                continue  # 400 × 6 no tiene nada que descomponer
+                continue  # 400 × 6 es multiplicar una sola cifra
             cifras = _cifras(numero)
             reservas = _reservas_multiplicacion(numero, factor)
             if nivel == 1 and reservas == 0:
@@ -436,10 +426,6 @@ class Multiplicacion3x1:
                 break
         producto = numero * factor
         respuesta = str(producto)
-        partes = [c * 10**i for i, c in reversed(list(enumerate(cifras))) if c]
-        parciales = [p * factor for p in partes]
-        descomposicion = " + ".join(miles(p) for p in partes)
-        productos = [f"{miles(p)} × {factor} = {miles(p * factor)}" for p in partes]
         return EjercicioGenerado(
             unidad_id=self.unidad_id,
             plantilla_id=self.id,
@@ -448,10 +434,11 @@ class Multiplicacion3x1:
             formato_respuesta="numerico",
             respuesta_final=respuesta,
             solucion_referencia=[
-                f"Se descompone {numero} en {descomposicion}.",
-                *[f"{p}." for p in productos],
-                f"Se suman los resultados: {' + '.join(miles(p) for p in parciales)} "
-                f"= {miles(producto)}.",
+                *[
+                    explicar_columna_producto(columna, factor)
+                    for columna in columnas_producto(numero, factor)
+                ],
+                f"El resultado es {miles(producto)}.",
             ],
             errores_comunes=_errores(
                 respuesta,
@@ -482,20 +469,7 @@ class Multiplicacion3x1:
                     ),
                 ],
             ),
-            pistas=[
-                "Descompón el número de tres cifras en centenas, decenas y unidades, "
-                "y multiplica cada parte por el factor.",
-                _sin_revelar(
-                    f"Descompón {numero} en {descomposicion}.",
-                    respuesta,
-                    "Descompón el número en centenas, decenas y unidades.",
-                ),
-                _sin_revelar(
-                    f"{', '.join(productos[:-1])} y {productos[-1]}. Ahora súmalos.",
-                    respuesta,
-                    "Multiplica cada parte por el factor y suma los resultados.",
-                ),
-            ],
+            pistas=pistas_producto(numero, factor),
         )
 
 
@@ -515,12 +489,12 @@ def _reservas_multiplicacion(numero: int, factor: int) -> int:
 class Division2x1:
     id = "4B-OA6-div-2d"
     unidad_id = "4B-OA6"
-    version = 1
+    version = 2  # v2: pistas y solución con la división escrita
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
         # N1: dentro de las tablas (cociente hasta 10, divisor 2-5) · N2: cociente mayor que
-        # 10 y divisor 2-5, por descomposición · N3: cociente mayor que 10 con divisor 6-9, o la
-        # misma división planteada como multiplicación con un factor desconocido.
+        # 10 y divisor 2-5, con la división escrita · N3: igual con divisor 6-9, o planteada
+        # como multiplicación con un factor desconocido, que se resuelve por descomposición.
         inversa = False
         while True:
             if nivel == 1:
@@ -571,6 +545,15 @@ class Division2x1:
                     f"Recorre la tabla del divisor hasta llegar a {dividendo}.",
                 ),
             ]
+        elif not inversa:
+            solucion = [
+                *[
+                    explicar_paso_division(dividendo, divisor, i)
+                    for i in range(len(pasos_division(dividendo, divisor)))
+                ],
+                f"Entonces {dividendo} : {divisor} = {cociente}.",
+            ]
+            pistas = pistas_division(dividendo, divisor)  # el cociente tiene dos cifras
         else:
             grande = dividendo // (10 * divisor) * 10 * divisor  # múltiplo de 10 × divisor
             resto = dividendo - grande
@@ -590,8 +573,9 @@ class Division2x1:
                 )
             )
             primera = (
-                f"Esta pregunta es una división: {dividendo} : {divisor}. " if inversa else ""
-            ) + f"Descompón {dividendo} en dos partes fáciles de dividir por {divisor}."
+                f"Esta pregunta es una división: {dividendo} : {divisor}. "
+                f"Descompón {dividendo} en dos partes fáciles de dividir por {divisor}."
+            )
             pistas = [
                 _sin_revelar(
                     primera,
@@ -981,15 +965,15 @@ class NumerosHasta10000:
 class ConceptoFraccion:
     id = "4B-OA8-fracciones"
     unidad_id = "4B-OA8"
-    version = 1
+    version = 2  # v2: en el nivel 1 también se lee la fracción en la recta numérica
     DENOMINADORES = (2, 3, 4, 5, 6, 8, 10, 12)
 
     def instanciar(self, nivel: int, azar: random.Random) -> EjercicioGenerado:
-        # N1: qué fracción del círculo está pintada · N2: comparar dos fracciones de igual
-        # denominador o de igual numerador · N3: ordenar tres fracciones de igual denominador o
-        # de igual numerador.
+        # N1: qué fracción del círculo está pintada o marca el punto en la recta · N2: comparar
+        # dos fracciones de igual denominador o de igual numerador · N3: ordenar tres fracciones
+        # de igual denominador o de igual numerador.
         if nivel == 1:
-            return self._parte_de_un_todo(azar)
+            return self._parte_de_un_todo(azar) if azar.random() < 0.5 else self._en_recta(azar)
         igual_denominador = azar.random() < 0.5
         cantidad = 2 if nivel == 2 else 3
         while True:
@@ -1053,6 +1037,53 @@ class ConceptoFraccion:
             representacion={
                 "tipo": "fraccion-circulo",
                 "parametros": {"denominador": d, "partesDestacadas": [a]},
+            },
+        )
+
+    def _en_recta(self, azar: random.Random) -> EjercicioGenerado:
+        d = azar.choice(self.DENOMINADORES)
+        a = azar.randint(1, d - 1)
+        respuesta = f"{a}/{d}"
+        return _ejercicio(
+            self,
+            1,
+            f"La recta va de 0 a 1 y está dividida en {d} partes iguales. "
+            "¿Qué fracción marca el punto?",
+            "fraccion",
+            respuesta,
+            [
+                f"De 0 a 1 hay {d} partes iguales: el denominador es {d}.",
+                f"Desde el 0 hasta el punto hay {a}: el numerador es {a}.",
+                f"El punto marca {respuesta}.",
+            ],
+            _errores(
+                respuesta,
+                [
+                    (
+                        f"{a}/{d + 1}",
+                        "contó las marcas en vez de las partes",
+                        "Cuenta los espacios entre las marcas, no las marcas.",
+                    ),
+                    (
+                        f"{d - a}/{d}",
+                        "contó desde el 1 hacia atrás",
+                        "Cuenta las partes partiendo desde el 0.",
+                    ),
+                    (
+                        f"{d}/{a}",
+                        "invirtió numerador y denominador",
+                        "Abajo va en cuántas partes iguales se dividió la recta.",
+                    ),
+                ],
+            ),
+            [
+                "El denominador dice en cuántas partes iguales se dividió la recta de 0 a 1.",
+                f"La recta tiene {d} partes: ese número va abajo.",
+                "Ahora cuenta cuántas partes hay desde el 0 hasta el punto: ese es el numerador.",
+            ],
+            representacion={
+                "tipo": "recta-numerica",
+                "parametros": {"minimo": 0, "maximo": 1, "divisiones": d, "punto": a},
             },
         )
 

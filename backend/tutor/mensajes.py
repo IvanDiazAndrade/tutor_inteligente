@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 from tutor.dominio import palabras
+from tutor.dominio.columnas import con_bloque, separar_bloque
 from tutor.dominio.corrector import FormatoInvalido, fraccion, numero
 from tutor.dominio.plantillas import menciona
 
@@ -162,8 +163,12 @@ def numeros_nuevos(texto: str, permitido: str) -> bool:
 
 def sin_revelar(texto: str, respuesta: str, enunciado: str = "") -> str:
     """Filtro de no revelación (§6, capa determinista): si el texto revela la respuesta final,
-    se reemplaza por un mensaje seguro."""
-    return RESPALDO if revela(texto, respuesta, enunciado) else texto
+    se reemplaza por un mensaje seguro. En una pista con operación en columnas se revisa la
+    frase y el bloque se conserva (se arma sin el resultado; ver dominio/columnas.py)."""
+    frase, bloque = separar_bloque(texto)
+    if bloque is None:
+        return RESPALDO if revela(texto, respuesta, enunciado) else texto
+    return con_bloque(RESPALDO if revela(frase, respuesta, enunciado) else frase, bloque)
 
 
 def personalizar(texto: str, alias: str) -> str:
