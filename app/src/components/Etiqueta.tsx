@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-export type TipoEtiqueta = 'dominada' | 'repasar' | 'nueva';
+export type TipoEtiqueta = 'dominada' | 'repasar' | 'nueva' | 'pronto';
 
 const ESTILOS: Record<TipoEtiqueta, { caja: string; texto: string; contenido: string }> = {
   dominada: { caja: 'bg-exito-fondo', texto: 'text-exito', contenido: '🏅 ¡Dominada!' },
@@ -10,6 +10,8 @@ const ESTILOS: Record<TipoEtiqueta, { caja: string; texto: string; contenido: st
     texto: 'text-primario',
     contenido: '✨ ¡Nueva!',
   },
+  // Unidad que todavía no tiene ejercicios activos (el banco se completa por unidad).
+  pronto: { caja: 'bg-divisor', texto: 'text-apagado-oscuro', contenido: '🛠️ Pronto' },
 };
 
 // Etiqueta redondeada de estado de una unidad. Encuadre de avance, nunca de castigo (RF-DA6):
@@ -18,7 +20,7 @@ export function Etiqueta({ tipo, grande = false }: { tipo: TipoEtiqueta; grande?
   const estilo = ESTILOS[tipo];
   return (
     <View className={`self-start rounded-full px-3 py-1 ${estilo.caja}`}>
-      <Text className={`font-nunito-black ${grande ? 'text-sm' : 'text-xs'} ${estilo.texto}`}>
+      <Text className={`font-nunito-black ${grande ? 'text-lg' : 'text-[15px]'} ${estilo.texto}`}>
         {estilo.contenido}
       </Text>
     </View>

@@ -20,15 +20,15 @@ export function SugerenciaOctavio({
   apilada = false,
 }: Props) {
   return (
-    <View className="mt-3 rounded-[20px] border-[2.5px] border-primario-claro bg-fondo px-4 pb-4 pt-5">
+    <View className="mt-3 rounded-[20px] border-[2.5px] border-primario-claro bg-fondo px-4 pb-5 pt-6">
       <View className="absolute -top-3 left-3.5 rounded-full bg-primario px-3 py-1">
-        <Text className={`font-nunito-black text-white ${grande ? 'text-sm' : 'text-xs'}`}>
+        <Text className={`font-nunito-black text-white ${grande ? 'text-lg' : 'text-sm'}`}>
           ✨ Octavio te sugiere
         </Text>
       </View>
-      <View className={apilada ? 'gap-3' : 'flex-row items-center gap-3'}>
+      <View className={apilada ? 'gap-4' : 'flex-row items-center gap-3'}>
         <View className={apilada ? 'gap-1.5' : 'flex-1 gap-1.5'}>
-          <Text className={`font-nunito-black text-tinta ${grande ? 'text-2xl' : 'text-[17px]'}`}>
+          <Text className={`font-nunito-black text-tinta ${grande ? 'text-3xl' : 'text-[22px]'}`}>
             {nombre}
           </Text>
           {etiqueta && <Etiqueta tipo={etiqueta} grande={grande} />}
@@ -42,7 +42,7 @@ export function SugerenciaOctavio({
           {({ pressed }) => (
             <Text
               className={`rounded-2xl bg-primario px-5 text-center font-nunito-black text-white ${
-                grande ? 'h-14 text-lg leading-[56px]' : 'h-12 text-base leading-[48px]'
+                grande ? 'h-16 text-2xl leading-[64px]' : 'h-14 text-xl leading-[56px]'
               } ${pressed ? 'translate-y-0' : '-translate-y-1'}`}
             >
               Practicar

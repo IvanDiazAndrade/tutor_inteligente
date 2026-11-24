@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { Protegida } from '@/sesion/Protegida';
@@ -14,15 +14,6 @@ function IconoInicio({ color, tamano }: { color: ColorValue; tamano: number }) {
   return (
     <Svg width={tamano} height={tamano} viewBox="0 0 24 24">
       <Path d="M4 11 L12 4 L20 11 V20 H14 V15 H10 V20 H4 Z" fill={color} />
-    </Svg>
-  );
-}
-
-function IconoPracticar({ color, tamano }: { color: ColorValue; tamano: number }) {
-  return (
-    <Svg width={tamano} height={tamano} viewBox="0 0 24 24">
-      <Rect x={4} y={5} width={16} height={14} rx={3} fill="none" stroke={color} strokeWidth={2} />
-      <Path d="M8 10 H16 M8 14 H13" stroke={color} strokeWidth={2} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -47,8 +38,8 @@ export default function LayoutEstudiante() {
   const { bottom } = useSafeAreaInsets();
   const { esTablet } = useDistribucion();
   // En tablet la barra crece para que los niños la toquen y lean con facilidad (RNF-U1).
-  const icono = esTablet ? 34 : 24;
-  const alto = esTablet ? 92 : 64;
+  const icono = esTablet ? 44 : 34;
+  const alto = esTablet ? 116 : 88;
   return (
     <Protegida rol="estudiante">
       <Tabs
@@ -57,15 +48,19 @@ export default function LayoutEstudiante() {
           tabBarActiveTintColor: ACTIVO,
           tabBarInactiveTintColor: INACTIVO,
           tabBarLabelPosition: 'below-icon',
+          tabBarActiveBackgroundColor: '#EDE6FC',
+          tabBarItemStyle: { borderRadius: 20, marginHorizontal: 10, overflow: 'hidden' },
+          tabBarIconStyle: { width: icono, height: icono },
           tabBarLabelStyle: {
             fontFamily: 'Nunito_900Black',
-            fontSize: esTablet ? 17 : 11,
+            fontSize: esTablet ? 20 : 15,
+            marginTop: 2,
           },
           tabBarStyle: {
             borderTopColor: '#EFE8FF',
             borderTopWidth: 1.5,
             height: alto + bottom,
-            paddingTop: esTablet ? 10 : 6,
+            paddingTop: 8,
             paddingBottom: 8 + bottom,
           },
           sceneStyle: { backgroundColor: '#FAF7FF' },
@@ -76,13 +71,6 @@ export default function LayoutEstudiante() {
           options={{
             title: 'Inicio',
             tabBarIcon: ({ color }) => <IconoInicio color={color} tamano={icono} />,
-          }}
-        />
-        <Tabs.Screen
-          name="practicar"
-          options={{
-            title: 'Practicar',
-            tabBarIcon: ({ color }) => <IconoPracticar color={color} tamano={icono} />,
           }}
         />
         <Tabs.Screen

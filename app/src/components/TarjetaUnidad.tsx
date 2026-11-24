@@ -19,18 +19,20 @@ export function TarjetaUnidad({ nombre, estrellas, etiqueta, onPress, grande = f
       accessibilityLabel={`${nombre}, ${estrellas} de 3 estrellas`}
       onPress={onPress}
       className={`flex-row items-center gap-2.5 rounded-[20px] bg-white px-4 active:bg-panel ${
-        grande ? 'py-5' : 'py-3'
+        grande ? 'py-7' : 'py-5'
       } ${etiqueta === 'repasar' ? 'border-2 border-lila-suave' : 'border-2 border-white'}`}
     >
-      <View className="flex-1 gap-0.5">
+      <View className={`flex-1 ${grande ? 'gap-3' : 'gap-2'}`}>
         <Text
-          className={`font-nunito-extrabold text-tinta-media ${grande ? 'text-xl' : 'text-[15px]'}`}
+          className={`font-nunito-extrabold text-tinta-media ${grande ? 'text-2xl' : 'text-xl'}`}
         >
           {nombre}
         </Text>
-        <Estrellas cantidad={estrellas} grande={grande} />
+        <View className="flex-row flex-wrap items-center justify-between gap-2">
+          <Estrellas cantidad={estrellas} grande={grande} />
+          {etiqueta && <Etiqueta tipo={etiqueta} grande={grande} />}
+        </View>
       </View>
-      {etiqueta && <Etiqueta tipo={etiqueta} grande={grande} />}
     </Pressable>
   );
 }

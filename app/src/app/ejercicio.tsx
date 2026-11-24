@@ -1,36 +1,31 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { api, type EjercicioServido, ErrorApi } from '@/api/cliente';
 import { BotonAccion } from '@/components/BotonAccion';
+import { BotonesVoz } from '@/components/BotonesVoz';
 import { BotonPrimario } from '@/components/BotonPrimario';
-import { CampoRespuesta } from '@/components/CampoRespuesta';
+import { CampoRespuesta, type ControlCampo, usaTeclado } from '@/components/CampoRespuesta';
 import { EnunciadoResaltado } from '@/components/EnunciadoResaltado';
-import { GloboOctavio } from '@/components/GloboOctavio';
+import { FiguraEjercicio, type Representacion } from '@/components/FiguraEjercicio';
+import { GloboOctavio, separarOperacion } from '@/components/GloboOctavio';
 import { Octavio } from '@/components/Octavio';
-import { RepresentacionFraccion } from '@/components/RepresentacionFraccion';
-import { RespuestaComparar } from '@/components/RespuestaComparar';
-import { RespuestaOrdenar } from '@/components/RespuestaOrdenar';
+import { TecladoMatematico } from '@/components/TecladoMatematico';
 import { useDistribucion } from '@/hooks/useDistribucion';
 import { Protegida } from '@/sesion/Protegida';
 import { useSesion } from '@/sesion/SesionContext';
 import { useConsulta } from '@/sesion/useConsulta';
+import { useVoz } from '@/voz/useVoz';
 
 const MENSAJE_INICIAL = 'Lee con calma y escribe tu respuesta. ¡Tú puedes!';
 
 const conPuntoDeMiles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 type Estado = 'cargando' | 'respondiendo' | 'correcta' | 'guiada' | 'sin-ejercicios';
-
-type Representacion = {
-  tipo: string;
-  parametros: { denominador: number; partesDestacadas: number[] };
-};
 
 // Ejercicio con Octavio (CU-3, CU-4, CU-11, CU-13; mockup "Ejercicio Estudiante").
 // El servidor sirve el ejercicio (F1), corrige (F2), entrega las pistas (F3) y actualiza el
@@ -45,11 +40,7 @@ function PantallaEjercicio() {
 
   const [ejercicio, setEjercicio] = useState<EjercicioServido | null>(null);
   const [estado, setEstado] = useState<Estado>('cargando');
-  const [numerador, setNumerador] = useState('');
-  const [denominador, setDenominador] = useState('');
-  const [entero, setEntero] = useState(''); // número mixto
-  const [seleccion, setSeleccion] = useState<string[]>([]); // formato "ordenar"
-  const [simbolo, setSimbolo] = useState(''); // formato "comparar"
+  const [respuesta, setRespuesta] = useState('');
   const [mensaje, setMensaje] = useState(MENSAJE_INICIAL);
   const [pistasRestantes, setPistasRestantes] = useState(0);
   const [ofreceJuntos, setOfreceJuntos] = useState(false);
@@ -60,28 +51,28 @@ function PantallaEjercicio() {
   const [seguidas, setSeguidas] = useState(0);
   const [ocupado, setOcupado] = useState(false);
   const inicio = useRef(0); // se fija al mostrar cada ejercicio
-  const desplazable = useRef<ScrollView>(null);
-  const yTarjeta = useRef(0);
-  const [tecladoVisible, setTecladoVisible] = useState(false);
-
-  // Con el teclado abierto se lleva la tarjeta a la vista (casilla y Responder) y las acciones
-  // pasan a una sola fila, para que todo quepa sobre el teclado.
+  const campo = useRef<ControlCampo>(null);
+  // El teclado se cierra al responder o pedir ayuda, para que se vea el globo de Octavio, y
+  // vuelve a abrirse al tocar una casilla.
+  const [tecladoAbierto, setTecladoAbierto] = useState(true);
+  // Lo que Octavio lee en voz alta: pistas, explicaciones y respuestas del tutor. De una operación
+  // en columnas lee la frase; los números se ven en el globo.
+  const [dicho, setDicho] = useState<{ texto: string } | null>(null);
+  const { activa: vozActiva, hablando, alternar: alternarVoz, decir } = useVoz();
   useEffect(() => {
-    const abre = Keyboard.addListener('keyboardDidShow', () => {
-      setTecladoVisible(true);
-      desplazable.current?.scrollTo({ y: yTarjeta.current, animated: true });
-    });
-    const cierra = Keyboard.addListener('keyboardDidHide', () => setTecladoVisible(false));
-    return () => {
-      abre.remove();
-      cierra.remove();
-    };
-  }, []);
+    if (!vozActiva || !dicho) return;
+    return decir(separarOperacion(dicho.texto).frase);
+  }, [vozActiva, dicho, decir]);
+  const mostrarYDecir = (texto: string) => {
+    setMensaje(texto);
+    setDicho({ texto });
+  };
 
   // Errores de red o de sesión: se muestran en el globo de Octavio; con 401 vuelve al acceso.
   const conManejo = useCallback(
     async (accion: () => Promise<void>) => {
       setOcupado(true);
+      setDicho(null); // se calla al pedir otra cosa
       try {
         await accion();
       } catch (e) {
@@ -100,18 +91,16 @@ function PantallaEjercicio() {
   const mostrar = useCallback((nuevo: EjercicioServido, mensajeInicial = MENSAJE_INICIAL) => {
     setEjercicio(nuevo);
     setEstado('respondiendo');
-    setNumerador('');
-    setDenominador('');
-    setEntero('');
-    setSeleccion([]);
-    setSimbolo('');
+    setRespuesta('');
     setMensaje(mensajeInicial);
+    setDicho(null);
     setPistasRestantes(nuevo.pistasRestantes);
     setOfreceJuntos(false);
     setPuedeNoEntiendo(false);
     setPasos([]);
     setPasoGuiado(0);
     setAnalogo(null);
+    setTecladoAbierto(true);
     inicio.current = Date.now();
   }, []);
 
@@ -163,26 +152,22 @@ function PantallaEjercicio() {
       servir();
       return;
     }
-    Keyboard.dismiss();
-    const respuesta = {
-      // Número mixto: "2 3/4"; solo el entero, "3"; sin entero, la fracción como siempre.
-      fraccion: !entero
-        ? `${numerador}/${denominador}`
-        : numerador || denominador
-          ? `${entero} ${numerador}/${denominador}`
-          : entero,
-      numerico: numerador,
-      ordenar: seleccion.join('; '), // como lo lee el corrector: "1/4; 0,5; 1 1/2"
-      comparar: simbolo,
-    }[ejercicio.formatoRespuesta];
-    if (!respuesta.replace(/[/; ]/g, '')) {
-      setMensaje('Primero escribe o elige tu respuesta.');
+    if (!respuesta) {
+      setDicho(null);
+      setMensaje(
+        ejercicio.formatoRespuesta === 'ordenar'
+          ? 'Toca todos los valores en el orden que se pide.'
+          : ejercicio.formatoRespuesta === 'comparar'
+            ? 'Primero elige un signo.'
+            : 'Primero escribe tu respuesta.',
+      );
       return;
     }
+    setTecladoAbierto(false); // para que se vea el globo de Octavio
     const segundos = Math.round((Date.now() - inicio.current) / 1000);
     conManejo(async () => {
       const r = await api.responder(token, ejercicio.servidoId, respuesta, segundos);
-      setMensaje(r.mensaje);
+      mostrarYDecir(r.mensaje);
       if (r.resultado === 'formato_invalido') return; // no cuenta como intento
       setPuedeNoEntiendo(r.resultado === 'incorrecta');
       setOfreceJuntos(r.ofreceResolverJuntos);
@@ -195,8 +180,9 @@ function PantallaEjercicio() {
   const pedirPista = () =>
     ejercicio &&
     conManejo(async () => {
+      setTecladoAbierto(false);
       const pista = await api.pedirPista(token, ejercicio.servidoId);
-      setMensaje(pista.mensaje);
+      mostrarYDecir(pista.mensaje);
       setPistasRestantes(pista.pistasRestantes);
       setPuedeNoEntiendo(true);
     });
@@ -204,18 +190,18 @@ function PantallaEjercicio() {
   const noEntiendo = () =>
     ejercicio &&
     conManejo(async () => {
-      setMensaje((await api.noEntiendo(token, ejercicio.servidoId)).mensaje);
+      setTecladoAbierto(false);
+      mostrarYDecir((await api.noEntiendo(token, ejercicio.servidoId)).mensaje);
     });
 
   const resolverJuntos = () =>
     ejercicio &&
     conManejo(async () => {
-      Keyboard.dismiss();
       const guiada = await api.resolverJuntos(token, ejercicio.servidoId);
       setPasos(guiada.pasos);
       setPasoGuiado(0);
       setAnalogo(guiada.analogo ?? null);
-      setMensaje(guiada.pasos[0]);
+      mostrarYDecir(guiada.pasos[0]);
       setEstado('guiada');
       actualizarProgreso();
     });
@@ -223,7 +209,7 @@ function PantallaEjercicio() {
   const siguientePaso = () => {
     const siguiente = pasoGuiado + 1;
     setPasoGuiado(siguiente);
-    setMensaje(pasos[siguiente]);
+    mostrarYDecir(pasos[siguiente]);
   };
 
   const probarParecido = () => {
@@ -316,59 +302,28 @@ function PantallaEjercicio() {
 
   const tarjeta = (
     <View
-      onLayout={(e) => {
-        yTarjeta.current = e.nativeEvent.layout.y;
-      }}
       className={`rounded-[20px] bg-white ${g ? 'gap-6 p-7' : 'gap-5 p-5'} ${
         llenaPantalla ? 'grow justify-center' : ''
       }`}
     >
       <EnunciadoResaltado texto={ejercicio.enunciado} grande={g} />
-      <View className={`flex-row items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}>
-        {representacion?.tipo === 'fraccion-circulo' && (
-          <RepresentacionFraccion
-            denominador={representacion.parametros.denominador}
-            partesDestacadas={representacion.parametros.partesDestacadas}
-            tamano={g ? 200 : 140}
-          />
-        )}
-        {ejercicio.formatoRespuesta === 'ordenar' && (
-          <RespuestaOrdenar
-            valores={ejercicio.valores ?? []}
-            seleccion={seleccion}
-            onCambio={setSeleccion}
-            deshabilitado={estado !== 'respondiendo' || ocupado}
-            grande={g}
-          />
-        )}
-        {ejercicio.formatoRespuesta === 'comparar' && (
-          <RespuestaComparar
-            izquierda={ejercicio.valores?.[0] ?? ''}
-            derecha={ejercicio.valores?.[1] ?? ''}
-            simbolo={simbolo}
-            onCambio={setSimbolo}
-            deshabilitado={estado !== 'respondiendo' || ocupado}
-            grande={g}
-          />
-        )}
-        {(ejercicio.formatoRespuesta === 'numerico' ||
-          ejercicio.formatoRespuesta === 'fraccion') && (
-          <CampoRespuesta
-            formato={ejercicio.formatoRespuesta === 'fraccion' ? 'fraccion' : 'numerico'}
-            numerador={numerador}
-            denominador={denominador}
-            onCambio={(n, d) => {
-              setNumerador(n);
-              setDenominador(d);
-            }}
-            onEnviar={responder}
-            deshabilitado={estado !== 'respondiendo' || ocupado}
-            grande={g}
-            mixto={ejercicio.entradaMixta}
-            entero={entero}
-            onEntero={setEntero}
-          />
-        )}
+      <View
+        className={`flex-row flex-wrap items-center justify-center ${g ? 'gap-10' : 'gap-[22px]'}`}
+      >
+        <FiguraEjercicio representacion={representacion} grande={g} />
+        <CampoRespuesta
+          // Un ejercicio nuevo parte con el campo vacío; tras un error, lo escrito se conserva.
+          key={ejercicio.servidoId}
+          formato={ejercicio.formatoRespuesta}
+          entradaMixta={ejercicio.entradaMixta}
+          valores={ejercicio.valores ?? []}
+          onCambio={setRespuesta}
+          ref={campo}
+          editando={tecladoAbierto}
+          onEditar={() => setTecladoAbierto(true)}
+          deshabilitado={estado !== 'respondiendo' || ocupado}
+          grande={g}
+        />
       </View>
       {estado !== 'guiada' && (
         <BotonPrimario
@@ -382,9 +337,21 @@ function PantallaEjercicio() {
   );
 
   const tutor = (
-    <GloboOctavio mensaje={ocupado ? 'Octavio está pensando…' : mensaje} grande={g}>
+    <GloboOctavio
+      mensaje={ocupado ? 'Octavio está pensando…' : mensaje}
+      hablando={hablando}
+      botonesVoz={
+        <BotonesVoz
+          activa={vozActiva}
+          onAlternar={alternarVoz}
+          onRepetir={dicho ? () => setDicho({ ...dicho }) : undefined}
+          grande={g}
+        />
+      }
+      grande={g}
+    >
       {estado === 'guiada' && (
-        <View className="flex-row justify-end">
+        <View className="ml-auto">
           <BotonAccion
             texto={ultimoPaso ? 'Probar uno parecido →' : 'Siguiente →'}
             onPress={ultimoPaso ? probarParecido : siguientePaso}
@@ -423,14 +390,36 @@ function PantallaEjercicio() {
     </>
   );
 
-  // Fuera de la zona que se desplaza: siempre quedan a la vista, también sobre el teclado.
+  // Teclado propio fijo abajo, como en las calculadoras: solo mientras se escribe la respuesta.
+  const teclado = estado === 'respondiendo' &&
+    tecladoAbierto &&
+    usaTeclado(ejercicio.formatoRespuesta) && (
+      <View
+        className={
+          dosColumnas
+            ? `mb-2 rounded-2xl bg-fondo ${g ? 'p-3' : 'p-1.5'}`
+            : `border-t-[1.5px] border-borde bg-fondo ${g ? 'px-8 py-4' : 'px-4 py-2.5'}`
+        }
+      >
+        <TecladoMatematico
+          onTecla={(t) => campo.current?.tecla(t)}
+          decimal={ejercicio.formatoRespuesta === 'numerico'}
+          variasCasillas={ejercicio.formatoRespuesta === 'fraccion'}
+          deshabilitado={ocupado}
+          grande={g}
+          compacto={dosColumnas && !g}
+        />
+      </View>
+    );
+
+  // Fuera de la zona que se desplaza: siempre quedan a la vista. Con el teclado abierto van en
+  // una sola fila, para que quepan sobre él.
   const acciones =
     estado === 'respondiendo' &&
-    (tecladoVisible ? (
+    (teclado ? (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
         contentContainerClassName="gap-2 py-2"
         className="grow-0"
       >
@@ -442,47 +431,40 @@ function PantallaEjercicio() {
 
   return (
     <SafeAreaView className="flex-1 bg-panel">
-      {/* Sin esto el teclado tapa la casilla, Responder y las acciones. */}
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
-        {dosColumnas ? (
-          <View className={`flex-1 flex-row ${g ? 'gap-8 px-8 pt-4' : 'gap-4 px-4 pt-2'}`}>
-            <View className="flex-1">
-              <ScrollView
-                contentContainerClassName="gap-3 pb-4"
-                keyboardShouldPersistTaps="handled"
-              >
-                {encabezado}
-                {tarjeta}
-              </ScrollView>
-            </View>
-            <View className="flex-1">
-              <ScrollView
-                contentContainerClassName={`grow gap-3 pb-4 ${g ? 'justify-center' : 'justify-end'}`}
-                keyboardShouldPersistTaps="handled"
-              >
-                {tutor}
-              </ScrollView>
-              {acciones}
-            </View>
-          </View>
-        ) : (
-          <>
-            <ScrollView
-              ref={desplazable}
-              contentContainerClassName={`grow gap-3 px-4 pb-4 pt-2 ${
-                g ? 'w-full max-w-[760px] self-center gap-6' : ''
-              }`}
-              keyboardShouldPersistTaps="handled"
-            >
+      {dosColumnas ? (
+        <View className={`flex-1 flex-row ${g ? 'gap-8 px-8 pt-4' : 'gap-4 px-4 pt-2'}`}>
+          <View className="flex-1">
+            <ScrollView contentContainerClassName="gap-3 pb-4">
               {encabezado}
               {tarjeta}
-              {/* En el teléfono Octavio queda abajo, como en el mockup; en tablet, junto al ejercicio. */}
+            </ScrollView>
+          </View>
+          <View className="flex-1">
+            <ScrollView
+              contentContainerClassName={`grow gap-3 pb-4 ${g ? 'justify-center' : 'justify-end'}`}
+            >
               {tutor}
             </ScrollView>
-            <View className={g ? 'w-full max-w-[760px] self-center px-4' : 'px-4'}>{acciones}</View>
-          </>
-        )}
-      </KeyboardAvoidingView>
+            {acciones}
+            {teclado}
+          </View>
+        </View>
+      ) : (
+        <>
+          <ScrollView
+            contentContainerClassName={`grow gap-3 px-4 pb-4 pt-2 ${
+              g ? 'w-full max-w-[760px] self-center gap-6' : ''
+            }`}
+          >
+            {encabezado}
+            {tarjeta}
+            {/* En el teléfono Octavio queda abajo, como en el mockup; en tablet, junto al ejercicio. */}
+            {tutor}
+          </ScrollView>
+          <View className={g ? 'w-full max-w-[760px] self-center px-4' : 'px-4'}>{acciones}</View>
+          {teclado}
+        </>
+      )}
     </SafeAreaView>
   );
 }

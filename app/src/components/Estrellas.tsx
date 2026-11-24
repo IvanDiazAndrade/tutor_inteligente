@@ -7,7 +7,7 @@ const ESTRELLA =
 // Nivel de la unidad en estrellas (modelo_estudiante.md §6): las no ganadas se ven tenues.
 // Se dibujan en SVG porque los emoji no admiten opacidad dentro de un texto en React Native.
 export function Estrellas({ cantidad, grande = false }: { cantidad: number; grande?: boolean }) {
-  const tamano = grande ? 22 : 16;
+  const tamano = grande ? 32 : 26;
   return (
     <View accessible accessibilityLabel={`${cantidad} de 3 estrellas`} className="flex-row gap-1">
       {[0, 1, 2].map((i) => (

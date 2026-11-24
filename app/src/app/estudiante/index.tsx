@@ -45,22 +45,27 @@ export default function HomeEstudiante() {
   const anteriores = unidades.data.filter((u) => u.curso < estudiante.curso);
   const sugerida = unidades.data.find((u) => u.sugerida);
 
+  // La sugerencia va directo a practicar; una unidad abre primero su lección.
   const practicar = (u: UnidadEstudiante) =>
-    router.push({ pathname: '/ejercicio', params: { unidad: u.id, nombre: u.descripcion } });
+    u.conEjercicios
+      ? router.push({ pathname: '/ejercicio', params: { unidad: u.id } })
+      : abrirUnidad(u);
+  const abrirUnidad = (u: UnidadEstudiante) =>
+    router.push({ pathname: '/leccion', params: { unidad: u.id } });
 
   const encabezado = (
     <View className="flex-row items-center gap-2.5">
-      <Octavio tamano={esTablet ? 88 : 62} />
+      <Octavio tamano={esTablet ? 120 : 88} />
       <View className="flex-1">
-        <Text className={`font-nunito-black text-tinta ${esTablet ? 'text-3xl' : 'text-[22px]'}`}>
+        <Text className={`font-nunito-black text-tinta ${esTablet ? 'text-4xl' : 'text-[28px]'}`}>
           ¡Hola, {estudiante.alias}!
         </Text>
-        <Text className={`font-nunito-bold text-lila ${esTablet ? 'text-base' : 'text-xs'}`}>
+        <Text className={`font-nunito-bold text-lila ${esTablet ? 'text-xl' : 'text-base'}`}>
           ¿Practicamos un poco hoy?
         </Text>
       </View>
       <View className="rounded-full bg-white px-3 py-1.5">
-        <Text className={`font-nunito-black text-ambar ${esTablet ? 'text-base' : 'text-[13px]'}`}>
+        <Text className={`font-nunito-black text-ambar ${esTablet ? 'text-2xl' : 'text-lg'}`}>
           ⭐ {conPuntoDeMiles(estudiante.puntajeTotal)}
         </Text>
       </View>
@@ -73,19 +78,19 @@ export default function HomeEstudiante() {
       etiqueta={sugerida.etiqueta === 'repasar' ? 'repasar' : undefined}
       onPracticar={() => practicar(sugerida)}
       grande={esTablet}
-      apilada={dosColumnas && !esTablet}
+      apilada={!esTablet}
     />
   );
 
   const listaUnidades = (lista: UnidadEstudiante[]) => (
-    <View className={esTablet ? 'flex-row flex-wrap gap-3' : 'gap-2.5'}>
+    <View className={esTablet ? 'flex-row flex-wrap gap-3' : 'gap-3.5'}>
       {lista.map((u) => (
         <View key={u.id} className={esTablet ? 'w-[48.5%]' : ''}>
           <TarjetaUnidad
             nombre={u.descripcion}
             estrellas={u.estrellas}
-            etiqueta={u.etiqueta ?? undefined}
-            onPress={() => practicar(u)}
+            etiqueta={u.conEjercicios ? (u.etiqueta ?? undefined) : 'pronto'}
+            onPress={() => abrirUnidad(u)}
             grande={esTablet}
           />
         </View>
@@ -96,7 +101,7 @@ export default function HomeEstudiante() {
   const tituloSeccion = (texto: string) => (
     <Text
       className={`px-1 font-nunito-black uppercase tracking-wide text-seccion ${
-        esTablet ? 'text-base' : 'text-[13px]'
+        esTablet ? 'text-xl' : 'text-base'
       }`}
     >
       {texto}
@@ -107,7 +112,7 @@ export default function HomeEstudiante() {
     <Pressable accessibilityRole="link" onPress={onPress} className="items-center py-2">
       <Text
         className={`font-nunito-extrabold text-primario-claro underline ${
-          esTablet ? 'text-base' : 'text-[13px]'
+          esTablet ? 'text-xl' : 'text-base'
         }`}
       >
         {texto}
